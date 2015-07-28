@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Array;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class ApplicationMonitor {
 
@@ -36,6 +37,8 @@ public abstract class ApplicationMonitor {
     private static Optional<ConsoleReporter> consoleReporter = Optional.empty();
 
     private static Optional<JmxReporter> jmxReporter = Optional.empty();
+
+    private static AtomicBoolean jvmMonitoringRunning = new AtomicBoolean(false);
     //CHECK_ON: StaticVariableName
 
     private static final Logger LOG = LoggerFactory.getLogger(ApplicationMonitor.class);
@@ -98,9 +101,11 @@ public abstract class ApplicationMonitor {
      * Start monitoring various jvm parameters (memory usage, gc, thread state, etc.).
      */
     public static synchronized void startJvmMonitoring() {
-        registry.registerAll(new MemoryUsageGaugeSet());
-        registry.registerAll(new GarbageCollectorMetricSet());
-        registry.registerAll(new ThreadStatesGaugeSet());
+        if (jvmMonitoringRunning.compareAndSet(false, true)) {
+            registry.registerAll(new MemoryUsageGaugeSet());
+            registry.registerAll(new GarbageCollectorMetricSet());
+            registry.registerAll(new ThreadStatesGaugeSet());
+        }
     }
 
     /**

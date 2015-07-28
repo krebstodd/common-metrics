@@ -12,7 +12,7 @@
 
     <groupId>com.blispay.common</groupId>
     <artifactId>blispay-metrics</artifactId>
-    <version>0</version>
+    <version>3</version>
     <packaging>jar</packaging>
 
     <dependencyManagement>
