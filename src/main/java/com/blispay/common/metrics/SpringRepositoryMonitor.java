@@ -1,4 +1,4 @@
-package com.blispay.tools.monitoring;
+package com.blispay.common.metrics;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
