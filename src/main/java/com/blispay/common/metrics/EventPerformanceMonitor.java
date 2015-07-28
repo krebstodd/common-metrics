@@ -2,7 +2,8 @@ package com.blispay.common.metrics;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
-public final class EventPerformanceMonitor extends ApplicationMonitor {
+//CHECK_OFF: FinalClass
+public class EventPerformanceMonitor extends ApplicationMonitor {
 
     private final String namespace;
 
@@ -28,3 +29,5 @@ public final class EventPerformanceMonitor extends ApplicationMonitor {
     }
 
 }
+//CHECK_ON: FinalClass
+

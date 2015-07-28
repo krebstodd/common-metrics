@@ -9,9 +9,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
+//CHECK_OFF: FinalClass
 @Configuration
 @EnableAspectJAutoProxy
-public final class SpringRepositoryMonitor{
+public class SpringRepositoryMonitor{
 
     /**
      * Build a new repository profile. Scans the classpath for spring data repositories and wraps them with
@@ -60,3 +61,4 @@ public final class SpringRepositoryMonitor{
     }
 
 }
+//CHECK_ON: FinalClass
