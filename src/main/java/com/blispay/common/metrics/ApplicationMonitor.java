@@ -2,6 +2,7 @@ package com.blispay.common.metrics;
 
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.JmxReporter;
+import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
 import com.codahale.metrics.Slf4jReporter;
@@ -22,6 +23,11 @@ public abstract class ApplicationMonitor {
      * Standardized metric namespace for response times.
      */
     public static final String RESPONSE_TIME = "response-time";
+
+    /**
+     * Sets a global singleton variable to track if vertx monitoring has been configured.
+     */
+    public static final AtomicBoolean vertxMonitoringConfigured = new AtomicBoolean(false);
 
     /**
      * The base registry that all metrics will be filed under. This is required so that other frameworks
@@ -138,6 +144,18 @@ public abstract class ApplicationMonitor {
      */
     public static synchronized void stopJmxReporter() {
         jmxReporter.ifPresent(JmxReporter::stop);
+    }
+
+    /**
+     * Shut down the application monitor and remove all listeners/metrics.
+     */
+    public static synchronized void shutdown() {
+        slf4jReporter.ifPresent(Slf4jReporter::stop);
+        consoleReporter.ifPresent(ConsoleReporter::stop);
+        jmxReporter.ifPresent(JmxReporter::stop);
+        jvmMonitoringRunning.set(false);
+        vertxMonitoringConfigured.set(false);
+        registry.removeMatching(MetricFilter.ALL);
     }
 
     @FunctionalInterface
