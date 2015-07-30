@@ -32,7 +32,7 @@ public class SpringRepositoryMonitor extends ApplicationMonitor {
         private static final EventPerformanceMonitor monitor
                 = EventPerformanceMonitor.getMonitor(DB_QUERY);
 
-        private SpringRepositoryProfiler() {}
+        public SpringRepositoryProfiler() {}
 
         //CHECK_OFF: IllegalThrows
         @Override
@@ -44,8 +44,6 @@ public class SpringRepositoryMonitor extends ApplicationMonitor {
             try {
                 final Object result = methodInvocation.proceed();
                 return result;
-            } catch (final Exception ex) {
-                throw ex;
             } finally {
                 resolver.done();
             }
