@@ -25,6 +25,21 @@ public abstract class ApplicationMonitor {
     public static final String RESPONSE_TIME = "response-time";
 
     /**
+     * Standardized jetty namespace.
+     */
+    public static final String JETTY = "jetty";
+
+    /**
+     * Standardized namespace for an open connection thread.
+     */
+    public static final String CONNECTION = "connection";
+
+    /**
+     * Metric namespace that should be used for database queries.
+     */
+    public static final String DB_QUERY = "db-query";
+
+    /**
      * Sets a global singleton variable to track if vertx monitoring has been configured.
      */
     public static final AtomicBoolean vertxMonitoringConfigured = new AtomicBoolean(false);

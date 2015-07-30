@@ -12,7 +12,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 //CHECK_OFF: FinalClass
 @Configuration
 @EnableAspectJAutoProxy
-public class SpringRepositoryMonitor{
+public class SpringRepositoryMonitor extends ApplicationMonitor {
 
     /**
      * Build a new repository profile. Scans the classpath for spring data repositories and wraps them with
@@ -28,11 +28,6 @@ public class SpringRepositoryMonitor{
     }
 
     public static final class SpringRepositoryProfiler  implements MethodInterceptor  {
-
-        /**
-         * Metric namespace that should be used for database queries.
-         */
-        public static final String DB_QUERY = "db-query";
 
         private static final EventPerformanceMonitor monitor
                 = EventPerformanceMonitor.getMonitor(DB_QUERY);

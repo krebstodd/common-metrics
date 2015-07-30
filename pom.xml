@@ -12,8 +12,12 @@
 
     <groupId>com.blispay.common</groupId>
     <artifactId>blispay-metrics</artifactId>
-    <version>3</version>
+    <version>4</version>
     <packaging>jar</packaging>
+
+    <properties>
+        <dropwizard-stack-version>3.1.2</dropwizard-stack-version>
+    </properties>
 
     <dependencyManagement>
         <dependencies>
@@ -21,11 +25,6 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>1.7.10</version>
-            </dependency>
-            <dependency>
-                <groupId>io.dropwizard.metrics</groupId>
-                <artifactId>metrics-core</artifactId>
-                <version>3.1.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -35,13 +34,19 @@
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>3.1.2</version>
+            <version>${dropwizard-stack-version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-jvm</artifactId>
-            <version>3.1.2</version>
+            <version>${dropwizard-stack-version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-jetty9</artifactId>
+            <version>${dropwizard-stack-version}</version>
         </dependency>
 
         <dependency>
@@ -54,6 +59,12 @@
             <groupId>io.vertx</groupId>
             <artifactId>vertx-dropwizard-metrics</artifactId>
             <version>3.0.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.dropwizard.metrics</groupId>
+                    <artifactId>metrics-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>
