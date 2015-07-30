@@ -45,6 +45,11 @@ public abstract class ApplicationMonitor {
     public static final AtomicBoolean vertxMonitoringConfigured = new AtomicBoolean(false);
 
     /**
+     * Sets a global singleton variable to track if the jetty server metrics have been set up.
+     */
+    public static final AtomicBoolean jettyServerConfigured = new AtomicBoolean(false);
+
+    /**
      * The base registry that all metrics will be filed under. This is required so that other frameworks
      * that integrate with dropwizard can reference the shared metric registry we'll create.
      */

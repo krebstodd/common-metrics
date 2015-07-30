@@ -180,31 +180,37 @@ public final class JettyMonitor extends ApplicationMonitor {
                     return Ratio.of(InstrumentedJettyServer.this.responses[3].getOneMinuteRate(), InstrumentedJettyServer.this.requests.getOneMinuteRate());
                 }
             });
-            this.metricRegistry.register(MetricRegistry.name(prefix, new String[]{"percent-4xx-5m"}), new RatioGauge() {
-                protected Ratio getRatio() {
-                    return Ratio.of(InstrumentedJettyServer.this.responses[3].getFiveMinuteRate(), InstrumentedJettyServer.this.requests.getFiveMinuteRate());
-                }
-            });
-            this.metricRegistry.register(MetricRegistry.name(prefix, new String[]{"percent-4xx-15m"}), new RatioGauge() {
-                protected Ratio getRatio() {
-                    return Ratio.of(InstrumentedJettyServer.this.responses[3].getFifteenMinuteRate(), InstrumentedJettyServer.this.requests.getFifteenMinuteRate());
-                }
-            });
-            this.metricRegistry.register(MetricRegistry.name(prefix, new String[]{"percent-5xx-1m"}), new RatioGauge() {
-                protected Ratio getRatio() {
-                    return Ratio.of(InstrumentedJettyServer.this.responses[4].getOneMinuteRate(), InstrumentedJettyServer.this.requests.getOneMinuteRate());
-                }
-            });
-            this.metricRegistry.register(MetricRegistry.name(prefix, new String[]{"percent-5xx-5m"}), new RatioGauge() {
-                protected Ratio getRatio() {
-                    return Ratio.of(InstrumentedJettyServer.this.responses[4].getFiveMinuteRate(), InstrumentedJettyServer.this.requests.getFiveMinuteRate());
-                }
-            });
-            this.metricRegistry.register(MetricRegistry.name(prefix, new String[]{"percent-5xx-15m"}), new RatioGauge() {
-                protected Ratio getRatio() {
-                    return Ratio.of(InstrumentedJettyServer.this.responses[4].getFifteenMinuteRate(), InstrumentedJettyServer.this.requests.getFifteenMinuteRate());
-                }
-            });
+
+            // These calls are not create if not extist, they're just create so we want to make sure that they aren't
+            // already configured.
+            if (jettyServerConfigured.compareAndSet(false, true)) {
+                this.metricRegistry.register(MetricRegistry.name(prefix, new String[]{"percent-4xx-5m"}), new RatioGauge() {
+                    protected Ratio getRatio() {
+                        return Ratio.of(InstrumentedJettyServer.this.responses[3].getFiveMinuteRate(), InstrumentedJettyServer.this.requests.getFiveMinuteRate());
+                    }
+                });
+                this.metricRegistry.register(MetricRegistry.name(prefix, new String[]{"percent-4xx-15m"}), new RatioGauge() {
+                    protected Ratio getRatio() {
+                        return Ratio.of(InstrumentedJettyServer.this.responses[3].getFifteenMinuteRate(), InstrumentedJettyServer.this.requests.getFifteenMinuteRate());
+                    }
+                });
+                this.metricRegistry.register(MetricRegistry.name(prefix, new String[]{"percent-5xx-1m"}), new RatioGauge() {
+                    protected Ratio getRatio() {
+                        return Ratio.of(InstrumentedJettyServer.this.responses[4].getOneMinuteRate(), InstrumentedJettyServer.this.requests.getOneMinuteRate());
+                    }
+                });
+                this.metricRegistry.register(MetricRegistry.name(prefix, new String[]{"percent-5xx-5m"}), new RatioGauge() {
+                    protected Ratio getRatio() {
+                        return Ratio.of(InstrumentedJettyServer.this.responses[4].getFiveMinuteRate(), InstrumentedJettyServer.this.requests.getFiveMinuteRate());
+                    }
+                });
+                this.metricRegistry.register(MetricRegistry.name(prefix, new String[]{"percent-5xx-15m"}), new RatioGauge() {
+                    protected Ratio getRatio() {
+                        return Ratio.of(InstrumentedJettyServer.this.responses[4].getFifteenMinuteRate(), InstrumentedJettyServer.this.requests.getFifteenMinuteRate());
+                    }
+                });
+            }
+
             this.listener = new WrappedAsyncListener();
         }
 
