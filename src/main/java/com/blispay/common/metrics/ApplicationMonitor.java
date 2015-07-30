@@ -58,11 +58,11 @@ public abstract class ApplicationMonitor {
     protected static final MetricRegistry registry = SharedMetricRegistries.getOrCreate(BASE_REGISTRY);
 
     //CHECK_OFF: StaticVariableName
-    private static Optional<Slf4jReporter> slf4jReporter = Optional.empty();
+    private static volatile Optional<Slf4jReporter> slf4jReporter = Optional.empty();
 
-    private static Optional<ConsoleReporter> consoleReporter = Optional.empty();
+    private static volatile Optional<ConsoleReporter> consoleReporter = Optional.empty();
 
-    private static Optional<JmxReporter> jmxReporter = Optional.empty();
+    private static volatile Optional<JmxReporter> jmxReporter = Optional.empty();
 
     private static AtomicBoolean jvmMonitoringRunning = new AtomicBoolean(false);
     //CHECK_ON: StaticVariableName
