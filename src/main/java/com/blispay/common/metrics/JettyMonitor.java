@@ -175,15 +175,15 @@ public final class JettyMonitor extends ApplicationMonitor {
             this.connectRequests = this.metricRegistry.timer(MetricRegistry.name(prefix, new String[]{"connect-requests"}));
             this.moveRequests = this.metricRegistry.timer(MetricRegistry.name(prefix, new String[]{"move-requests"}));
             this.otherRequests = this.metricRegistry.timer(MetricRegistry.name(prefix, new String[]{"other-requests"}));
-            this.metricRegistry.register(MetricRegistry.name(prefix, new String[]{"percent-4xx-1m"}), new RatioGauge() {
-                protected Ratio getRatio() {
-                    return Ratio.of(InstrumentedJettyServer.this.responses[3].getOneMinuteRate(), InstrumentedJettyServer.this.requests.getOneMinuteRate());
-                }
-            });
 
             // These calls are not create if not extist, they're just create so we want to make sure that they aren't
             // already configured.
             if (jettyServerConfigured.compareAndSet(false, true)) {
+                this.metricRegistry.register(MetricRegistry.name(prefix, new String[]{"percent-4xx-1m"}), new RatioGauge() {
+                    protected Ratio getRatio() {
+                        return Ratio.of(InstrumentedJettyServer.this.responses[3].getOneMinuteRate(), InstrumentedJettyServer.this.requests.getOneMinuteRate());
+                    }
+                });
                 this.metricRegistry.register(MetricRegistry.name(prefix, new String[]{"percent-4xx-5m"}), new RatioGauge() {
                     protected Ratio getRatio() {
                         return Ratio.of(InstrumentedJettyServer.this.responses[3].getFiveMinuteRate(), InstrumentedJettyServer.this.requests.getFiveMinuteRate());
