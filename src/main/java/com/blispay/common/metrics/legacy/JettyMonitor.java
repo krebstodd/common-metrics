@@ -1,4 +1,4 @@
-package com.blispay.common.metrics;
+package com.blispay.common.metrics.legacy;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
@@ -15,6 +15,8 @@ import org.eclipse.jetty.server.HttpChannelState;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.thread.ThreadPool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
@@ -27,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public final class JettyMonitor extends ApplicationMonitor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JettyMonitor.class);
 
     private JettyMonitor() {}
 
@@ -103,7 +107,7 @@ public final class JettyMonitor extends ApplicationMonitor {
 
         @Override
         public void handle(final HttpChannel<?> channel) throws IOException, ServletException {
-
+            LOG.info("Collecting metrics on jetty https request");
             activeDispatches.inc();
 
             final long start;

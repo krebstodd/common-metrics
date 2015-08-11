@@ -1,4 +1,4 @@
-package com.blispay.common.metrics;
+package com.blispay.common.metrics.legacy;
 
 import static com.codahale.metrics.MetricRegistry.name;
 

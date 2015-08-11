@@ -1,4 +1,4 @@
-package com.blispay.common.metrics;
+package com.blispay.common.metrics.legacy;
 
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.JmxReporter;

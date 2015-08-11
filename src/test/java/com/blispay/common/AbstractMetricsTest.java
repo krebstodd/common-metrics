@@ -1,6 +1,6 @@
 package com.blispay.common;
 
-import com.blispay.common.metrics.ApplicationMonitor;
+import com.blispay.common.metrics.legacy.ApplicationMonitor;
 import com.codahale.metrics.MetricRegistry;
 
 import java.lang.reflect.Field;

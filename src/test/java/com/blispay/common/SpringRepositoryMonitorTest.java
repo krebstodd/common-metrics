@@ -1,6 +1,6 @@
 package com.blispay.common;
 
-import com.blispay.common.metrics.SpringRepositoryMonitor;
+import com.blispay.common.metrics.legacy.SpringRepositoryMonitor;
 import com.codahale.metrics.Timer;
 import org.junit.Assert;
 import org.junit.Test;

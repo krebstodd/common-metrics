@@ -1,7 +1,7 @@
 package com.blispay.common;
 
-import com.blispay.common.metrics.ApplicationMonitor;
-import com.blispay.common.metrics.EventPerformanceMonitor;
+import com.blispay.common.metrics.legacy.ApplicationMonitor;
+import com.blispay.common.metrics.legacy.EventPerformanceMonitor;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import org.junit.Assert;
