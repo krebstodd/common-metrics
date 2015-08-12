@@ -1,27 +1,27 @@
 package com.blispay.common;
 
-import com.blispay.common.metrics.legacy.ApplicationMonitor;
-import com.codahale.metrics.MetricRegistry;
+import com.blispay.common.metrics.BpMetric;
+import com.blispay.common.metrics.BpMetricService;
+import com.codahale.metrics.Metric;
+import org.junit.Assert;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 public abstract class AbstractMetricsTest {
 
-    protected MetricRegistry getRegistry() throws IllegalAccessException, NoSuchFieldException {
-        Field privateRegistry = null;
+    protected static final BpMetricService metricService = BpMetricService.getInstance("bpMetricsTest");
+
+    protected <M extends Metric> M getInternalMetric(final BpMetric metric) {
         try {
-            privateRegistry = ApplicationMonitor.class.getDeclaredField("registry");
-            privateRegistry.setAccessible(true);
-            return (MetricRegistry) privateRegistry.get(null);
-        } finally {
-            if (privateRegistry != null) {
-                privateRegistry.setAccessible(false);
-            }
+
+            final Method internalMetricGetter = metric.getClass().getDeclaredMethod("getInternalMetric");
+            internalMetricGetter.setAccessible(true);
+            final M internalMetric = (M) internalMetricGetter.invoke(metric);
+            internalMetricGetter.setAccessible(false);
+            return internalMetric;
+        } catch (Exception ex) {
+            Assert.assertNull("There should be a package level getter for the internal dropwizard metric.", ex);
+            return null;
         }
     }
-
-    protected Boolean inRange(final Double value, final Double min, final Double max) {
-        return Double.compare(min, value) < 0 && Double.compare(value, max) < 0;
-    }
-
 }

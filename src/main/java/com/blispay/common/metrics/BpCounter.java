@@ -1,14 +1,8 @@
 package com.blispay.common.metrics;
 
 import com.codahale.metrics.Counter;
-import com.codahale.metrics.Metric;
-import com.codahale.metrics.Slf4jReporter;
-
-import java.util.HashMap;
 
 public class BpCounter extends BpMetric {
-
-    private static final Integer NUM_MEASUREMENTS = 1;
 
     private final Counter counter;
 
@@ -35,7 +29,7 @@ public class BpCounter extends BpMetric {
 
     @Override
     ImmutablePair[] sample() {
-        final ImmutablePair[] sample = new ImmutablePair[NUM_MEASUREMENTS];
+        final ImmutablePair[] sample = new ImmutablePair[1];
         sample[0] = new ImmutablePair("count", this.counter.getCount());
         return sample;
     }

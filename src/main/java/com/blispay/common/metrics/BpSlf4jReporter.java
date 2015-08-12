@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-class BpSlf4jReporter extends BpScheduledReporter implements BpMetricReporter {
+class BpSlf4jReporter extends BpScheduledReporter implements BpMetricConsumer {
 
     private final Map<String, BpMetric> metrics = new ConcurrentHashMap<>();
 
@@ -34,9 +34,11 @@ class BpSlf4jReporter extends BpScheduledReporter implements BpMetricReporter {
 
     @Override
     public void registerMetric(final BpMetric metric) {
+        // TODO: This isn't thread safe.
         if (metrics.containsKey(metric.getName())) {
-            throw new IllegalArgumentException("BpSlf4jReporter already contains metrict " + metric.getName());
+            throw new IllegalArgumentException("BpSlf4jReporter already contains metric " + metric.getName());
         }
+
         metrics.put(metric.getName(), metric);
     }
 
@@ -48,6 +50,7 @@ class BpSlf4jReporter extends BpScheduledReporter implements BpMetricReporter {
     private void logMetric(final BpMetric metric) {
 
         StringBuilder sb = new StringBuilder();
+        sb.append("name=").append(metric.getName()).append(",");
 
         final ImmutablePair[] sample = metric.sample();
         ImmutablePair current = null;

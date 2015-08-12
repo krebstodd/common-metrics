@@ -14,7 +14,7 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
 
-class BpJmxReporter implements BpMetricReporter {
+class BpJmxReporter implements BpMetricConsumer {
 
     private final MBeanServer mBeanServer;
 

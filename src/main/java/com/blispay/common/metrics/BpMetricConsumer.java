@@ -1,6 +1,6 @@
 package com.blispay.common.metrics;
 
-interface BpMetricReporter {
+public interface BpMetricConsumer {
 
     void registerMetric(BpMetric metric);
 

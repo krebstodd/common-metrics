@@ -1,8 +1,6 @@
 package com.blispay.common.metrics;
 
-import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Metric;
-import com.codahale.metrics.MetricSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,9 +8,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public class BpMetricReportingService implements BpMetricListener {
+class BpMetricReportingService {
 
     public static final Boolean DEFAULT_JMX_ENABLED = false;
 
@@ -20,85 +19,39 @@ public class BpMetricReportingService implements BpMetricListener {
 
     public static final String DEFAULT_SLF4J_LOGGER_NAME = "METRICS-LOGGER";
 
+    public static final String DEFAULT_SLF4J_LOGGER_PERIOD = "60";
+
+    public static final String DEFAULT_SLF4J_LOGGER_UNIT = "SECONDS";
+
     private static final Logger LOG = LoggerFactory.getLogger(BpMetricReportingService.class);
 
-    private final List<BpMetricReporter> reporters = new ArrayList<>();
+    private final List<BpMetricConsumer> reporters = new ArrayList<>();
 
-    private BpMetricReportingService(final BpJmxReporter jmxReporter, final BpSlf4jReporter slf4jReporter) {
-        this.reporters.add(jmxReporter);
-        this.reporters.add(slf4jReporter);
+    private BpMetricReportingService() { }
+
+    public void addConsumer(final BpMetricConsumer consumer) {
+        this.reporters.add(consumer);
     }
 
-    @Override
-    public void onGaugeAdded(final String s, final Gauge<?> gauge) {
-
-    }
-
-    @Override
-    public void onGaugeRemoved(final String s) {
-
-    }
-
-    @Override
-    public void onCounterAdded(final BpCounter counter) {
-
-    }
-
-    @Override
-    public void onCounterRemoved(final String s) {
-
-    }
-
-    @Override
-    public void onHistogramAdded(final BpHistogram histogram) {
-
-    }
-
-    @Override
-    public void onHistogramRemoved(final String s) {
-
-    }
-
-    @Override
-    public void onMeterAdded(final BpMeter meter) {
-
-    }
-
-    @Override
-    public void onMeterRemoved(final String s) {
-
-    }
-
-    @Override
-    public void onTimerAdded(final BpTimer timer) {
-
-    }
-
-    @Override
-    public void onTimerRemoved(final String s) {
-
+    public void start() {
+        applyToAll(BpMetricConsumer::start);
     }
 
     public void stop() {
-        applyToAll(BpMetricReporter::stop);
+        applyToAll(BpMetricConsumer::stop);
     }
 
-    @Override
-    public void start() {
-        applyToAll(BpMetricReporter::start);
-    }
-
-    private void onMetricAdded(final BpMetric metric) {
+    public void onMetricAdded(final BpMetric metric) {
         applyToAll((reporter) -> reporter.registerMetric(metric));
     }
 
-    private void onMetricRemoved(final String name) {
+    public void onMetricRemoved(final String name) {
         applyToAll((reporter) -> reporter.unregisterMetric(name));
     }
 
-    private void applyToAll(Consumer<BpMetricReporter> consumer) {
+    private void applyToAll(Consumer<BpMetricConsumer> consumer) {
         synchronized (reporters) {
-            for (final Iterator<BpMetricReporter> iter = reporters.iterator(); iter.hasNext(); ) {
+            for (final Iterator<BpMetricConsumer> iter = reporters.iterator(); iter.hasNext(); ) {
                 consumer.accept(iter.next());
             }
         }
@@ -106,25 +59,34 @@ public class BpMetricReportingService implements BpMetricListener {
 
     public static BpMetricReportingService initialize(final BpMetricService service) {
 
-        BpJmxReporter jmxReporter = null;
-        BpSlf4jReporter slf4jReporter = null;
+        final BpMetricReportingService reportingService = new BpMetricReportingService();
 
         final Properties sysProps = System.getProperties();
         final Boolean jmxEnabled = (Boolean) sysProps.getOrDefault("metrics.jmx.enabled", DEFAULT_JMX_ENABLED);
         final Boolean slf4jEnabled = (Boolean) sysProps.getOrDefault("metrics.slf4j.enabled", DEFAULT_SLF4J_ENABLED);
 
         if (jmxEnabled) {
-            jmxReporter = buildJmxReporter(service);
+            reportingService.addConsumer(buildJmxReporter(service));
         }
 
         if (slf4jEnabled) {
+            final String loggerName = (String) sysProps.getOrDefault("metrics.slf4j.logger", DEFAULT_SLF4J_LOGGER_NAME);
+            final String period = (String) sysProps.getOrDefault("metrics.slf4j.period", DEFAULT_SLF4J_LOGGER_PERIOD);
+            final String unit = (String) sysProps.getOrDefault("metrics.slf4j.unit", DEFAULT_SLF4J_LOGGER_UNIT);
 
+            reportingService.addConsumer(buildSlf4jReporter(service, loggerName, period, unit));
         }
 
-        return new BpMetricReportingService(null, null);
+        return reportingService;
     }
 
-    private static BpJmxReporter buildJmxReporter(final MetricSet metricSet) {
+    private static BpSlf4jReporter buildSlf4jReporter(final BpMetricSet metricSet, final String loggerName,
+                                                      final String period, final String unit) {
+        final BpSlf4jReporter reporter = new BpSlf4jReporter(loggerName, Integer.valueOf(period), TimeUnit.valueOf(unit));
+        return reporter;
+    }
+
+    private static BpJmxReporter buildJmxReporter(final BpMetricSet metricSet) {
         final BpJmxReporter reporter = new BpJmxReporter();
 
         // Add any already existing metrics to the jmx reporter.

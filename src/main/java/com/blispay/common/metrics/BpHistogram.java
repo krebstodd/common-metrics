@@ -6,8 +6,6 @@ import com.codahale.metrics.Snapshot;
 
 public class BpHistogram extends BpMetric {
 
-    private static final Integer NUM_MEASUREMENTS = 12;
-
     private final Histogram histogram;
 
     public BpHistogram(final String name, final String description) {
