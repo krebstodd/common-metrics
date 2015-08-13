@@ -1,14 +1,11 @@
 package com.blispay.common;
 
 import com.blispay.common.metrics.BpHistogram;
-import com.blispay.common.metrics.BpMeter;
 import org.junit.Test;
 
-import java.time.Instant;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class BpHistogramTest extends AbstractMetricsTest {
 

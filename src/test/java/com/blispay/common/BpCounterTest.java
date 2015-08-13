@@ -1,11 +1,12 @@
 package com.blispay.common;
 
 //CHECK_OFF: AvoidStarImport
+
 import com.blispay.common.metrics.BpCounter;
 import com.codahale.metrics.Counter;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 //CHECK_ON: AvoidStarImport
 
 public class BpCounterTest extends AbstractMetricsTest {
