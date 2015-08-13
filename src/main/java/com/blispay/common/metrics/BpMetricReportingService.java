@@ -11,7 +11,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-class BpMetricReportingService {
+public class BpMetricReportingService {
 
     public static final Boolean DEFAULT_JMX_ENABLED = false;
 

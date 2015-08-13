@@ -4,7 +4,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-abstract class BpScheduledReporter {
+public abstract class BpScheduledReporter {
 
     private final ScheduledExecutorService executorService;
 

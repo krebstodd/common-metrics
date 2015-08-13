@@ -28,7 +28,7 @@ public class BpCounter extends BpMetric {
     }
 
     @Override
-    ImmutablePair[] sample() {
+    public ImmutablePair[] sample() {
         final ImmutablePair[] sample = new ImmutablePair[1];
         sample[0] = new ImmutablePair("count", this.counter.getCount());
         return sample;

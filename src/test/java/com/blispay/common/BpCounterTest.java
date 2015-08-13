@@ -12,7 +12,7 @@ public class BpCounterTest extends AbstractMetricsTest {
 
     @Test
     public void testIncrementAndDecrement() {
-        final BpCounter counter = metricService.createCounter("defaultIncrementerTest", "count", "Test the default incrementer.");
+        final BpCounter counter = metricService.createCounter(BpCounterTest.class, "defaultIncrementerTestCount", "Test the default incrementer.");
         final Counter internalCounter = getInternalMetric(counter);
 
         assertEquals(0, internalCounter.getCount());
@@ -25,4 +25,5 @@ public class BpCounterTest extends AbstractMetricsTest {
         counter.decrement(5l);
         assertEquals(0, internalCounter.getCount());
     }
+
 }

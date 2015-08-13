@@ -23,22 +23,13 @@ public class BpTimer extends BpMetric {
         return timer.time()::stop;
     }
 
-    public void update(long duration, TimeUnit unit) {
-        timer.update(duration, unit);
-    }
-
     @FunctionalInterface
     public static interface Resolver {
         void done();
     }
 
     @Override
-    Timer getInternalMetric() {
-        return this.timer;
-    }
-
-    @Override
-    ImmutablePair[] sample() {
+    public ImmutablePair[] sample() {
         final ImmutablePair[] sample = new ImmutablePair[15];
 
         sample[0] = new ImmutablePair("count", this.timer.getCount());
@@ -61,5 +52,10 @@ public class BpTimer extends BpMetric {
         sample[14] = new ImmutablePair("mean", sn.getMean());
 
         return sample;
+    }
+
+    @Override
+    Timer getInternalMetric() {
+        return this.timer;
     }
 }

@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-class BpSlf4jReporter extends BpScheduledReporter implements BpMetricConsumer {
+public class BpSlf4jReporter extends BpScheduledReporter implements BpMetricConsumer {
 
     private final Map<String, BpMetric> metrics = new ConcurrentHashMap<>();
 
@@ -53,7 +53,7 @@ class BpSlf4jReporter extends BpScheduledReporter implements BpMetricConsumer {
         sb.append("name=").append(metric.getName()).append(",");
 
         final ImmutablePair[] sample = metric.sample();
-        ImmutablePair current = null;
+        ImmutablePair current;
         for (int i = 0; i < sample.length; i++) {
             current = sample[i];
             sb.append(current.getKey()).append("=").append(current.getVal()).append(",");

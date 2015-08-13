@@ -26,7 +26,7 @@ public class BpHistogram extends BpMetric {
     }
 
     @Override
-    ImmutablePair[] sample() {
+    public ImmutablePair[] sample() {
         final ImmutablePair[] sample = new ImmutablePair[11];
         final Snapshot sn = this.histogram.getSnapshot();
         final Long count = this.histogram.getCount();

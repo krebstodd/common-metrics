@@ -23,8 +23,8 @@ public abstract class BpMetric implements Metric {
         return description;
     }
 
-    abstract <M extends Metric> M getInternalMetric();
+    public abstract ImmutablePair[] sample();
 
-    abstract ImmutablePair[] sample();
+    abstract <M extends Metric> M getInternalMetric();
 
 }

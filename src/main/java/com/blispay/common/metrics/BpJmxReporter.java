@@ -14,7 +14,7 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
 
-class BpJmxReporter implements BpMetricConsumer {
+public class BpJmxReporter implements BpMetricConsumer {
 
     private final MBeanServer mBeanServer;
 
@@ -39,6 +39,7 @@ class BpJmxReporter implements BpMetricConsumer {
         try {
             mBeanServer.registerMBean(bean, bean.objectName());
         } catch (InstanceAlreadyExistsException e) {
+            // TODO: Handle all of the exceptions in this class.
             e.printStackTrace();
         } catch (MBeanRegistrationException e) {
             e.printStackTrace();

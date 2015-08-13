@@ -1,6 +1,6 @@
 package com.blispay.common.metrics;
 
-class ImmutablePair {
+public class ImmutablePair {
 
     private final Object key;
 

@@ -1,6 +1,5 @@
 package com.blispay.common.legacy;
 
-import com.blispay.common.legacy.AbstractMetricsTest;
 import com.blispay.common.metrics.legacy.ApplicationMonitor;
 import com.blispay.common.metrics.legacy.EventPerformanceMonitor;
 import com.codahale.metrics.MetricRegistry;

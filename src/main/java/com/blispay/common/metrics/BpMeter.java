@@ -24,12 +24,7 @@ public class BpMeter extends BpMetric {
     }
 
     @Override
-    Meter getInternalMetric() {
-        return this.meter;
-    }
-
-    @Override
-    ImmutablePair[] sample() {
+    public ImmutablePair[] sample() {
         final ImmutablePair[] sample = new ImmutablePair[5];
 
         sample[0] = new ImmutablePair("count", this.meter.getCount());
@@ -39,6 +34,11 @@ public class BpMeter extends BpMetric {
         sample[4] = new ImmutablePair("fifteenMinuteRate", this.meter.getFifteenMinuteRate());
 
         return sample;
+    }
+
+    @Override
+    Meter getInternalMetric() {
+        return this.meter;
     }
 
 }
