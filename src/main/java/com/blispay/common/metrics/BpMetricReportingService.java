@@ -6,10 +6,6 @@ import com.codahale.metrics.Metric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -79,17 +75,7 @@ public final class BpMetricReportingService {
         final Boolean slf4jEnabled = Boolean.valueOf((String) sysProps.getOrDefault("metrics.slf4j.enabled", DEFAULT_SLF4J_ENABLED));
 
         if (jmxEnabled) {
-            try {
-                reportingService.addConsumer(buildJmxReporter(service));
-            } catch (MalformedObjectNameException e) {
-                e.printStackTrace();
-            } catch (NotCompliantMBeanException e) {
-                e.printStackTrace();
-            } catch (InstanceAlreadyExistsException e) {
-                e.printStackTrace();
-            } catch (MBeanRegistrationException e) {
-                e.printStackTrace();
-            }
+            reportingService.addConsumer(buildJmxReporter(service));
         }
 
         if (slf4jEnabled) {
@@ -105,39 +91,24 @@ public final class BpMetricReportingService {
 
     private static BpSlf4jReporter buildSlf4jReporter(final BpMetricSet metricSet, final String loggerName,
                                                       final String period, final String unit) {
-        final BpSlf4jReporter reporter = new BpSlf4jReporter(loggerName, Integer.valueOf(period), TimeUnit.valueOf(unit));
-
-        // Add any already existing metrics to the jmx reporter.
-        final Iterator iter = metricSet.getMetrics().values().iterator();
-        while (iter.hasNext()) {
-            final Metric metric = (Metric) iter.next();
-            if (metric instanceof BpMetric) {
-                reporter.registerMetric((BpMetric) metric);
-            } else {
-                LOG.warn("Cannot add non-bp metric {} to jmx metrics service", metric.getClass());
-            }
-        }
-
-        return reporter;
+        return (BpSlf4jReporter) seedConsumer(new BpSlf4jReporter(loggerName, Integer.valueOf(period), TimeUnit.valueOf(unit)), metricSet);
     }
 
-    private static BpJmxReporter buildJmxReporter(final BpMetricSet metricSet)
-            throws MalformedObjectNameException, NotCompliantMBeanException,
-            InstanceAlreadyExistsException, MBeanRegistrationException {
+    private static BpJmxReporter buildJmxReporter(final BpMetricSet metricSet) {
+        return (BpJmxReporter) seedConsumer(new BpJmxReporter(), metricSet);
+    }
 
-        final BpJmxReporter reporter = new BpJmxReporter();
-
+    private static BpMetricConsumer seedConsumer(final BpMetricConsumer consumer, final BpMetricSet activeMetrics) {
         // Add any already existing metrics to the jmx reporter.
-        final Iterator iter = metricSet.getMetrics().values().iterator();
+        final Iterator iter = activeMetrics.getMetrics().values().iterator();
         while (iter.hasNext()) {
             final Metric metric = (Metric) iter.next();
             if (metric instanceof BpMetric) {
-                reporter.registerMetric((BpMetric) metric);
+                consumer.registerMetric((BpMetric) metric);
             } else {
                 LOG.warn("Cannot add non-bp metric {} to jmx metrics service", metric.getClass());
             }
         }
-
-        return reporter;
+        return consumer;
     }
 }

@@ -1,15 +1,18 @@
 package com.blispay.common.metrics;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import org.springframework.context.Lifecycle;
+
 import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
 // TODO: Create metric sets for groupings (api, query, etc.) and possibly probes.
-// TODO: How do we handle restarts.
-// TODO: Look at mbean objectname format
 // TODO: Look at the units that metrics are coming back in.
 //    private static void instrumentJvmMonitoring(final BpMetricService service) {
 //        final Boolean jvmMonitoringEnabled = (Boolean) System.getProperties().getOrDefault("metrics.jvm.enabled", false);
@@ -21,16 +24,20 @@ import static com.codahale.metrics.MetricRegistry.name;
 //        }
 //    }
 
-public final class BpMetricService implements BpMetricSet {
+public final class BpMetricService implements BpMetricSet, Lifecycle {
 
-    private static BpMetricService METRIC_SERVICE = new BpMetricService();
+    private static final BpMetricService METRIC_SERVICE = new BpMetricService();
+
+    private static final Logger LOG = LoggerFactory.getLogger(BpMetricService.class);
 
     private final ConcurrentHashMap<String, BpMetric> metrics = new ConcurrentHashMap<>();
 
-    private final BpMetricReportingService reportingService;
+    private final BpMetricReportingService reportingService = BpMetricReportingService.initialize(this);
+
+    private final AtomicBoolean isRunning = new AtomicBoolean(false);
 
     private BpMetricService() {
-        this.reportingService = BpMetricReportingService.initialize(this);
+        start();
     }
 
     public BpCounter createCounter(final Class clazz, final String metricName, final String description) {
@@ -101,9 +108,10 @@ public final class BpMetricService implements BpMetricSet {
             return (M) registerMetric(ctor.newInstance(fullName, description));
 
         // CHECK_OFF: IllegalCatch
-        } catch (Exception e) {
-            // Eat this exception, we know the constructor type for all of hte BpMetrics
-            e.printStackTrace();
+        } catch (Exception ex) {
+            // Eat this exception, we know the constructor type for all of hte BpMetrics so we shouldn't ever actually
+            // hit this catc.
+            LOG.error("Caught an exception attempting to instantiate a metric instance.", ex);
             return null;
         }
         // CHECK_ON: IllegalCatch
@@ -113,6 +121,29 @@ public final class BpMetricService implements BpMetricSet {
         this.metrics.put(metric.getName(), metric);
         this.reportingService.onMetricAdded(metric);
         return metric;
+    }
+
+    @Override
+    public void start() {
+        if (isRunning.compareAndSet(false, true)) {
+            reportingService.start();
+        } else {
+            throw new IllegalStateException("Metric service is already running and cannot be started.");
+        }
+    }
+
+    @Override
+    public void stop() {
+        if (isRunning.compareAndSet(true, false)) {
+            reportingService.stop();
+        } else {
+            throw new IllegalStateException("Metric service is stopped.");
+        }
+    }
+
+    @Override
+    public boolean isRunning() {
+        return isRunning.get();
     }
 
     /**
