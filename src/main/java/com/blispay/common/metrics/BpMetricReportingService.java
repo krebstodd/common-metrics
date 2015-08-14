@@ -15,16 +15,6 @@ import java.util.function.Consumer;
 
 public final class BpMetricReportingService {
 
-    private static final String DEFAULT_JMX_ENABLED = "false";
-
-    private static final String DEFAULT_SLF4J_ENABLED = "false";
-
-    private static final String DEFAULT_SLF4J_LOGGER_NAME = "METRICS-LOGGER";
-
-    private static final String DEFAULT_SLF4J_LOGGER_PERIOD = "60";
-
-    private static final String DEFAULT_SLF4J_LOGGER_UNIT = "SECONDS";
-
     private static final Logger LOG = LoggerFactory.getLogger(BpMetricReportingService.class);
 
     private final List<BpMetricConsumer> reporters = new ArrayList<>();
@@ -70,18 +60,17 @@ public final class BpMetricReportingService {
 
         final BpMetricReportingService reportingService = new BpMetricReportingService();
 
-        final Properties sysProps = System.getProperties();
-        final Boolean jmxEnabled = Boolean.valueOf((String) sysProps.getOrDefault("metrics.jmx.enabled", DEFAULT_JMX_ENABLED));
-        final Boolean slf4jEnabled = Boolean.valueOf((String) sysProps.getOrDefault("metrics.slf4j.enabled", DEFAULT_SLF4J_ENABLED));
+        final Boolean jmxEnabled = MetricServiceProperties.jmxReportingEnabled();
+        final Boolean slf4jEnabled = MetricServiceProperties.slf4jReportingEnabled();
 
         if (jmxEnabled) {
             reportingService.addConsumer(buildJmxReporter(service));
         }
 
         if (slf4jEnabled) {
-            final String loggerName = (String) sysProps.getOrDefault("metrics.slf4j.logger", DEFAULT_SLF4J_LOGGER_NAME);
-            final String period = (String) sysProps.getOrDefault("metrics.slf4j.period", DEFAULT_SLF4J_LOGGER_PERIOD);
-            final String unit = (String) sysProps.getOrDefault("metrics.slf4j.unit", DEFAULT_SLF4J_LOGGER_UNIT);
+            final String loggerName = MetricServiceProperties.slf4jLogger();
+            final String period = MetricServiceProperties.slf4jLogPeriod();
+            final String unit = MetricServiceProperties.slf4jLogPeriodUnit();
 
             reportingService.addConsumer(buildSlf4jReporter(service, loggerName, period, unit));
         }

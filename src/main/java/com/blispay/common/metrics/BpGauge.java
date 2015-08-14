@@ -13,6 +13,11 @@ public class BpGauge<T> extends BpMetric {
         this.gauge = supplier::get;
     }
 
+    public BpGauge(final Gauge<T> gauge, final String name, final String description) {
+        super(name, description);
+        this.gauge = gauge;
+    }
+
     public T getValue() {
         return this.gauge.getValue();
     }

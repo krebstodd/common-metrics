@@ -14,6 +14,12 @@ public class BpTimer extends BpMetric {
         this.timer = new Timer();
     }
 
+    public BpTimer(final Timer timer, final String name, final String description) {
+        super(name, description);
+        this.timer = timer;
+    }
+
+
     public void update(final long duration, final TimeUnit timeUnit) {
         timer.update(duration, timeUnit);
     }

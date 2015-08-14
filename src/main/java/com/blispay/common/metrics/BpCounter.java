@@ -11,6 +11,11 @@ public class BpCounter extends BpMetric {
         this.counter = new Counter();
     }
 
+    public BpCounter(final Counter counter, final String name, final String description) {
+        super(name, description);
+        this.counter = counter;
+    }
+
     public void increment() {
         counter.inc();
     }

@@ -11,6 +11,11 @@ public class BpMeter extends BpMetric {
         this.meter = new Meter();
     }
 
+    public BpMeter(final Meter meter, final String name, final String description) {
+        super(name, description);
+        this.meter = meter;
+    }
+
     public void mark() {
         meter.mark();
     }

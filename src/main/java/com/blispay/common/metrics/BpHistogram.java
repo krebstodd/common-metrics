@@ -12,6 +12,11 @@ public class BpHistogram extends BpMetric {
         this.histogram = new Histogram(new ExponentiallyDecayingReservoir());
     }
 
+    public BpHistogram(final Histogram histogram, final String name, final String description) {
+        super(name, description);
+        this.histogram = histogram;
+    }
+
     public void update(final Integer value) {
         histogram.update(value);
     }

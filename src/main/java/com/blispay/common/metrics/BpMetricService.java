@@ -1,10 +1,14 @@
 package com.blispay.common.metrics;
 
+import com.blispay.common.metrics.probe.JvmProbe;
+import com.codahale.metrics.MetricSet;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.springframework.context.Lifecycle;
 
+import javax.annotation.PostConstruct;
 import java.lang.reflect.Constructor;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -73,7 +77,6 @@ public final class BpMetricService implements BpMetricSet, Lifecycle {
     private void removeMetricByFullName(final String metricName) {
         final BpMetric removed = this.metrics.remove(metricName);
 
-        // TODO: Make thread safe.
         if (removed != null) {
             this.reportingService.onMetricRemoved(metricName);
         }
@@ -85,6 +88,14 @@ public final class BpMetricService implements BpMetricSet, Lifecycle {
 
     public void removeMetric(final BpMetric metric) {
         removeMetricByFullName(metric.getName());
+    }
+
+    public void addConsumer(final BpMetricConsumer consumer) {
+        this.reportingService.addConsumer(consumer);
+    }
+
+    public void addAll(final List<BpMetric> metrics) {
+        metrics.forEach(this::registerMetric);
     }
 
     @Override
@@ -127,6 +138,7 @@ public final class BpMetricService implements BpMetricSet, Lifecycle {
     public void start() {
         if (isRunning.compareAndSet(false, true)) {
             reportingService.start();
+            JvmProbe.startJvmProbe(this);
         } else {
             throw new IllegalStateException("Metric service is already running and cannot be started.");
         }
