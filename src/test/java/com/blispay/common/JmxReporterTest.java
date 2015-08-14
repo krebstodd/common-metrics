@@ -21,6 +21,10 @@ import static org.junit.Assert.assertEquals;
 
 public class JmxReporterTest {
 
+    static {
+        System.setProperty("metrics.jmx.enabled", "true");
+    }
+
     private MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
 
     @Test
