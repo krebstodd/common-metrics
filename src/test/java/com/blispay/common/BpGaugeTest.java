@@ -1,7 +1,6 @@
 package com.blispay.common;
 
 import com.blispay.common.metrics.BpGauge;
-import com.codahale.metrics.Gauge;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -9,6 +8,8 @@ import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
 
+// CHECK_OFF: MultipleStringLiterals
+// CHECK_OFF: MagicNumber
 public class BpGaugeTest extends AbstractMetricsTest {
 
     @Test
@@ -19,12 +20,13 @@ public class BpGaugeTest extends AbstractMetricsTest {
 
         final BpGauge<Long> gauge
                 = metricService.createGauge(BpGaugeTest.class, "currentValue", "Basic test supplier", supplier);
-        final Gauge internal = getInternalMetric(gauge);
 
-        assertEquals(supplier.get(), internal.getValue());
+        assertEquals(supplier.get(), gauge.sample().getAttribute("currentValue"));
         currentValue.getAndIncrement();
-        assertEquals(Long.valueOf(1l), supplier.get());
-        assertEquals(supplier.get(), internal.getValue());
+        assertEquals(Long.valueOf(1L), supplier.get());
+        assertEquals(supplier.get(),  gauge.sample().getAttribute("currentValue"));
     }
 
 }
+// CHECK_ON: MagicNumber
+// CHECK_OFF: MultipleStringLiterals

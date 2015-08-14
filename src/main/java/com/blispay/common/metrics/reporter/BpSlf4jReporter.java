@@ -1,9 +1,10 @@
-package com.blispay.common.metrics;
+package com.blispay.common.metrics.reporter;
 
+import com.blispay.common.metrics.BpMetric;
+import com.blispay.common.metrics.BpMetricConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,13 +24,9 @@ public class BpSlf4jReporter extends BpScheduledReporter implements BpMetricCons
     @Override
     public void report() {
         final Iterator iter = metrics.values().iterator();
-        final Long sampleTime = Instant.now().toEpochMilli();
-
-        metricLogger.info("Start sample: {}", sampleTime);
         while (iter.hasNext()) {
-            logMetric((BpMetric) iter.next());
+            metricLogger.info(iter.next().toString());
         }
-        metricLogger.info("Stop sample: {}", sampleTime);
     }
 
     @Override
@@ -46,22 +43,5 @@ public class BpSlf4jReporter extends BpScheduledReporter implements BpMetricCons
     public void unregisterMetric(final String metric) {
         metrics.remove(metric);
     }
-
-    private void logMetric(final BpMetric metric) {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("name=").append(metric.getName()).append(",");
-
-        final ImmutablePair[] sample = metric.sample();
-        ImmutablePair current;
-        for (int i = 0; i < sample.length; i++) {
-            current = sample[i];
-            sb.append(current.getKey()).append("=").append(current.getVal()).append(",");
-        }
-
-        metricLogger.info(sb.toString());
-
-    }
-
 
 }

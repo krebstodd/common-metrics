@@ -1,6 +1,5 @@
 package com.blispay.common.metrics;
 
-import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.Timer;
 
 import java.util.concurrent.Callable;
@@ -15,7 +14,11 @@ public class BpTimer extends BpMetric {
         this.timer = new Timer();
     }
 
-    public <T> T time(Callable<T> event) throws Exception {
+    public void update(final long duration, final TimeUnit timeUnit) {
+        timer.update(duration, timeUnit);
+    }
+
+    public <T> T time(final Callable<T> event) throws Exception {
         return timer.time(event);
     }
 
@@ -23,39 +26,96 @@ public class BpTimer extends BpMetric {
         return timer.time()::stop;
     }
 
+    public long getCount() {
+        return timer.getCount();
+    }
+
+    public double getMeanRate() {
+        return timer.getMeanRate();
+    }
+
+    public double getOneMinuteRate() {
+        return timer.getMeanRate();
+    }
+
+    public double getFiveMinuteRate() {
+        return timer.getMeanRate();
+    }
+
+    public double getFifteenMinuteRate() {
+        return timer.getMeanRate();
+    }
+
+    public Double getMedian() {
+        return timer.getSnapshot().getMedian();
+    }
+
+    public Double getMean() {
+        return timer.getSnapshot().getMean();
+    }
+
+    public Double get75thPercentile() {
+        return timer.getSnapshot().get75thPercentile();
+    }
+
+    public Double get95thPercentile() {
+        return timer.getSnapshot().get95thPercentile();
+    }
+
+    public Double get98thPercentile() {
+        return timer.getSnapshot().get98thPercentile();
+    }
+
+    public Double get99thPercentile() {
+        return timer.getSnapshot().get99thPercentile();
+    }
+
+    public Double get999thPercentile() {
+        return timer.getSnapshot().get999thPercentile();
+    }
+
+    public long getMax() {
+        return timer.getSnapshot().getMax();
+    }
+
+    public long getMin() {
+        return timer.getSnapshot().getMin();
+    }
+
+    public long[] getValues() {
+        return timer.getSnapshot().getValues();
+    }
+
+    // CHECK_OFF: MagicNumber
+    @Override
+    public Sample sample() {
+        final ImmutablePair[] sample = new ImmutablePair[17];
+
+        sample[0] = new ImmutablePair("name", getName());
+        sample[1] = new ImmutablePair("description", getDescription());
+        sample[2] = new ImmutablePair("count", getCount());
+        sample[3] = new ImmutablePair("meanRate", getMeanRate());
+        sample[4] = new ImmutablePair("oneMinuteRate", getOneMinuteRate());
+        sample[5] = new ImmutablePair("fiveMinuteRate", getFiveMinuteRate());
+        sample[6] = new ImmutablePair("fifteenMinuteRate", getFifteenMinuteRate());
+        sample[7] = new ImmutablePair("median", getMedian());
+        sample[8] = new ImmutablePair("mean", getMean());
+        sample[9] = new ImmutablePair("75thPercentile", get75thPercentile());
+        sample[10] = new ImmutablePair("95thPercentile", get95thPercentile());
+        sample[11] = new ImmutablePair("98thPercentile", get98thPercentile());
+        sample[12] = new ImmutablePair("99thPercentile", get99thPercentile());
+        sample[13] = new ImmutablePair("999thPercentile", get999thPercentile());
+        sample[14] = new ImmutablePair("max", getMax());
+        sample[15] = new ImmutablePair("min", getMin());
+        sample[16] = new ImmutablePair("mean", getMean());
+
+        return new Sample(getName(), sample);
+    }
+    // CHECK_ON: MagicNumber
+
     @FunctionalInterface
-    public static interface Resolver {
+    public interface Resolver {
         void done();
     }
 
-    @Override
-    public ImmutablePair[] sample() {
-        final ImmutablePair[] sample = new ImmutablePair[15];
-
-        sample[0] = new ImmutablePair("count", this.timer.getCount());
-        sample[1] = new ImmutablePair("meanRate", this.timer.getMeanRate());
-        sample[2] = new ImmutablePair("oneMinuteRate", this.timer.getOneMinuteRate());
-        sample[3] = new ImmutablePair("fiveMinuteRate", this.timer.getFiveMinuteRate());
-        sample[4] = new ImmutablePair("fifteenMinuteRate", this.timer.getFifteenMinuteRate());
-
-        final Snapshot sn = this.timer.getSnapshot();
-
-        sample[5] = new ImmutablePair("median", sn.getMedian());
-        sample[6] = new ImmutablePair("mean", sn.getMean());
-        sample[7] = new ImmutablePair("75thPercentile", sn.get75thPercentile());
-        sample[8] = new ImmutablePair("95thPercentile", sn.get95thPercentile());
-        sample[9] = new ImmutablePair("98thPercentile", sn.get98thPercentile());
-        sample[10] = new ImmutablePair("99thPercentile", sn.get99thPercentile());
-        sample[11] = new ImmutablePair("999thPercentile", sn.get999thPercentile());
-        sample[12] = new ImmutablePair("max", sn.getMax());
-        sample[13] = new ImmutablePair("min", sn.getMin());
-        sample[14] = new ImmutablePair("mean", sn.getMean());
-
-        return sample;
-    }
-
-    @Override
-    Timer getInternalMetric() {
-        return this.timer;
-    }
 }

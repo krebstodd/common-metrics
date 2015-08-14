@@ -15,28 +15,31 @@ public class BpCounter extends BpMetric {
         counter.inc();
     }
 
-    public void decrement() {
-        counter.dec();
-    }
-
     public void increment(final Long incrementBy) {
         counter.inc(incrementBy);
+    }
+
+    public void decrement() {
+        counter.dec();
     }
 
     public void decrement(final Long decrementBy) {
         counter.dec(decrementBy);
     }
 
-    @Override
-    public ImmutablePair[] sample() {
-        final ImmutablePair[] sample = new ImmutablePair[1];
-        sample[0] = new ImmutablePair("count", this.counter.getCount());
-        return sample;
+    public long getCount() {
+        return this.counter.getCount();
     }
 
+    // CHECK_OFF: MagicNumber
     @Override
-    Counter getInternalMetric() {
-        return this.counter;
+    public Sample sample() {
+        final ImmutablePair[] sample = new ImmutablePair[3];
+        sample[0] = new ImmutablePair("name", getName());
+        sample[1] = new ImmutablePair("description", getDescription());
+        sample[2] = new ImmutablePair("count", getCount());
+        return new Sample(getName(), sample);
     }
+    // CHECK_ON: MagicNumber
 
 }

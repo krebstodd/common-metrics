@@ -3,28 +3,30 @@ package com.blispay.common;
 //CHECK_OFF: AvoidStarImport
 
 import com.blispay.common.metrics.BpCounter;
-import com.codahale.metrics.Counter;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 //CHECK_ON: AvoidStarImport
 
+// CHECK_OFF: MultipleStringLiterals
+// CHECK_OFF: MagicNumber
 public class BpCounterTest extends AbstractMetricsTest {
 
     @Test
     public void testIncrementAndDecrement() {
         final BpCounter counter = metricService.createCounter(BpCounterTest.class, "defaultIncrementerTestCount", "Test the default incrementer.");
-        final Counter internalCounter = getInternalMetric(counter);
 
-        assertEquals(0, internalCounter.getCount());
+        assertEquals(0L, counter.sample().getAttribute("count"));
         counter.increment();
-        assertEquals(1, internalCounter.getCount());
-        counter.increment(5l);
-        assertEquals(6, internalCounter.getCount());
+        assertEquals(1L, counter.sample().getAttribute("count"));
+        counter.increment(5L);
+        assertEquals(6L, counter.sample().getAttribute("count"));
         counter.decrement();
-        assertEquals(5, internalCounter.getCount());
-        counter.decrement(5l);
-        assertEquals(0, internalCounter.getCount());
+        assertEquals(5L, counter.sample().getAttribute("count"));
+        counter.decrement(5L);
+        assertEquals(0L, counter.sample().getAttribute("count"));
     }
 
 }
+// CHECK_ON: MagicNumber
+// CHECK_ON: MultipleStringLiterals

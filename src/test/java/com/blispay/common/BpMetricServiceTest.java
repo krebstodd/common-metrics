@@ -3,35 +3,29 @@ package com.blispay.common;
 import com.blispay.common.metrics.BpCounter;
 import com.blispay.common.metrics.BpMetric;
 import com.blispay.common.metrics.BpMetricService;
-import com.codahale.metrics.Counter;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+// CHECK_OFF: MultipleStringLiterals
 public class BpMetricServiceTest extends AbstractMetricsTest {
-
-    @Test
-    public void testOneServicePerProcess() {
-        thrown.expect(IllegalArgumentException.class);
-        BpMetricService.getInstance();
-    }
 
     @Test
     public void testIsSingleton() {
         final BpCounter counter = metricService.createCounter(BpMetricServiceTest.class, "defaultIncrementerTestCount", "Test the default incrementer.");
-        final Counter internalCounter = getInternalMetric(counter);
 
-        assertEquals(0, internalCounter.getCount());
+        assertEquals(0L, counter.sample().getAttribute("count"));
         counter.increment();
 
         final BpMetricService metricServiceInstance = BpMetricService.getInstance();
-        final BpCounter counter2 = (BpCounter) metricService.getMetric(BpMetricServiceTest.class, "defaultIncrementerTestCount");
-        final Counter internalCounter2 = getInternalMetric(counter2);
+        final BpCounter counter2 = (BpCounter) metricServiceInstance.getMetric(BpMetricServiceTest.class, "defaultIncrementerTestCount");
 
         counter2.increment();
 
-        assertEquals(2, internalCounter.getCount());
-        assertEquals(internalCounter.getCount(), internalCounter2.getCount());
+        assertEquals(2L, counter2.sample().getAttribute("count"));
+        assertEquals(counter.sample().getAttribute("count"), counter2.sample().getAttribute("count"));
     }
 
     @Test
@@ -51,3 +45,4 @@ public class BpMetricServiceTest extends AbstractMetricsTest {
     }
 
 }
+// CHECK_OFF: MultipleStringLiterals

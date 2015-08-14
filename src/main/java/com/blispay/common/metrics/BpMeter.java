@@ -23,22 +23,41 @@ public class BpMeter extends BpMetric {
         mark(Long.valueOf(numberOfOccurrences));
     }
 
-    @Override
-    public ImmutablePair[] sample() {
-        final ImmutablePair[] sample = new ImmutablePair[5];
-
-        sample[0] = new ImmutablePair("count", this.meter.getCount());
-        sample[1] = new ImmutablePair("meanRate", this.meter.getMeanRate());
-        sample[2] = new ImmutablePair("oneMinuteRate", this.meter.getOneMinuteRate());
-        sample[3] = new ImmutablePair("fiveMinuteRate", this.meter.getFiveMinuteRate());
-        sample[4] = new ImmutablePair("fifteenMinuteRate", this.meter.getFifteenMinuteRate());
-
-        return sample;
+    public long getCount() {
+        return meter.getCount();
     }
 
-    @Override
-    Meter getInternalMetric() {
-        return this.meter;
+    public double getMeanRate() {
+        return this.meter.getMeanRate();
     }
+
+    public double getOneMinuteRate() {
+        return this.meter.getMeanRate();
+    }
+
+    public double getFiveMinuteRate() {
+        return this.meter.getMeanRate();
+    }
+
+    public double getFifteenMinuteRate() {
+        return this.meter.getMeanRate();
+    }
+
+    // CHECK_OFF: MagicNumber
+    @Override
+    public Sample sample() {
+        final ImmutablePair[] sample = new ImmutablePair[7];
+
+        sample[0] = new ImmutablePair("name", getName());
+        sample[1] = new ImmutablePair("description", getDescription());
+        sample[2] = new ImmutablePair("count", getCount());
+        sample[3] = new ImmutablePair("meanRate", getMeanRate());
+        sample[4] = new ImmutablePair("oneMinuteRate", getOneMinuteRate());
+        sample[5] = new ImmutablePair("fiveMinuteRate", getFiveMinuteRate());
+        sample[6] = new ImmutablePair("fifteenMinuteRate", getFifteenMinuteRate());
+
+        return new Sample(getName(), sample);
+    }
+    // CHECK_ON: MagicNumber
 
 }

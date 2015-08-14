@@ -1,8 +1,5 @@
 package com.blispay.common.metrics;
 
-import com.codahale.metrics.Metric;
-import com.codahale.metrics.MetricSet;
-
 import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,9 +21,9 @@ import static com.codahale.metrics.MetricRegistry.name;
 //        }
 //    }
 
-public class BpMetricService implements BpMetricSet {
+public final class BpMetricService implements BpMetricSet {
 
-    private static BpMetricService metricsService = null;
+    private static BpMetricService METRIC_SERVICE = new BpMetricService();
 
     private final ConcurrentHashMap<String, BpMetric> metrics = new ConcurrentHashMap<>();
 
@@ -59,7 +56,11 @@ public class BpMetricService implements BpMetricSet {
     }
 
     public BpMetric getMetric(final Class owningClass, final String metricName) {
-        return metrics.get(name(owningClass.getName(), metricName));
+        return getMetricByFullName(name(owningClass.getName(), metricName));
+    }
+
+    public BpMetric getMetricByFullName(final String name) {
+        return metrics.get(name);
     }
 
     private void removeMetricByFullName(final String metricName) {
@@ -88,6 +89,7 @@ public class BpMetricService implements BpMetricSet {
                                                 final String description, final Class<M> metricClass) {
 
         try {
+
             final Constructor<M> ctor = metricClass.getConstructor(String.class, String.class);
             final String fullName = name(namespace, metricName);
 
@@ -97,11 +99,14 @@ public class BpMetricService implements BpMetricSet {
 
             // TODO: Make all of this thread safe possibly locking on the metrics object or a specific lock for writing to the map.
             return (M) registerMetric(ctor.newInstance(fullName, description));
+
+        // CHECK_OFF: IllegalCatch
         } catch (Exception e) {
             // Eat this exception, we know the constructor type for all of hte BpMetrics
             e.printStackTrace();
             return null;
         }
+        // CHECK_ON: IllegalCatch
     }
 
     private BpMetric registerMetric(final BpMetric metric) {
@@ -110,18 +115,14 @@ public class BpMetricService implements BpMetricSet {
         return metric;
     }
 
+    /**
+     * Get an instance of the blispay metric service. Service is a singleton to ensure the entire process is utilizing
+     * the same metric set.
+     *
+     * @return Existing singleton.
+     */
     public static BpMetricService getInstance() {
-        if (metricsService == null) {
-
-            synchronized (BpMetricService.class) {
-                if (metricsService == null) {
-                    metricsService = new BpMetricService();
-                }
-            }
-
-        }
-
-        return metricsService;
+        return METRIC_SERVICE;
     }
 
 }

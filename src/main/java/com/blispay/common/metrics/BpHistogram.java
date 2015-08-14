@@ -2,7 +2,6 @@ package com.blispay.common.metrics;
 
 import com.codahale.metrics.ExponentiallyDecayingReservoir;
 import com.codahale.metrics.Histogram;
-import com.codahale.metrics.Snapshot;
 
 public class BpHistogram extends BpMetric {
 
@@ -25,29 +24,66 @@ public class BpHistogram extends BpMetric {
         return histogram.getCount();
     }
 
-    @Override
-    public ImmutablePair[] sample() {
-        final ImmutablePair[] sample = new ImmutablePair[11];
-        final Snapshot sn = this.histogram.getSnapshot();
-        final Long count = this.histogram.getCount();
-
-        sample[0] = new ImmutablePair("count", count);
-        sample[1] = new ImmutablePair("median", sn.getMedian());
-        sample[2] = new ImmutablePair("mean", sn.getMean());
-        sample[3] = new ImmutablePair("75thPercentile", sn.get75thPercentile());
-        sample[4] = new ImmutablePair("95thPercentile", sn.get95thPercentile());
-        sample[5] = new ImmutablePair("98thPercentile", sn.get98thPercentile());
-        sample[6] = new ImmutablePair("99thPercentile", sn.get99thPercentile());
-        sample[7] = new ImmutablePair("999thPercentile", sn.get999thPercentile());
-        sample[8] = new ImmutablePair("max", sn.getMax());
-        sample[9] = new ImmutablePair("min", sn.getMin());
-        sample[10] = new ImmutablePair("mean", sn.getMean());
-
-        return sample;
+    public Double getMedian() {
+        return histogram.getSnapshot().getMedian();
     }
 
-    @Override
-    Histogram getInternalMetric() {
-        return this.histogram;
+    public Double getMean() {
+        return histogram.getSnapshot().getMean();
     }
+
+    public Double get75thPercentile() {
+        return histogram.getSnapshot().get75thPercentile();
+    }
+
+    public Double get95thPercentile() {
+        return histogram.getSnapshot().get95thPercentile();
+    }
+
+    public Double get98thPercentile() {
+        return histogram.getSnapshot().get98thPercentile();
+    }
+
+    public Double get99thPercentile() {
+        return histogram.getSnapshot().get99thPercentile();
+    }
+
+    public Double get999thPercentile() {
+        return histogram.getSnapshot().get999thPercentile();
+    }
+
+    public long getMax() {
+        return histogram.getSnapshot().getMax();
+    }
+
+    public long getMin() {
+        return histogram.getSnapshot().getMin();
+    }
+
+    public long[] getValues() {
+        return histogram.getSnapshot().getValues();
+    }
+
+    // CHECK_OFF: MagicNumber
+    @Override
+    public Sample sample() {
+        final ImmutablePair[] sample = new ImmutablePair[12];
+
+        sample[0] = new ImmutablePair("name", getName());
+        sample[1] = new ImmutablePair("description", getDescription());
+        sample[2] = new ImmutablePair("count", getCount());
+        sample[3] = new ImmutablePair("median", getMedian());
+        sample[4] = new ImmutablePair("mean", getMean());
+        sample[5] = new ImmutablePair("75thPercentile", get75thPercentile());
+        sample[6] = new ImmutablePair("95thPercentile", get95thPercentile());
+        sample[7] = new ImmutablePair("98thPercentile", get98thPercentile());
+        sample[8] = new ImmutablePair("99thPercentile", get99thPercentile());
+        sample[9] = new ImmutablePair("999thPercentile", get999thPercentile());
+        sample[10] = new ImmutablePair("max", getMax());
+        sample[11] = new ImmutablePair("min", getMin());
+
+        return new Sample(getName(), sample);
+    }
+    // CHECK_ON: MagicNumber
+
 }

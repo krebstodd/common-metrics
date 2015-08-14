@@ -8,6 +8,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+// CHECK_OFF: MagicNumber
 public class BpTimerTest extends AbstractMetricsTest {
 
     @Test
@@ -20,12 +21,13 @@ public class BpTimerTest extends AbstractMetricsTest {
             resolver.done();
         }
 
-        final Map sample = toMap(timer.sample());
-        assertEquals(3l, sample.get("count"));
+        final Map sample = toMap(timer.sample().getSampleData());
+        assertEquals(3L, sample.get("count"));
         final double medianMillis = (Double) sample.get("median") / 1000000;
-        assertTrue(approximatelyEqual(1000d, medianMillis, 100d));
+        assertTrue(approximatelyEqual(1000D, medianMillis, 100D));
         final double meanMillis = (Double) sample.get("mean") / 1000000;
-        assertTrue(approximatelyEqual(1000d, meanMillis, 100d));
+        assertTrue(approximatelyEqual(1000D, meanMillis, 100D));
     }
 
 }
+// CHECK_ON: MagicNumber

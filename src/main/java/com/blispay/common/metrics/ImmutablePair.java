@@ -6,7 +6,7 @@ public class ImmutablePair {
 
     private final Object val;
 
-    public ImmutablePair(Object key, Object val) {
+    public ImmutablePair(final Object key, final Object val) {
         this.key = key;
         this.val = val;
     }
