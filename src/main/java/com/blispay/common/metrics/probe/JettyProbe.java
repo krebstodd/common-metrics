@@ -35,21 +35,18 @@ public class JettyProbe extends BpMetricProbe {
 
     private final Server instrumentedServer;
 
-    private final ConnectionFactory instrumentedConnectionFactory;
+    private ConnectionFactory instrumentedConnectionFactory;
 
     private final ThreadPool instrumentedThreadPool;
 
     /**
      * Probe jetty for metrics around connections usage, thread usage, and generatl http metrics.
      *
-     * @param connectionFactory Connection factory to be used in jetty server.
      * @param threadPool Thread pool to be used to serve http requests.
      * @param channelHandler Channel handler being handed to http server.
      */
-    public JettyProbe(final ConnectionFactory connectionFactory, final QueuedThreadPool threadPool,
+    public JettyProbe(final QueuedThreadPool threadPool,
                       final Consumer<HttpChannel<?>> channelHandler) {
-
-        this.instrumentedConnectionFactory = instrumentConnectionFactory(connectionFactory);
         this.instrumentedThreadPool = instrumentThreadPool(threadPool);
         this.instrumentedServer = new InstrumentedJettyServer(threadPool, channelHandler);
     }
@@ -64,6 +61,11 @@ public class JettyProbe extends BpMetricProbe {
 
     public ThreadPool getInstrumentedThreadPool() {
         return instrumentedThreadPool;
+    }
+
+    public ConnectionFactory setAndInstrumentConnectionFactory(final ConnectionFactory factory) {
+        this.instrumentedConnectionFactory = instrumentConnectionFactory(factory);
+        return this.instrumentedConnectionFactory;
     }
 
     @Override
@@ -189,6 +191,7 @@ public class JettyProbe extends BpMetricProbe {
             super.doStart();
 
             this.requests = metricService.createTimer(InstrumentedJettyServer.class, "requests", "Total number of requests and response time statistics");
+            this.dispatches = metricService.createTimer(InstrumentedJettyServer.class, "dispatches", "Total number of disptaches and timing statistics.");
             this.activeRequests = metricService.createCounter(InstrumentedJettyServer.class, "acive-requests", "Total number of in flight requests");
             this.activeDispatches = metricService.createCounter(InstrumentedJettyServer.class, "active-dispatches", "Total number of requests being processed");
             this.activeSuspended = metricService.createCounter(InstrumentedJettyServer.class, "active-suspended", "Total number of suspended requests");

@@ -25,7 +25,7 @@ public class BpSlf4jReporter extends BpScheduledReporter implements BpMetricCons
     public void report() {
         final Iterator iter = metrics.values().iterator();
         while (iter.hasNext()) {
-            metricLogger.info(iter.next().toString());
+            metricLogger.info(((BpMetric) iter.next()).sample().toString());
         }
     }
 

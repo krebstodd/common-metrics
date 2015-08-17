@@ -81,11 +81,6 @@ public abstract class BpMetric implements Metric {
         // CHECK_OFF: NPathComplexity
         public String toString(final Boolean prettyPrint) {
             final StringBuilder sb = new StringBuilder();
-            sb.append("name=").append(getNamespace()).append(",");
-
-            if (prettyPrint) {
-                sb.append("\n");
-            }
 
             final ImmutablePair[] sample = getSampleData();
             ImmutablePair current;

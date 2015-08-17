@@ -59,17 +59,17 @@ public final class BpMetricReportingService {
 
         final BpMetricReportingService reportingService = new BpMetricReportingService();
 
-        final Boolean jmxEnabled = MetricServiceProperties.jmxReportingEnabled();
-        final Boolean slf4jEnabled = MetricServiceProperties.slf4jReportingEnabled();
+        final Boolean jmxEnabled = BpMetricServiceProperties.jmxReportingEnabled();
+        final Boolean slf4jEnabled = BpMetricServiceProperties.slf4jReportingEnabled();
 
         if (jmxEnabled) {
             reportingService.addConsumer(buildJmxReporter(service));
         }
 
         if (slf4jEnabled) {
-            final String loggerName = MetricServiceProperties.slf4jLogger();
-            final String period = MetricServiceProperties.slf4jLogPeriod();
-            final String unit = MetricServiceProperties.slf4jLogPeriodUnit();
+            final String loggerName = BpMetricServiceProperties.slf4jLogger();
+            final String period = BpMetricServiceProperties.slf4jLogPeriod();
+            final String unit = BpMetricServiceProperties.slf4jLogPeriodUnit();
 
             reportingService.addConsumer(buildSlf4jReporter(service, loggerName, period, unit));
         }

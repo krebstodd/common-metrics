@@ -1,9 +1,8 @@
 package com.blispay.common.metrics;
 
 import com.blispay.common.metrics.probe.BpMetricProbe;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import org.springframework.context.Lifecycle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.util.HashSet;
@@ -15,7 +14,7 @@ import java.util.function.Supplier;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
-public final class BpMetricService implements BpMetricSet, Lifecycle {
+public final class BpMetricService implements BpMetricSet {
 
     private static final BpMetricService METRIC_SERVICE = new BpMetricService();
 
@@ -117,13 +116,13 @@ public final class BpMetricService implements BpMetricSet, Lifecycle {
     }
 
     private BpMetric registerMetric(final BpMetric metric) {
+        LOG.info("Registering new metric: {}", metric.getName());
         this.metrics.put(metric.getName(), metric);
         this.reportingService.onMetricAdded(metric);
         return metric;
     }
 
-    @Override
-    public void start() {
+    private void start() {
         if (isRunning.compareAndSet(false, true)) {
             reportingService.start();
         } else {
@@ -131,7 +130,6 @@ public final class BpMetricService implements BpMetricSet, Lifecycle {
         }
     }
 
-    @Override
     public void stop() {
         if (isRunning.compareAndSet(true, false)) {
             reportingService.stop();
@@ -144,7 +142,6 @@ public final class BpMetricService implements BpMetricSet, Lifecycle {
         this.probes.add(probe);
     }
 
-    @Override
     public boolean isRunning() {
         return isRunning.get();
     }

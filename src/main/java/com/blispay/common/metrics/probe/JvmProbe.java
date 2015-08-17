@@ -53,22 +53,6 @@ public class JvmProbe extends BpMetricProbe {
         return metrics;
     }
 
-    private static BpMetric wrapMetric(final Metric metric, final String name) {
-        if (metric instanceof Timer) {
-            return new BpTimer((Timer) metric, name, "");
-        } else if (metric instanceof Gauge) {
-            return new BpGauge((Gauge) metric, name, "");
-        } else if (metric instanceof Counter) {
-            return new BpCounter((Counter) metric, name, "");
-        } else if (metric instanceof Meter) {
-            return new BpMeter((Meter) metric, name, "");
-        } else if (metric instanceof Histogram) {
-            return new BpHistogram((Histogram) metric, name, "");
-        } else {
-            return null;
-        }
-    }
-
     private static String name(final String prefix, final String metricNAme) {
         return JvmProbe.class.getName() + "." + prefix + "." + metricNAme;
     }
