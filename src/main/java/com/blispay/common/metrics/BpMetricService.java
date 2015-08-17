@@ -1,13 +1,12 @@
 package com.blispay.common.metrics;
 
-import com.blispay.common.metrics.probe.JvmProbe;
-import com.codahale.metrics.MetricSet;
+import com.blispay.common.metrics.probe.BpMetricProbe;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.springframework.context.Lifecycle;
 
-import javax.annotation.PostConstruct;
 import java.lang.reflect.Constructor;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,18 +15,6 @@ import java.util.function.Supplier;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
-// TODO: Create metric sets for groupings (api, query, etc.) and possibly probes.
-// TODO: Look at the units that metrics are coming back in.
-//    private static void instrumentJvmMonitoring(final BpMetricService service) {
-//        final Boolean jvmMonitoringEnabled = (Boolean) System.getProperties().getOrDefault("metrics.jvm.enabled", false);
-//
-//        if (jvmMonitoringEnabled) {
-//            service.getRegistry().registerAll(new MemoryUsageGaugeSet());
-//            service.getRegistry().registerAll(new GarbageCollectorMetricSet());
-//            service.getRegistry().registerAll(new ThreadStatesGaugeSet());
-//        }
-//    }
-
 public final class BpMetricService implements BpMetricSet, Lifecycle {
 
     private static final BpMetricService METRIC_SERVICE = new BpMetricService();
@@ -35,6 +22,8 @@ public final class BpMetricService implements BpMetricSet, Lifecycle {
     private static final Logger LOG = LoggerFactory.getLogger(BpMetricService.class);
 
     private final ConcurrentHashMap<String, BpMetric> metrics = new ConcurrentHashMap<>();
+
+    private final HashSet<BpMetricProbe> probes = new HashSet<>();
 
     private final BpMetricReportingService reportingService = BpMetricReportingService.initialize(this);
 
@@ -115,7 +104,6 @@ public final class BpMetricService implements BpMetricSet, Lifecycle {
                 throw new IllegalArgumentException("Metric has already been registered with name " + fullName);
             }
 
-            // TODO: Make all of this thread safe possibly locking on the metrics object or a specific lock for writing to the map.
             return (M) registerMetric(ctor.newInstance(fullName, description));
 
         // CHECK_OFF: IllegalCatch
@@ -138,7 +126,6 @@ public final class BpMetricService implements BpMetricSet, Lifecycle {
     public void start() {
         if (isRunning.compareAndSet(false, true)) {
             reportingService.start();
-            JvmProbe.startJvmProbe(this);
         } else {
             throw new IllegalStateException("Metric service is already running and cannot be started.");
         }
@@ -151,6 +138,10 @@ public final class BpMetricService implements BpMetricSet, Lifecycle {
         } else {
             throw new IllegalStateException("Metric service is stopped.");
         }
+    }
+
+    public void addProbe(final BpMetricProbe probe) {
+        this.probes.add(probe);
     }
 
     @Override

@@ -5,7 +5,6 @@ import com.blispay.common.metrics.BpGauge;
 import com.blispay.common.metrics.BpHistogram;
 import com.blispay.common.metrics.BpMeter;
 import com.blispay.common.metrics.BpMetric;
-import com.blispay.common.metrics.BpMetricService;
 import com.blispay.common.metrics.BpTimer;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
@@ -17,31 +16,36 @@ import com.codahale.metrics.Timer;
 import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-public class JvmProbe {
+public class JvmProbe extends BpMetricProbe {
 
-    private static final AtomicBoolean jvmProbStarted = new AtomicBoolean(false);
+    public JvmProbe() {}
 
-    public static void startJvmProbe(final BpMetricService metricService) {
-        if (jvmProbStarted.compareAndSet(false, true)) {
-            metricService.addAll(wrapMetrics("memory", new MemoryUsageGaugeSet()));
-            metricService.addAll(wrapMetrics("gc", new GarbageCollectorMetricSet()));
-            metricService.addAll(wrapMetrics("thread", new ThreadStatesGaugeSet()));
-        }
+    @Override
+    protected void startProbe() {
+        metricService.addAll(wrapMetrics("memory", new MemoryUsageGaugeSet()));
+        metricService.addAll(wrapMetrics("gc", new GarbageCollectorMetricSet()));
+        metricService.addAll(wrapMetrics("thread", new ThreadStatesGaugeSet()));
     }
 
-    private static final List<BpMetric> wrapMetrics(String prefix, final MetricSet raw) {
+    @Override
+    protected Logger getLogger() {
+        return LoggerFactory.getLogger(JvmProbe.class);
+    }
+
+    private static List<BpMetric> wrapMetrics(final String prefix, final MetricSet raw) {
         final Map<String, Metric> rawMetrics = raw.getMetrics();
 
-        List<BpMetric> metrics = new ArrayList<>(rawMetrics.size());
+        final List<BpMetric> metrics = new ArrayList<>(rawMetrics.size());
         final Iterator iter = rawMetrics.keySet().iterator();
-        while(iter.hasNext()) {
+        while (iter.hasNext()) {
             final String current = (String) iter.next();
             metrics.add(wrapMetric(rawMetrics.get(current), name(prefix, current)));
         }
@@ -49,7 +53,7 @@ public class JvmProbe {
         return metrics;
     }
 
-    private static final BpMetric wrapMetric(final Metric metric, final String name) {
+    private static BpMetric wrapMetric(final Metric metric, final String name) {
         if (metric instanceof Timer) {
             return new BpTimer((Timer) metric, name, "");
         } else if (metric instanceof Gauge) {
@@ -65,7 +69,7 @@ public class JvmProbe {
         }
     }
 
-    private static final String name(final String prefix, final String metricNAme) {
+    private static String name(final String prefix, final String metricNAme) {
         return JvmProbe.class.getName() + "." + prefix + "." + metricNAme;
     }
 

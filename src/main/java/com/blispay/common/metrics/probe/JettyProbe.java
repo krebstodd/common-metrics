@@ -2,7 +2,6 @@ package com.blispay.common.metrics.probe;
 
 import com.blispay.common.metrics.BpCounter;
 import com.blispay.common.metrics.BpMeter;
-import com.blispay.common.metrics.BpMetricService;
 import com.blispay.common.metrics.BpTimer;
 import com.codahale.metrics.RatioGauge;
 import org.eclipse.jetty.http.HttpMethod;
@@ -30,15 +29,50 @@ import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public final class JettyProbe {
-
-    // CHECK_OFF: StaticVariableName
-    private static BpMetricService metricService = BpMetricService.getInstance();
-    // CHECK_ON: StaticVariableName
+public class JettyProbe extends BpMetricProbe {
 
     private static final Logger LOG = LoggerFactory.getLogger(JettyProbe.class);
 
-    private JettyProbe() {}
+    private final Server instrumentedServer;
+
+    private final ConnectionFactory instrumentedConnectionFactory;
+
+    private final ThreadPool instrumentedThreadPool;
+
+    /**
+     * Probe jetty for metrics around connections usage, thread usage, and generatl http metrics.
+     *
+     * @param connectionFactory Connection factory to be used in jetty server.
+     * @param threadPool Thread pool to be used to serve http requests.
+     * @param channelHandler Channel handler being handed to http server.
+     */
+    public JettyProbe(final ConnectionFactory connectionFactory, final QueuedThreadPool threadPool,
+                      final Consumer<HttpChannel<?>> channelHandler) {
+
+        this.instrumentedConnectionFactory = instrumentConnectionFactory(connectionFactory);
+        this.instrumentedThreadPool = instrumentThreadPool(threadPool);
+        this.instrumentedServer = new InstrumentedJettyServer(threadPool, channelHandler);
+    }
+
+    public Server getInstrumentedServer() {
+        return instrumentedServer;
+    }
+
+    public ConnectionFactory getInstrumentedConnectionFactory() {
+        return instrumentedConnectionFactory;
+    }
+
+    public ThreadPool getInstrumentedThreadPool() {
+        return instrumentedThreadPool;
+    }
+
+    @Override
+    protected void startProbe() { }
+
+    @Override
+    protected Logger getLogger() {
+        return LOG;
+    }
 
     /**
      * Instrument a jetty connection factory to collect behavioral metrics on the amount of time connections spend open.
@@ -46,7 +80,7 @@ public final class JettyProbe {
      * @param plain Plain jetty connection factory.
      * @return Instrumented facotry.
      */
-    public static ConnectionFactory instrumentConnectionFactory(final ConnectionFactory plain) {
+    private ConnectionFactory instrumentConnectionFactory(final ConnectionFactory plain) {
         final BpTimer connectionTimer
                 = metricService.createTimer(InstrumentedConnectionFactory.class, "connectionTimer", "Gather metrics on the amount of time a Jetty Connection remains open.");
         return new InstrumentedConnectionFactory(plain, connectionTimer);
@@ -57,7 +91,7 @@ public final class JettyProbe {
      *
      * @param pool Queued thread pool to profile.
      */
-    public static void instrumentThreadPool(final QueuedThreadPool pool) {
+    private ThreadPool instrumentThreadPool(final QueuedThreadPool pool) {
 
         metricService.createGauge(QueuedThreadPool.class, "utilization", "Utilization percentage of the jetty thread pool.",
                 () -> RatioGauge.Ratio.of(pool.getThreads() - pool.getIdleThreads(), pool.getThreads()).getValue());
@@ -71,10 +105,8 @@ public final class JettyProbe {
         metricService.createGauge(QueuedThreadPool.class, "jobs", "The current number of jobs waiting in the thread pool queue.",
                 () -> pool.getQueueSize());
 
-    }
+        return pool;
 
-    public static Server getInstrumentedServer(final ThreadPool threadPool, final Consumer<HttpChannel<?>> channelHandler) {
-        return new InstrumentedJettyServer(threadPool, channelHandler);
     }
 
     private static class InstrumentedJettyServer extends Server {
