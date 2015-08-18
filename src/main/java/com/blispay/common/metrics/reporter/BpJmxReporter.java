@@ -38,8 +38,6 @@ public class BpJmxReporter implements BpMetricConsumer {
 
     @Override
     public void registerMetric(final BpMetric metric) {
-
-        System.out.println(metric.getName());
         metrics.put(metric.getName(), metric);
     }
 
