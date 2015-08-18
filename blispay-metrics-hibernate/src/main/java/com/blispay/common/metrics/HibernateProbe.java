@@ -21,6 +21,7 @@ public class HibernateProbe extends BpMetricProbe {
      */
     public HibernateProbe(final HibernateEntityManagerFactory entityManager, final String id) {
         this.sessionFactory = entityManager.getSessionFactory();
+        this.sessionFactory.getStatistics().setStatisticsEnabled(true);
         this.id = id;
         init();
     }
