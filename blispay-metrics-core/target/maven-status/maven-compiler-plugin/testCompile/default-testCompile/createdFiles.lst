@@ -1,8 +1,0 @@
-com/blispay/common/metrics/BpMeterTest.class
-com/blispay/common/metrics/BpHistogramTest.class
-com/blispay/common/metrics/JmxReporterTest.class
-com/blispay/common/metrics/BpCounterTest.class
-com/blispay/common/metrics/BpMetricServiceTest.class
-com/blispay/common/metrics/AbstractMetricsTest.class
-com/blispay/common/metrics/BpGaugeTest.class
-com/blispay/common/metrics/BpTimerTest.class

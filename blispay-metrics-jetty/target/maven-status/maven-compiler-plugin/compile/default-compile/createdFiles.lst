@@ -1,6 +1,0 @@
-com/blispay/common/metrics/InstrumentedConnectionFactory.class
-com/blispay/common/metrics/InstrumentedJettyServer.class
-com/blispay/common/metrics/JettyProbe.class
-com/blispay/common/metrics/InstrumentedJettyServer$1.class
-com/blispay/common/metrics/InstrumentedConnectionFactory$1.class
-com/blispay/common/metrics/InstrumentedJettyServer$WrappedAsyncListener.class
