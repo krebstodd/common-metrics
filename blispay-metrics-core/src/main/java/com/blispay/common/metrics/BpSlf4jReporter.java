@@ -29,11 +29,6 @@ public class BpSlf4jReporter extends BpScheduledReporter implements BpMetricCons
 
     @Override
     public void registerMetric(final BpMetric metric) {
-        // TODO: This isn't thread safe.
-        if (metrics.containsKey(metric.getName())) {
-            throw new IllegalArgumentException("BpSlf4jReporter already contains metric " + metric.getName());
-        }
-
         metrics.put(metric.getName(), metric);
     }
 

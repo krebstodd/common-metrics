@@ -99,7 +99,7 @@ public final class BpMetricService implements BpMetricSet {
             final String fullName = name(namespace, metricName);
 
             if (this.metrics.containsKey(fullName)) {
-                throw new IllegalArgumentException("Metric has already been registered with name " + fullName);
+                return (M) this.metrics.get(fullName);
             }
 
             return (M) registerMetric(ctor.newInstance(fullName, description));
