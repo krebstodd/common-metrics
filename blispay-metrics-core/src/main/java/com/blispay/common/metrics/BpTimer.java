@@ -95,26 +95,27 @@ public class BpTimer extends BpMetric {
     // CHECK_OFF: MagicNumber
     @Override
     public Sample sample() {
-        final ImmutablePair[] sample = new ImmutablePair[18];
+        final ImmutablePair[] sample = new ImmutablePair[19];
 
         sample[0] = new ImmutablePair("name", getName());
         sample[1] = new ImmutablePair("description", getDescription());
         sample[2] = new ImmutablePair("durationUnit", getDurationUnit());
-        sample[3] = new ImmutablePair("count", getCount());
-        sample[4] = new ImmutablePair("meanRate", getMeanRate());
-        sample[5] = new ImmutablePair("oneMinuteRate", getOneMinuteRate());
-        sample[6] = new ImmutablePair("fiveMinuteRate", getFiveMinuteRate());
-        sample[7] = new ImmutablePair("fifteenMinuteRate", getFifteenMinuteRate());
-        sample[8] = new ImmutablePair("median", getMedian());
-        sample[9] = new ImmutablePair("mean", getMean());
-        sample[10] = new ImmutablePair("75thPercentile", get75thPercentile());
-        sample[11] = new ImmutablePair("95thPercentile", get95thPercentile());
-        sample[12] = new ImmutablePair("98thPercentile", get98thPercentile());
-        sample[13] = new ImmutablePair("99thPercentile", get99thPercentile());
-        sample[14] = new ImmutablePair("999thPercentile", get999thPercentile());
-        sample[15] = new ImmutablePair("max", getMax());
-        sample[16] = new ImmutablePair("min", getMin());
-        sample[17] = new ImmutablePair("mean", getMean());
+        sample[3] = new ImmutablePair("rateUnit", getRateUnit());
+        sample[4] = new ImmutablePair("count", getCount());
+        sample[5] = new ImmutablePair("meanRate", getMeanRate());
+        sample[6] = new ImmutablePair("oneMinuteRate", getOneMinuteRate());
+        sample[7] = new ImmutablePair("fiveMinuteRate", getFiveMinuteRate());
+        sample[8] = new ImmutablePair("fifteenMinuteRate", getFifteenMinuteRate());
+        sample[9] = new ImmutablePair("median", getMedian());
+        sample[10] = new ImmutablePair("mean", getMean());
+        sample[11] = new ImmutablePair("75thPercentile", get75thPercentile());
+        sample[12] = new ImmutablePair("95thPercentile", get95thPercentile());
+        sample[13] = new ImmutablePair("98thPercentile", get98thPercentile());
+        sample[14] = new ImmutablePair("99thPercentile", get99thPercentile());
+        sample[15] = new ImmutablePair("999thPercentile", get999thPercentile());
+        sample[16] = new ImmutablePair("max", getMax());
+        sample[17] = new ImmutablePair("min", getMin());
+        sample[18] = new ImmutablePair("mean", getMean());
 
         return new Sample(getName(), sample);
     }
