@@ -10,6 +10,10 @@ public abstract class BpMetric implements Metric {
 
     private final String description;
 
+    private final String rateUnit = "PER_SECOND";
+
+    private final String durationUnit = "NANOSECOND";
+
     public BpMetric(final String name, final String description) {
         this.name = name;
         this.description = description;
@@ -21,6 +25,14 @@ public abstract class BpMetric implements Metric {
 
     public String getDescription() {
         return description;
+    }
+
+    public String getRateUnit() {
+        return rateUnit;
+    }
+
+    public String getDurationUnit() {
+        return durationUnit;
     }
 
     public abstract Sample sample();
@@ -109,4 +121,5 @@ public abstract class BpMetric implements Metric {
         // CHECK_ON: NPathComplexity
 
     }
+
 }

@@ -51,15 +51,16 @@ public class BpMeter extends BpMetric {
     // CHECK_OFF: MagicNumber
     @Override
     public Sample sample() {
-        final ImmutablePair[] sample = new ImmutablePair[7];
+        final ImmutablePair[] sample = new ImmutablePair[8];
 
         sample[0] = new ImmutablePair("name", getName());
         sample[1] = new ImmutablePair("description", getDescription());
-        sample[2] = new ImmutablePair("count", getCount());
-        sample[3] = new ImmutablePair("meanRate", getMeanRate());
-        sample[4] = new ImmutablePair("oneMinuteRate", getOneMinuteRate());
-        sample[5] = new ImmutablePair("fiveMinuteRate", getFiveMinuteRate());
-        sample[6] = new ImmutablePair("fifteenMinuteRate", getFifteenMinuteRate());
+        sample[2] = new ImmutablePair("rateUnit", getRateUnit());
+        sample[3] = new ImmutablePair("count", getCount());
+        sample[4] = new ImmutablePair("meanRate", getMeanRate());
+        sample[5] = new ImmutablePair("oneMinuteRate", getOneMinuteRate());
+        sample[6] = new ImmutablePair("fiveMinuteRate", getFiveMinuteRate());
+        sample[7] = new ImmutablePair("fifteenMinuteRate", getFifteenMinuteRate());
 
         return new Sample(getName(), sample);
     }

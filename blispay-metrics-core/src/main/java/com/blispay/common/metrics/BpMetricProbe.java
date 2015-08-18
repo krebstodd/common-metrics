@@ -14,7 +14,7 @@ public abstract class BpMetricProbe {
 
     protected static final BpMetricService metricService = BpMetricService.getInstance();
 
-    private static final AtomicBoolean isRunning = new AtomicBoolean(false);
+    private final AtomicBoolean isRunning = new AtomicBoolean(false);
 
     /**
      * Start the current metric probe running. Not all probe types will require logic in their start method, however most will.
