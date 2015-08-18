@@ -21,21 +21,6 @@ public abstract class AbstractMetricsTest {
     // CHECK_ON: JavadocVariable
     // CHECK_ON: VisibilityModifier
 
-//    protected <M extends Metric> M getInternalMetric(final BpMetric metric) {
-//        try {
-//            final Method internalMetricGetter = metric.getClass().getDeclaredMethod("getInternalMetric");
-//            internalMetricGetter.setAccessible(true);
-//            final M internalMetric = (M) internalMetricGetter.invoke(metric);
-//            internalMetricGetter.setAccessible(false);
-//            return internalMetric;
-//        // CHECK_OFF: IllegalCatch
-//        } catch (Exception ex) {
-//            Assert.assertNull("There should be a package level getter for the internal dropwizard metric.", ex);
-//            return null;
-//        }
-//        // CHECK_ON: IllegalCatch
-//    }
-
     protected Map<String, Object> toMap(final ImmutablePair[] sample) {
         final HashMap<String, Object> sampleMap = new HashMap<>(sample.length);
         for (int i  = 0; i < sample.length; i++) {
@@ -48,7 +33,4 @@ public abstract class AbstractMetricsTest {
         return Math.abs(expected - actual) < acceptableDelta;
     }
 
-    protected Boolean approximatelyEqual(final Integer expected, final Integer actual, final Integer acceptableDelta) {
-        return Math.abs(expected - actual) < acceptableDelta;
-    }
 }

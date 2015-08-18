@@ -40,11 +40,6 @@
                 <artifactId>junit</artifactId>
                 <version>4.12</version>
             </dependency>
-            <dependency>
-                <groupId>org.jdbi</groupId>
-                <artifactId>jdbi</artifactId>
-                <version>2.63</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
