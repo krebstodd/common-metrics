@@ -29,7 +29,7 @@ public class LogbackProbe extends BpMetricProbe {
 
         private BpMeter all = metricService.createMeter(getClass(), "logback-all", "Meter for all logback log types.");
 
-        private BpMeter trace = metricService.createMeter(getClass(), "logback-all", "Meter for logback trace log types.");
+        private BpMeter trace = metricService.createMeter(getClass(), "logback-trace", "Meter for logback trace log types.");
 
         private BpMeter debug = metricService.createMeter(getClass(), "logback-debug", "Meter for logback debug log types.");
 

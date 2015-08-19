@@ -168,7 +168,7 @@ public class InstrumentedJettyServer extends Server {
     }
 
     private String buildEndpointKey(final Request request) {
-        return request.getMethod() + " " + request.getRequestURI();
+        return request.getMethod() + ":" + request.getRequestURI();
     }
 
     private BpTimer requestTimer(final String method) {
@@ -239,5 +239,6 @@ public class InstrumentedJettyServer extends Server {
 
         }
     }
+    // CHECK_ON: MagicNumber
 
 }
