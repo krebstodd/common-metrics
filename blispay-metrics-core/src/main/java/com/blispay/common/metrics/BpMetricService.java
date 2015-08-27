@@ -53,6 +53,11 @@ public final class BpMetricService implements BpMetricSet {
         return (BpGauge<R>) registerMetric(new BpGauge(name(clazz.getName(), metricName), description, resultSupplier));
     }
 
+    public BpHealthCheck createHealthCheck(final Class clazz, final String metricName,
+                                           final String description, final Supplier<BpHealthCheck.Result> healthSupplier) {
+        return (BpHealthCheck) registerMetric(new BpHealthCheck(name(clazz.getName(), metricName), description, healthSupplier));
+    }
+
     public BpMetric getMetric(final Class owningClass, final String metricName) {
         return getMetricByFullName(name(owningClass.getName(), metricName));
     }
