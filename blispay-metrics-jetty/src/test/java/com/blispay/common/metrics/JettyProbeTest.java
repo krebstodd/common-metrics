@@ -97,7 +97,7 @@ public class JettyProbeTest {
 
         countDownLatch.await(1, TimeUnit.SECONDS);
 
-        assertEquals(8, poolSize.getValue());
+        assertEquals(tp.getThreads(), poolSize.getValue());
         assertEquals(0.0D, utilization.getValue());
         assertEquals(0, jobs.getValue());
     }
