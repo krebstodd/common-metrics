@@ -4,7 +4,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.service.spi.ServiceBinding;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.stat.QueryStatistics;
 import org.hibernate.stat.internal.ConcurrentStatisticsImpl;
 import org.hibernate.stat.spi.StatisticsImplementor;
@@ -57,9 +56,9 @@ public class HibernateProbe extends BpMetricProbe {
 
     private void replaceStatisticsServiceBinding() {
         final SessionFactoryImpl impl = (SessionFactoryImpl) sessionFactory;
-        final ServiceRegistryImplementor reg = impl.getServiceRegistry();
-        final ServiceBinding<StatisticsImplementor> binding = reg.locateServiceBinding(StatisticsImplementor.class);
-        binding.setService(new NewQueryStatisticsInterceptor());
+        final ServiceBinding<StatisticsImplementor> binding
+                = impl.getServiceRegistry().locateServiceBinding(StatisticsImplementor.class);
+        binding.setService(new NewQueryStatisticsInterceptor(impl));
     }
 
     private BpGauge addQueryGauge(final String query) {
@@ -81,9 +80,13 @@ public class HibernateProbe extends BpMetricProbe {
 
     private class NewQueryStatisticsInterceptor extends ConcurrentStatisticsImpl {
 
+        public NewQueryStatisticsInterceptor(SessionFactoryImpl sessionFactory) {
+            super(sessionFactory);
+            this.setStatisticsEnabled(true);
+        }
+
         @Override
         public QueryStatistics getQueryStatistics(final String hqlString) {
-            System.out.println("ADDING NEW QUERY: " + queryGauges.containsKey(hqlString));
             queryGauges.computeIfAbsent(hqlString, HibernateProbe.this::addQueryGauge);
             return super.getQueryStatistics(hqlString);
         }
