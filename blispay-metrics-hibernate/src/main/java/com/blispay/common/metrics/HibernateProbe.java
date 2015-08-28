@@ -80,7 +80,7 @@ public class HibernateProbe extends BpMetricProbe {
 
     private class NewQueryStatisticsInterceptor extends ConcurrentStatisticsImpl {
 
-        public NewQueryStatisticsInterceptor(SessionFactoryImpl sessionFactory) {
+        public NewQueryStatisticsInterceptor(final SessionFactoryImpl sessionFactory) {
             super(sessionFactory);
             this.setStatisticsEnabled(true);
         }
