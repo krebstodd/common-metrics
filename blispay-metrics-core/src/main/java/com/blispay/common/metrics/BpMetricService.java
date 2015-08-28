@@ -90,6 +90,10 @@ public final class BpMetricService implements BpMetricSet {
         metrics.forEach(this::registerMetric);
     }
 
+    public void removeAll() {
+        metrics.clear();
+    }
+
     @Override
     public Map<String, BpMetric> getMetrics() {
         return this.metrics;

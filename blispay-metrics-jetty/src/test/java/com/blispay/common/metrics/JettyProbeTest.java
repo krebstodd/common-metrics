@@ -11,6 +11,7 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.junit.After;
 import org.junit.Test;
 
 import java.time.Instant;
@@ -26,6 +27,11 @@ import static org.mockito.Mockito.when;
 public class JettyProbeTest {
 
     private static final BpMetricService metricService = BpMetricService.getInstance();
+
+    @After
+    public void clearMetrics() {
+        metricService.removeAll();
+    }
 
     @Test
     public void testInstrumentedConnectionFactory() throws Exception {
@@ -97,7 +103,7 @@ public class JettyProbeTest {
 
         countDownLatch.await(1, TimeUnit.SECONDS);
 
-//        assertEquals(tp.getThreads(), poolSize.getValue());
+        assertEquals(tp.getThreads(), poolSize.getValue());
         assertEquals(0.0D, utilization.getValue());
         assertEquals(0, jobs.getValue());
     }

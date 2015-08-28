@@ -5,7 +5,6 @@ import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.HttpChannel;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.jetty.util.thread.ThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,8 +18,6 @@ public class JettyProbe extends BpMetricProbe {
 
     private ConnectionFactory instrumentedConnectionFactory;
 
-    private final ThreadPool instrumentedThreadPool;
-
     /**
      * Probe jetty for metrics around connections usage, thread usage, and generatl http metrics.
      *
@@ -29,8 +26,8 @@ public class JettyProbe extends BpMetricProbe {
      */
     public JettyProbe(final QueuedThreadPool threadPool,
                       final Consumer<HttpChannel<?>> channelHandler) {
-        this.instrumentedThreadPool = instrumentThreadPool(threadPool);
         this.instrumentedServer = new InstrumentedJettyServer(metricService, threadPool, channelHandler);
+        instrumentThreadPool(threadPool);
     }
 
     public Server getInstrumentedServer() {
@@ -39,10 +36,6 @@ public class JettyProbe extends BpMetricProbe {
 
     public ConnectionFactory getInstrumentedConnectionFactory() {
         return instrumentedConnectionFactory;
-    }
-
-    public ThreadPool getInstrumentedThreadPool() {
-        return instrumentedThreadPool;
     }
 
     public ConnectionFactory setAndInstrumentConnectionFactory(final ConnectionFactory factory) {
@@ -75,7 +68,7 @@ public class JettyProbe extends BpMetricProbe {
      *
      * @param pool Queued thread pool to profile.
      */
-    private ThreadPool instrumentThreadPool(final QueuedThreadPool pool) {
+    private void instrumentThreadPool(final QueuedThreadPool pool) {
 
         metricService.createGauge(QueuedThreadPool.class, "utilization", "Utilization percentage of the jetty thread pool.",
                 () -> RatioGauge.Ratio.of(pool.getThreads() - pool.getIdleThreads(), pool.getThreads()).getValue());
@@ -88,8 +81,6 @@ public class JettyProbe extends BpMetricProbe {
 
         metricService.createGauge(QueuedThreadPool.class, "jobs", "The current number of jobs waiting in the thread pool queue.",
                 () -> pool.getQueueSize());
-
-        return pool;
 
     }
 
