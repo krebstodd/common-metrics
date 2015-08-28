@@ -102,11 +102,6 @@ public final class BpMetricService implements BpMetricSet {
 
             final Constructor<M> ctor = metricClass.getConstructor(String.class, String.class);
             final String fullName = name(namespace, metricName);
-
-            if (this.metrics.containsKey(fullName)) {
-                return (M) this.metrics.get(fullName);
-            }
-
             return (M) registerMetric(ctor.newInstance(fullName, description));
 
         // CHECK_OFF: IllegalCatch
@@ -120,10 +115,11 @@ public final class BpMetricService implements BpMetricSet {
     }
 
     private BpMetric registerMetric(final BpMetric metric) {
-        LOG.info("Registering new metric: {}", metric.getName());
-        this.metrics.put(metric.getName(), metric);
-        this.reportingService.onMetricAdded(metric);
-        return metric;
+        return this.metrics.computeIfAbsent(metric.getName(), (name) -> {
+                LOG.info("Registering new metric: {}", name);
+                this.reportingService.onMetricAdded(metric);
+                return metric;
+            });
     }
 
     private void start() {
