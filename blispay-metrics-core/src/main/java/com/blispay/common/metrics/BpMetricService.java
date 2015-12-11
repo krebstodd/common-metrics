@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 
 public final class BpMetricService {
 
-    private static BpMetricService GLOBAL_INSTANCE = new BpMetricService().start();
+    private static BpMetricService GLOBAL_INSTANCE = new BpMetricService();
 
     private final BpMetricFactory metricFactory = new BpMetricFactory();
 
