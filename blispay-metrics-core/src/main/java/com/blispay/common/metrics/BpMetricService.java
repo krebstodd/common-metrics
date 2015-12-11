@@ -1,166 +1,150 @@
 package com.blispay.common.metrics;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.blispay.common.metrics.metric.BpCounter;
+import com.blispay.common.metrics.metric.BpGauge;
+import com.blispay.common.metrics.metric.BpHealthCheck;
+import com.blispay.common.metrics.metric.BpHistogram;
+import com.blispay.common.metrics.metric.BpMeter;
+import com.blispay.common.metrics.metric.BpMetric;
+import com.blispay.common.metrics.metric.BpTimer;
+import com.blispay.common.metrics.probe.BpMetricProbe;
+import com.blispay.common.metrics.report.BpMetricReporter;
 
-import java.lang.reflect.Constructor;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-import static com.codahale.metrics.MetricRegistry.name;
+public final class BpMetricService {
 
-public final class BpMetricService implements BpMetricSet {
+    private static BpMetricService GLOBAL_INSTANCE = new BpMetricService().start();
 
-    private static final BpMetricService METRIC_SERVICE = new BpMetricService();
+    private final BpMetricFactory metricFactory = new BpMetricFactory();
 
-    private static final Logger LOG = LoggerFactory.getLogger(BpMetricService.class);
+    private final BpMetricSet metrics = new BpMetricSet();
 
-    private final ConcurrentHashMap<String, BpMetric> metrics = new ConcurrentHashMap<>();
+    private final List<BpMetricProbe> probes = new ArrayList<>();
 
-    private final HashSet<BpMetricProbe> probes = new HashSet<>();
-
-    private final BpMetricReportingService reportingService = BpMetricReportingService.initialize(this);
+    private final List<BpMetricReporter> reporters = new ArrayList<>();
 
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
 
-    private BpMetricService() {
-        start();
+    public BpMetricService() {
     }
 
     public BpCounter createCounter(final Class clazz, final String metricName, final String description) {
-        return createMetric(clazz.getName(), metricName, description, BpCounter.class);
+        return registerNewMetric(metricFactory.createCounter(clazz, metricName, description));
     }
 
     public BpHistogram createHistogram(final Class clazz, final String metricName, final String description) {
-        return createMetric(clazz.getName(), metricName, description, BpHistogram.class);
+        return registerNewMetric(metricFactory.createHistogram(clazz, metricName, description));
     }
 
     public BpMeter createMeter(final Class clazz, final String metricName, final String description) {
-        return createMetric(clazz.getName(), metricName, description, BpMeter.class);
+        return registerNewMetric(metricFactory.createMeter(clazz, metricName, description));
     }
 
     public BpTimer createTimer(final Class clazz, final String metricName, final String description) {
-        return createMetric(clazz.getName(), metricName, description, BpTimer.class);
+        return registerNewMetric(metricFactory.createTimer(clazz, metricName, description));
     }
 
     public <R> BpGauge<R> createGauge(final Class clazz, final String metricName,
                                       final String description, final Supplier<R> resultSupplier) {
 
-        return (BpGauge<R>) registerMetric(new BpGauge(name(clazz.getName(), metricName), description, resultSupplier));
+        return registerNewMetric(metricFactory.createGauge(clazz, metricName, description, resultSupplier));
     }
 
     public BpHealthCheck createHealthCheck(final Class clazz, final String metricName,
                                            final String description, final Supplier<BpHealthCheck.Result> healthSupplier) {
-        return (BpHealthCheck) registerMetric(new BpHealthCheck(name(clazz.getName(), metricName), description, healthSupplier));
+        return registerNewMetric(metricFactory.createHealthCheck(clazz, metricName, description, healthSupplier));
     }
 
     public BpMetric getMetric(final Class owningClass, final String metricName) {
-        return getMetricByFullName(name(owningClass.getName(), metricName));
+        return metrics.getMetric(owningClass, metricName);
     }
 
-    public BpMetric getMetricByFullName(final String name) {
-        return metrics.get(name);
-    }
-
-    private void removeMetricByFullName(final String metricName) {
-        final BpMetric removed = this.metrics.remove(metricName);
-
-        if (removed != null) {
-            this.reportingService.onMetricRemoved(metricName);
-        }
-    }
-
-    public void removeMetric(final Class owningClass, final String name) {
-        removeMetricByFullName(name(owningClass.getName(), name));
+    public void addAll(final Collection<BpMetric> metrics) {
+        metrics.forEach(this::registerNewMetric);
     }
 
     public void removeMetric(final BpMetric metric) {
-        removeMetricByFullName(metric.getName());
+        metrics.removeMetric(metric.getName());
     }
 
-    public void addConsumer(final BpMetricConsumer consumer) {
-        this.reportingService.addConsumer(consumer);
-    }
-
-    public void addAll(final List<BpMetric> metrics) {
-        metrics.forEach(this::registerMetric);
-    }
-
-    public void removeAll() {
+    public void clear() {
         metrics.clear();
     }
 
-    @Override
-    public Map<String, BpMetric> getMetrics() {
-        return this.metrics;
+    private <M extends BpMetric> M registerNewMetric(final M metric) {
+        return metrics.registerMetric(metric);
     }
 
-    private <M extends BpMetric> M createMetric(final String namespace, final String metricName,
-                                                final String description, final Class<M> metricClass) {
+    /**
+     * Add a new probe instance. Will start the probe if the service is already running.
+     * @param probe A new probe using the current metric service instance.
+     */
+    public void addProbe(final BpMetricProbe probe) {
+        probes.add(probe);
 
-        try {
-
-            final Constructor<M> ctor = metricClass.getConstructor(String.class, String.class);
-            final String fullName = name(namespace, metricName);
-            return (M) registerMetric(ctor.newInstance(fullName, description));
-
-        // CHECK_OFF: IllegalCatch
-        } catch (Exception ex) {
-            // Eat this exception, we know the constructor type for all of hte BpMetrics so we shouldn't ever actually
-            // hit this catc.
-            LOG.error("Caught an exception attempting to instantiate a metric instance.", ex);
-            return null;
+        synchronized (isRunning) {
+            if (isRunning.get()) {
+                probe.start();
+            }
         }
-        // CHECK_ON: IllegalCatch
     }
 
-    private BpMetric registerMetric(final BpMetric metric) {
-        return this.metrics.computeIfAbsent(metric.getName(), (name) -> {
-                LOG.info("Registering new metric: {}", name);
-                this.reportingService.onMetricAdded(metric);
-                return metric;
-            });
+    /**
+     * Add a new reporter to the metric service.
+     * @param reporter The reporter to add.
+     */
+    public void addReporter(final BpMetricReporter reporter) {
+        reporter.setSampler(metrics::sample);
+
+        synchronized (isRunning) {
+            if (isRunning.get()) {
+                reporter.start();
+            }
+        }
+
+        reporters.add(reporter);
     }
 
-    private void start() {
-        if (isRunning.compareAndSet(false, true)) {
-            reportingService.start();
-        } else {
+    public void removeRepoerter(final BpMetricReporter reporter) {
+        reporters.remove(reporter);
+    }
+
+    /**
+     * Start the bp metric service and all reporters.
+     * @return The current instance.
+     */
+    public BpMetricService start() {
+        if (!isRunning.compareAndSet(false, true)) {
             throw new IllegalStateException("Metric service is already running and cannot be started.");
         }
+
+        reporters.forEach(BpMetricReporter::start);
+        probes.forEach(BpMetricProbe::start);
+        return this;
     }
 
     /**
      * Stop the metric service from reporting metrics.
      */
     public void stop() {
-        if (isRunning.compareAndSet(true, false)) {
-            reportingService.stop();
-        } else {
+        if (!isRunning.compareAndSet(true, false)) {
             throw new IllegalStateException("Metric service is stopped.");
         }
-    }
 
-    public void addProbe(final BpMetricProbe probe) {
-        this.probes.add(probe);
+        reporters.forEach(BpMetricReporter::stop);
     }
 
     public boolean isRunning() {
         return isRunning.get();
     }
 
-    /**
-     * Get an instance of the blispay metric service. Service is a singleton to ensure the entire process is utilizing
-     * the same metric set.
-     *
-     * @return Existing singleton.
-     */
-    public static BpMetricService getInstance() {
-        return METRIC_SERVICE;
+    public static BpMetricService globalInstance() {
+        return GLOBAL_INSTANCE;
     }
 
 }

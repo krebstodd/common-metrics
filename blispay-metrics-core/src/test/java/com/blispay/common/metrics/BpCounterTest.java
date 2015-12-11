@@ -2,6 +2,7 @@ package com.blispay.common.metrics;
 
 //CHECK_OFF: AvoidStarImport
 
+import com.blispay.common.metrics.metric.BpCounter;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

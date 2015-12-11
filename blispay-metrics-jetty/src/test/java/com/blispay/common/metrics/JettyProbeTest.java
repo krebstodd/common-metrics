@@ -1,5 +1,8 @@
 package com.blispay.common.metrics;
 
+import com.blispay.common.metrics.metric.BpGauge;
+import com.blispay.common.metrics.metric.BpMeter;
+import com.blispay.common.metrics.metric.BpTimer;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.server.ConnectionFactory;
@@ -26,17 +29,17 @@ import static org.mockito.Mockito.when;
 // CHECK_OFF: MagicNumber
 public class JettyProbeTest {
 
-    private static final BpMetricService metricService = BpMetricService.getInstance();
+    private static final BpMetricService metricService = BpMetricService.globalInstance();
 
     @After
     public void clearMetrics() {
-        metricService.removeAll();
+        metricService.clear();
     }
 
     @Test
     public void testInstrumentedConnectionFactory() throws Exception {
 
-        final JettyProbe probe = new JettyProbe(queuedThreadPool(), (channel) -> { });
+        final JettyProbe probe = new JettyProbe(queuedThreadPool(), (channel) -> { }, metricService);
         final ConnectionFactory instrumentedFactory = probe.setAndInstrumentConnectionFactory(new ConnectionFactory() {
             @Override
             public String getProtocol() {
@@ -59,7 +62,7 @@ public class JettyProbeTest {
     @Test
     public void testInstrumentedServer() throws Exception {
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        final JettyProbe probe = new JettyProbe(queuedThreadPool(), (HttpChannel<?> channel) -> countDownLatch.countDown());
+        final JettyProbe probe = new JettyProbe(queuedThreadPool(), (HttpChannel<?> channel) -> countDownLatch.countDown(), metricService);
         final Server jettyServer = probe.getInstrumentedServer();
         jettyServer.start();
 
@@ -89,7 +92,7 @@ public class JettyProbeTest {
         final CountDownLatch countDownLatch = new CountDownLatch(1);
 
         final QueuedThreadPool tp = queuedThreadPool();
-        new JettyProbe(tp, (HttpChannel<?> channel) -> { });
+        new JettyProbe(tp, (HttpChannel<?> channel) -> { }, metricService);
         tp.start();
 
         final BpGauge poolSize = (BpGauge) metricService.getMetric(QueuedThreadPool.class, "size");

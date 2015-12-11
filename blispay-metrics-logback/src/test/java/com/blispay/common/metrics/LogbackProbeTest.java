@@ -1,5 +1,6 @@
 package com.blispay.common.metrics;
 
+import com.blispay.common.metrics.metric.BpMeter;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,11 +10,11 @@ import static org.junit.Assert.assertEquals;
 // CHECK_OFF: MagicNumber
 public class LogbackProbeTest {
 
-    private final BpMetricService metricService = BpMetricService.getInstance();
+    private final BpMetricService metricService = BpMetricService.globalInstance();
 
     @Test
     public void testLogbackProbe() {
-        final LogbackProbe probe = new LogbackProbe();
+        final LogbackProbe probe = new LogbackProbe(metricService);
         probe.start();
 
         final Logger log = LoggerFactory.getLogger(LogbackProbeTest.class);
@@ -35,7 +36,7 @@ public class LogbackProbeTest {
     }
 
     private long getCount(final String type) {
-        return ((BpMeter) metricService.getMetricByFullName("com.blispay.common.metrics.LogbackProbe$Appender.logback-" + type)).getCount();
+        return ((BpMeter) metricService.getMetric(LogbackProbe.Appender.class, "logback-" + type)).getCount();
     }
 }
 // CHECK_ON: MagicNumber

@@ -1,5 +1,6 @@
 package com.blispay.common.metrics;
 
+import com.blispay.common.metrics.metric.BpHealthCheck;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicBoolean;

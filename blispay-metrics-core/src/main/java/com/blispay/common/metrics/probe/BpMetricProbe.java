@@ -1,5 +1,11 @@
-package com.blispay.common.metrics;
+package com.blispay.common.metrics.probe;
 
+import com.blispay.common.metrics.metric.BpCounter;
+import com.blispay.common.metrics.metric.BpGauge;
+import com.blispay.common.metrics.metric.BpHistogram;
+import com.blispay.common.metrics.metric.BpMeter;
+import com.blispay.common.metrics.metric.BpMetric;
+import com.blispay.common.metrics.metric.BpTimer;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Histogram;
@@ -11,8 +17,6 @@ import org.slf4j.Logger;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class BpMetricProbe {
-
-    protected static final BpMetricService metricService = BpMetricService.getInstance();
 
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
 

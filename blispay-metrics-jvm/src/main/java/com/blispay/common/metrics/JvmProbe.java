@@ -1,5 +1,7 @@
 package com.blispay.common.metrics;
 
+import com.blispay.common.metrics.metric.BpMetric;
+import com.blispay.common.metrics.probe.BpMetricProbe;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
@@ -15,7 +17,15 @@ import java.util.Map;
 
 public class JvmProbe extends BpMetricProbe {
 
-    public JvmProbe() {}
+    private final BpMetricService metricService;
+
+    /**
+     * Probe for profiling the current JVM process.
+     * @param metricService Metric service to register probe on.
+     */
+    public JvmProbe(final BpMetricService metricService) {
+        this.metricService = metricService;
+    }
 
     @Override
     protected void startProbe() {

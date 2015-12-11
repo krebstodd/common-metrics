@@ -1,10 +1,10 @@
-package com.blispay.common.metrics;
+package com.blispay.common.metrics.report;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public abstract class BpScheduledReporter {
+public abstract class BpScheduledReporter extends BpMetricReporter {
 
     private final ScheduledExecutorService executorService;
 
@@ -23,6 +23,8 @@ public abstract class BpScheduledReporter {
         this.unit = unit;
         executorService = Executors.newSingleThreadScheduledExecutor();
     }
+
+    public abstract void report();
 
     /**
      * Start scheduling hte recurring reports.
@@ -46,5 +48,4 @@ public abstract class BpScheduledReporter {
         }
     }
 
-    public abstract void report();
 }

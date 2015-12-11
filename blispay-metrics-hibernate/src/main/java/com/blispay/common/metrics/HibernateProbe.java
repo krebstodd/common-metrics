@@ -1,5 +1,7 @@
 package com.blispay.common.metrics;
 
+import com.blispay.common.metrics.metric.BpGauge;
+import com.blispay.common.metrics.probe.BpMetricProbe;
 import org.hibernate.SessionFactory;
 import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
@@ -24,14 +26,18 @@ public class HibernateProbe extends BpMetricProbe {
 
     private final ConcurrentHashMap<String, BpGauge> queryGauges = new ConcurrentHashMap<>();
 
+    private final BpMetricService metricService;
+
     /**
      * Create a new hibernate probe for the provided entity manager factory.
      *
      * @param entityManager Entity manager factory containing the hibernate session factory we want to probe.
      * @param id An identifier for the specific entity manager factory as apps may have multiple entity managers they want to probe.
      * @param collectQueryStats Collect statistics on a per-query basis.
+     * @param metricService Metric service to register probe on.
      */
-    public HibernateProbe(final HibernateEntityManagerFactory entityManager, final String id, final Boolean collectQueryStats) {
+    public HibernateProbe(final HibernateEntityManagerFactory entityManager, final String id,
+                          final Boolean collectQueryStats, final BpMetricService metricService) {
 
         this.sessionFactory = entityManager.getSessionFactory();
         this.sessionFactory.getStatistics().setStatisticsEnabled(true);
@@ -42,12 +48,10 @@ public class HibernateProbe extends BpMetricProbe {
             replaceStatisticsServiceBinding();
         }
 
-        init();
-    }
-
-    private void init() {
         metricService.createGauge(HibernateProbe.class, name("statistics"), "Hibernate statistics",
                 sessionFactory::getStatistics);
+
+        this.metricService = metricService;
     }
 
     private String name(final String metric) {

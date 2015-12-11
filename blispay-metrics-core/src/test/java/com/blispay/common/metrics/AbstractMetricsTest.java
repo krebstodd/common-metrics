@@ -1,5 +1,6 @@
 package com.blispay.common.metrics;
 
+import com.blispay.common.metrics.util.ImmutablePair;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 
@@ -12,7 +13,7 @@ public abstract class AbstractMetricsTest {
         System.setProperty("metrics.jmx.enabled", "true");
     }
 
-    protected static final BpMetricService metricService = BpMetricService.getInstance();
+    protected static final BpMetricService metricService = BpMetricService.globalInstance();
 
     // CHECK_OFF: JavadocVariable
     // CHECK_OFF: VisibilityModifier

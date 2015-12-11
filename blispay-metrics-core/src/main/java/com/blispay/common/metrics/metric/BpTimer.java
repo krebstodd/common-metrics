@@ -1,5 +1,6 @@
-package com.blispay.common.metrics;
+package com.blispay.common.metrics.metric;
 
+import com.blispay.common.metrics.util.ImmutablePair;
 import com.codahale.metrics.Timer;
 
 import java.util.concurrent.Callable;

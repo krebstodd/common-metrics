@@ -1,5 +1,7 @@
 package com.blispay.common.metrics;
 
+import com.blispay.common.metrics.metric.BpMetric;
+import com.blispay.common.metrics.probe.BpMetricProbe;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import io.vertx.core.Vertx;
@@ -22,8 +24,9 @@ public class VertxProbe extends BpMetricProbe {
      * Create a new instance of the vertx metrics probe.
      *
      * @param vertx The active vertx instance to be probed.
+     * @param metricService Metric service to register probe on.
      */
-    public VertxProbe(final Vertx vertx) {
+    public VertxProbe(final Vertx vertx, final BpMetricService metricService) {
         final AbstractMetrics abstractMetrics = AbstractMetrics.unwrap(vertx);
 
         try {

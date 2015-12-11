@@ -1,4 +1,6 @@
-package com.blispay.common.metrics;
+package com.blispay.common.metrics.metric;
+
+import com.blispay.common.metrics.util.ImmutablePair;
 
 import java.util.function.Supplier;
 

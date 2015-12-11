@@ -1,5 +1,6 @@
-package com.blispay.common.metrics;
+package com.blispay.common.metrics.report;
 
+import com.blispay.common.metrics.metric.BpMetric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,14 +8,10 @@ import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-public class BpJmxReporter implements BpMetricConsumer {
+public class BpJmxReporter extends BpMetricReporter {
 
     private static final Logger LOG = LoggerFactory.getLogger(BpJmxReporter.class);
-
-    private static final Map<String, BpMetric> metrics = new ConcurrentHashMap<>();
 
     private final MBeanServer beanServer;
 
@@ -24,6 +21,7 @@ public class BpJmxReporter implements BpMetricConsumer {
      * Create a new metric consumer to expose currently tracked metrics via jmx.
      */
     public BpJmxReporter() {
+        super();
         beanServer = ManagementFactory.getPlatformMBeanServer();
         serviceMBean = new JmxMetricService();
 
@@ -35,32 +33,24 @@ public class BpJmxReporter implements BpMetricConsumer {
     }
 
     @Override
-    public void registerMetric(final BpMetric metric) {
-        metrics.put(metric.getName(), metric);
+    public void start() {
     }
 
     @Override
-    public void unregisterMetric(final String metric) {
-        metrics.remove(metric);
+    public void stop() {
     }
-
-    @Override
-    public void start() {}
-
-    @Override
-    public void stop() {}
 
     public interface JmxMetricServiceMBean {
         String getMetric(String metricName);
     }
 
-    public static class JmxMetricService implements JmxMetricServiceMBean {
+    public class JmxMetricService implements JmxMetricServiceMBean {
 
         @Override
         public String getMetric(final String metricName) {
-            final BpMetric metric = metrics.get(metricName);
-            if (metric != null) {
-                return metric.sample().toString(true);
+            final BpMetric.Sample sample = BpJmxReporter.this.sampleMetrics().get(metricName);
+            if (sample != null) {
+                return sample.toString(true);
             } else {
                 return "Unable to locate metric.";
             }

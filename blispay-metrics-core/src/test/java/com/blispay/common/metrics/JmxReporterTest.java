@@ -1,5 +1,7 @@
 package com.blispay.common.metrics;
 
+import com.blispay.common.metrics.metric.BpCounter;
+import com.blispay.common.metrics.report.BpJmxReporter;
 import org.junit.Test;
 
 import javax.management.AttributeNotFoundException;
@@ -27,7 +29,9 @@ public class JmxReporterTest {
 
     @Test
     public void testJmxReporter() throws MalformedObjectNameException, InstanceNotFoundException, MBeanException, AttributeNotFoundException, ReflectionException, IOException {
-        final BpMetricService service = BpMetricService.getInstance();
+        final BpMetricService service = BpMetricService.globalInstance();
+        service.addReporter(new BpJmxReporter());
+
         final BpCounter counter = service.createCounter(JmxReporterTest.class, "testJmxReporter", "Test to ensure metrics are accessible through jmx server.");
 
         final String expectedMetricName = JmxReporterTest.class.getName() + ".testJmxReporter";
