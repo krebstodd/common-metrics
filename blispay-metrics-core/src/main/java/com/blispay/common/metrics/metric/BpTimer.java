@@ -3,6 +3,7 @@ package com.blispay.common.metrics.metric;
 import com.blispay.common.metrics.util.ImmutablePair;
 import com.codahale.metrics.Timer;
 
+import java.io.Closeable;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -33,6 +34,10 @@ public class BpTimer extends BpMetric {
         return timer.time()::stop;
     }
 
+    public Closeable timeCloseable() {
+        return timer.time();
+    }
+
     public long getCount() {
         return timer.getCount();
     }
@@ -42,15 +47,15 @@ public class BpTimer extends BpMetric {
     }
 
     public double getOneMinuteRate() {
-        return timer.getMeanRate();
+        return timer.getOneMinuteRate();
     }
 
     public double getFiveMinuteRate() {
-        return timer.getMeanRate();
+        return timer.getFiveMinuteRate();
     }
 
     public double getFifteenMinuteRate() {
-        return timer.getMeanRate();
+        return timer.getFifteenMinuteRate();
     }
 
     public Double getMedian() {

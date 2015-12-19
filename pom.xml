@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.blispay.tools</groupId>
         <artifactId>tools-build-maven3-parent</artifactId>
-        <version>8</version>
+        <version>1.0.11</version>
     </parent>
 
     <groupId>com.blispay.common</groupId>

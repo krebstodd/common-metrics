@@ -27,7 +27,7 @@ public abstract class BpScheduledReporter extends BpMetricReporter {
     public abstract void report();
 
     /**
-     * Start scheduling hte recurring reports.
+     * Start scheduling the recurring reports.
      */
     public void start() {
         this.executorService.scheduleAtFixedRate(this::report, period, period, unit);
