@@ -24,8 +24,6 @@ public abstract class BpScheduledReporter extends BpMetricReporter {
         executorService = Executors.newSingleThreadScheduledExecutor();
     }
 
-    public abstract void report();
-
     /**
      * Start scheduling hte recurring reports.
      */

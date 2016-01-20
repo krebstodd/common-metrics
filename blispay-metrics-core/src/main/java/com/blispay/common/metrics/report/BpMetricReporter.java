@@ -21,4 +21,6 @@ public abstract class BpMetricReporter {
 
     public abstract void stop();
 
+    public abstract void report();
+
 }

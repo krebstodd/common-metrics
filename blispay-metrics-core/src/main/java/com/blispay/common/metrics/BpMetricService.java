@@ -143,6 +143,10 @@ public final class BpMetricService {
         return isRunning.get();
     }
 
+    public void flushReporters() {
+        reporters.forEach(BpMetricReporter::report);
+    }
+
     public static BpMetricService globalInstance() {
         return GLOBAL_INSTANCE;
     }

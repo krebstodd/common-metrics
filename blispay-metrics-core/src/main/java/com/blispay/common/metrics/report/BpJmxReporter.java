@@ -40,6 +40,10 @@ public class BpJmxReporter extends BpMetricReporter {
     public void stop() {
     }
 
+    @Override
+    public void report() {
+    }
+
     public interface JmxMetricServiceMBean {
         String getMetric(String metricName);
     }
