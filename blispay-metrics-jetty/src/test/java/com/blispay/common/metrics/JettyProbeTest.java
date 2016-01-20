@@ -22,7 +22,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -80,11 +79,13 @@ public class JettyProbeTest {
         final BpMeter meter4xx = (BpMeter) metricService.getMetric(InstrumentedJettyServer.class, "4xx-responses");
         assertEquals(1L, meter4xx.getCount());
 
-        final BpGauge gauge4xx = (BpGauge) metricService.getMetric(InstrumentedJettyServer.class, "percent-4xx-1m");
-        assertTrue(approximatelyEqual(0.5D, (Double) gauge4xx.getValue(), 0.05D));
-
         final BpTimer endpointTimer = (BpTimer) metricService.getMetric(InstrumentedJettyServer.class, "POST:/user/create/v1");
         assertEquals(1L, endpointTimer.getCount());
+
+        //wiat for gauge to update
+        Thread.sleep(5000);
+        final BpGauge gauge4xx = (BpGauge) metricService.getMetric(InstrumentedJettyServer.class, "percent-4xx-1m");
+        assertEquals(0.5D, (Double) gauge4xx.getValue(), 0.05D);
     }
 
     @Test

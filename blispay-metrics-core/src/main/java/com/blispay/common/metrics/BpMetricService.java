@@ -110,7 +110,7 @@ public final class BpMetricService {
         reporters.add(reporter);
     }
 
-    public void removeRepoerter(final BpMetricReporter reporter) {
+    public void removeReporter(final BpMetricReporter reporter) {
         reporters.remove(reporter);
     }
 
