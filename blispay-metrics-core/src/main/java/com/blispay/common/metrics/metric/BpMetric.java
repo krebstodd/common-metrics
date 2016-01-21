@@ -75,7 +75,7 @@ public abstract class BpMetric<T> implements Metric {
 
     protected void recordEvent(final EventSample<T> sample) {
         if (recordEvents) {
-            eventRecordingService.recordEvent(new RecordableEvent(recordLevelFn.apply(sample), sample.toString()));
+            eventRecordingService.recordEvent(new RecordableEvent(recordLevelFn.apply(sample), sample));
         }
     }
 
