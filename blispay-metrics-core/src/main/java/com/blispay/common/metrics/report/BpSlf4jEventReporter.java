@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class BpSlf4jEventReporter implements BpEventReporter {
+public class BpSlf4jEventReporter extends BpEventReporter {
 
     private final Map<RecordableEvent.Level, Consumer<String>> eventLoggers;
 

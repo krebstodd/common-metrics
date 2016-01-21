@@ -1,5 +1,12 @@
 package com.blispay.common.metrics.report;
 
-public class NoOpEventRecordingService implements BpEventRecordingService {
+import com.blispay.common.metrics.util.RecordableEvent;
+
+public class NoOpEventRecordingService extends BpEventRecordingService {
+
+    @Override
+    public void recordEvent(final RecordableEvent event) {
+        // NO_OP
+    }
 
 }

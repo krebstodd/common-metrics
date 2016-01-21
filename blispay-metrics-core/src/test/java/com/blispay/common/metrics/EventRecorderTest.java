@@ -284,7 +284,7 @@ public class EventRecorderTest extends AbstractMetricsTest {
         final Long warnTime = 200L;
         final Long errTime = 300L;
 
-        timer.setEventRecordLevelFn((evt) -> {
+        timer.setEventRecordLevelFn(evt -> {
                 if (evt.getSampleState() < warnTime) {
                     return RecordableEvent.Level.INFO;
                 } else if (evt.getSampleState() < errTime) {
@@ -308,6 +308,67 @@ public class EventRecorderTest extends AbstractMetricsTest {
         assertThat(event.get(1), new Slf4jLogMessageMatcher(Level.WARN, keyValueMatcher("event", "Warning")));
         assertThat(event.get(2), new Slf4jLogMessageMatcher(Level.ERROR, keyValueMatcher("event", "Error")));
 
+    }
+
+    @Test
+    public void testMessageFilters() {
+        final TestableBpEventReporter reporter1 = new TestableBpEventReporter();
+        final BpMetricService service = defaultService(reporter1);
+
+        final TestableBpEventReporter reporter2 = new TestableBpEventReporter();
+        reporter2.addFilter(event -> event.getMessage().contains("amount=2"));
+        service.addEventReporter(reporter2);
+
+        final String c1Name = "testCounter1";
+        final BpCounter counter1 = service.createCounter(getClass(), c1Name, "Event recording counter");
+        counter1.enableEventRecording(Boolean.TRUE);
+
+        assertTrue(reporter1.history().isEmpty());
+        assertTrue(reporter2.history().isEmpty());
+
+        counter1.increment();
+        counter1.increment(2L);
+
+        final Queue<RecordableEvent> events1 = reporter1.history();
+
+        assertEquals(2, events1.size());
+        assertThat(events1.poll(), counterEventMatcher(counter1.getName(), "1"));
+        assertThat(events1.poll(), counterEventMatcher(counter1.getName(), "2"));
+
+        final Queue<RecordableEvent> events2 = reporter2.history();
+
+        assertEquals(1, events2.size());
+        assertThat(events2.poll(), counterEventMatcher(counter1.getName(), "2"));
+    }
+
+    @Test
+    public void testLevelFilter() {
+        final TestableBpEventReporter reporter = new TestableBpEventReporter();
+
+        reporter.addFilter(evt -> evt.getLevel() == RecordableEvent.Level.ERROR);
+
+        final BpMetricService service = defaultService(reporter);
+
+        final String histoName = "testHistogram";
+        final BpHistogram histogram = service.createHistogram(getClass(), histoName, "Event recording counter");
+        histogram.enableEventRecording(Boolean.TRUE);
+        histogram.setEventRecordLevelFn(sample -> {
+                if (sample.getSampleState() > 3L) {
+                    return RecordableEvent.Level.ERROR;
+                } else {
+                    return RecordableEvent.Level.INFO;
+                }
+            });
+
+        assertTrue(reporter.history().isEmpty());
+
+        histogram.update(2L);
+        histogram.update(5);
+
+        final Queue<RecordableEvent> events = reporter.history();
+
+        assertEquals(1, events.size());
+        assertThat(events.poll(), new RecordableEventMatcher(keyValueMatcher("update", "5"), equalTo(RecordableEvent.Level.ERROR)));
     }
 
     private static BpMetricService defaultService(final TestableBpEventReporter testReporter) {
@@ -405,7 +466,7 @@ public class EventRecorderTest extends AbstractMetricsTest {
         }
     }
 
-    private static class TestableBpEventReporter implements BpEventReporter {
+    private static class TestableBpEventReporter extends BpEventReporter {
 
         private final LinkedList<RecordableEvent> events = new LinkedList<>();
 
