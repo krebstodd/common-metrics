@@ -21,7 +21,7 @@ public class BpMeterTest extends AbstractMetricsTest {
 
         Thread.sleep(2000);
 
-        final Map<String, Object> stats = toMap(meter.sample().getSampleData());
+        final Map<String, Object> stats = toMap(meter.aggregateSample().getSampleData());
         assertEquals(504L, stats.get("count"));
 
         final Double meanRateSeconds = (Double) stats.get("meanRate");

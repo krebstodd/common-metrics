@@ -74,10 +74,10 @@ public class JettyProbeTest {
         assertEquals(2L, requestsTimer.getCount());
 
         final BpMeter meter2xx = (BpMeter) metricService.getMetric(InstrumentedJettyServer.class, "2xx-responses");
-        assertEquals(1L, meter2xx.getCount());
+        assertEquals(1L, meter2xx.getCount().longValue());
 
         final BpMeter meter4xx = (BpMeter) metricService.getMetric(InstrumentedJettyServer.class, "4xx-responses");
-        assertEquals(1L, meter4xx.getCount());
+        assertEquals(1L, meter4xx.getCount().longValue());
 
         final BpTimer endpointTimer = (BpTimer) metricService.getMetric(InstrumentedJettyServer.class, "POST:/user/create/v1");
         assertEquals(1L, endpointTimer.getCount());

@@ -25,12 +25,12 @@ public class BpGauge<T> extends BpMetric {
 
     // CHECK_OFF: MagicNumber
     @Override
-    public Sample sample() {
+    public Sample aggregateSample() {
         final ImmutablePair[] sample = new ImmutablePair[3];
         sample[0] = new ImmutablePair("name", getName());
         sample[1] = new ImmutablePair("description", getDescription());
         sample[2] = new ImmutablePair("currentValue", getValue());
-        return new Sample(getName(), sample);
+        return new Sample(getName(), sample, SampleType.AGGREGATE);
     }
     // CHECK_ON: MagicNumber
 

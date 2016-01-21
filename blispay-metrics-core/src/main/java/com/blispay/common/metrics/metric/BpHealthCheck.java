@@ -15,7 +15,7 @@ public class BpHealthCheck extends BpMetric {
 
     // CHECK_OFF: MagicNumber
     @Override
-    public Sample sample() {
+    public Sample aggregateSample() {
         final Result result = healthGauge.get();
 
         final ImmutablePair[] sample = new ImmutablePair[5];
@@ -25,13 +25,13 @@ public class BpHealthCheck extends BpMetric {
         sample[3] = new ImmutablePair("message", result.getMessage());
         sample[4] = new ImmutablePair("throwable", result.getThrowable());
 
-        return new Sample(getName(), sample);
+        return new Sample(getName(), sample, SampleType.AGGREGATE);
     }
     // CHECK_ON: MagicNumber
 
     public static final class Result {
 
-        private final boolean isHealthy;
+        private final Boolean isHealthy;
 
         private final String message;
 

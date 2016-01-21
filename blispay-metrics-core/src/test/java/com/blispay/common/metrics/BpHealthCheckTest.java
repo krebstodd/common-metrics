@@ -28,12 +28,12 @@ public class BpHealthCheckTest extends AbstractMetricsTest {
 
         final BpHealthCheck healthCheck = metricService.createHealthCheck(BpHealthCheckTest.class, "currentHealth", "Current health of the bp health check test", healthProbe);
 
-        assertTrue((Boolean) healthCheck.sample().getAttribute("healthy"));
-        assertNull(healthCheck.sample().getAttribute("message"));
-        assertNull(healthCheck.sample().getAttribute("throwable"));
+        assertTrue((Boolean) healthCheck.aggregateSample().getAttribute("healthy"));
+        assertNull(healthCheck.aggregateSample().getAttribute("message"));
+        assertNull(healthCheck.aggregateSample().getAttribute("throwable"));
         currentHealth.set(false);
-        assertFalse((Boolean) healthCheck.sample().getAttribute("healthy"));
-        assertEquals("UNHEALTHY", healthCheck.sample().getAttribute("message"));
+        assertFalse((Boolean) healthCheck.aggregateSample().getAttribute("healthy"));
+        assertEquals("UNHEALTHY", healthCheck.aggregateSample().getAttribute("message"));
     }
 
 }

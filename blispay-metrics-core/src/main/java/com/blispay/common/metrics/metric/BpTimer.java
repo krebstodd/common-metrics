@@ -1,26 +1,26 @@
 package com.blispay.common.metrics.metric;
 
 import com.blispay.common.metrics.util.ImmutablePair;
+import com.blispay.common.metrics.util.StopWatch;
 import com.codahale.metrics.Timer;
 
-import java.io.Closeable;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-public class BpTimer extends BpMetric {
+public class BpTimer extends BpMetric<Long> {
+
+    private static final Boolean DEFAULT_RECORD_EVENTS = Boolean.TRUE;
 
     private final Timer timer;
 
     public BpTimer(final String name, final String description) {
-        super(name, description);
-        this.timer = new Timer();
+        this(new Timer(), name, description);
     }
 
     public BpTimer(final Timer timer, final String name, final String description) {
-        super(name, description);
+        super(name, description, DEFAULT_RECORD_EVENTS);
         this.timer = timer;
     }
-
 
     public void update(final long duration, final TimeUnit timeUnit) {
         timer.update(duration, timeUnit);
@@ -30,31 +30,39 @@ public class BpTimer extends BpMetric {
         return timer.time(event);
     }
 
-    public Resolver time() {
-        return timer.time()::stop;
-    }
+    /**
+     * Start a new stopwatch.
+     *
+     * @return A new, started stopwatch instance.
+     */
+    public StopWatch time() {
+        final StopWatch stopWatch = new StopWatch();
 
-    public Closeable timeCloseable() {
-        return timer.time();
+        stopWatch.setCompletionNotifier(elapsedMillis -> this.timer.update(elapsedMillis, TimeUnit.MILLISECONDS));
+        stopWatch.setLapNotifier((eventName, elapsedMillis) -> recordEvent(eventSample(eventName, elapsedMillis)));
+
+        stopWatch.start();
+
+        return stopWatch;
     }
 
     public long getCount() {
         return timer.getCount();
     }
 
-    public double getMeanRate() {
+    public Double getMeanRate() {
         return timer.getMeanRate();
     }
 
-    public double getOneMinuteRate() {
+    public Double getOneMinuteRate() {
         return timer.getOneMinuteRate();
     }
 
-    public double getFiveMinuteRate() {
+    public Double getFiveMinuteRate() {
         return timer.getFiveMinuteRate();
     }
 
-    public double getFifteenMinuteRate() {
+    public Double getFifteenMinuteRate() {
         return timer.getFifteenMinuteRate();
     }
 
@@ -86,11 +94,11 @@ public class BpTimer extends BpMetric {
         return timer.getSnapshot().get999thPercentile();
     }
 
-    public long getMax() {
+    public Long getMax() {
         return timer.getSnapshot().getMax();
     }
 
-    public long getMin() {
+    public Long getMin() {
         return timer.getSnapshot().getMin();
     }
 
@@ -99,8 +107,18 @@ public class BpTimer extends BpMetric {
     }
 
     // CHECK_OFF: MagicNumber
+    private EventSample<Long> eventSample(final String event, final Long elapsedMillis) {
+        final ImmutablePair[] sample = new ImmutablePair[3];
+
+        sample[0] = new ImmutablePair("name", getName());
+        sample[1] = new ImmutablePair("event", event);
+        sample[2] = new ImmutablePair("elapsedMillis", elapsedMillis);
+
+        return new EventSample<>(getName(), sample, SampleType.EVENT, elapsedMillis);
+    }
+
     @Override
-    public Sample sample() {
+    public Sample aggregateSample() {
         final ImmutablePair[] sample = new ImmutablePair[19];
 
         sample[0] = new ImmutablePair("name", getName());
@@ -123,7 +141,7 @@ public class BpTimer extends BpMetric {
         sample[17] = new ImmutablePair("min", getMin());
         sample[18] = new ImmutablePair("mean", getMean());
 
-        return new Sample(getName(), sample);
+        return new Sample(getName(), sample, SampleType.AGGREGATE);
     }
     // CHECK_ON: MagicNumber
 

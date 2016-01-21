@@ -21,10 +21,10 @@ public class BpGaugeTest extends AbstractMetricsTest {
         final BpGauge<Long> gauge
                 = metricService.createGauge(BpGaugeTest.class, "currentValue", "Basic test supplier", supplier);
 
-        assertEquals(supplier.get(), gauge.sample().getAttribute("currentValue"));
+        assertEquals(supplier.get(), gauge.aggregateSample().getAttribute("currentValue"));
         currentValue.getAndIncrement();
         assertEquals(Long.valueOf(1L), supplier.get());
-        assertEquals(supplier.get(),  gauge.sample().getAttribute("currentValue"));
+        assertEquals(supplier.get(),  gauge.aggregateSample().getAttribute("currentValue"));
     }
 
 }

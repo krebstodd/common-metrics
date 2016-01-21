@@ -32,19 +32,23 @@ public abstract class BpMetricProbe {
     }
 
     protected static BpMetric wrapMetric(final Metric plain, final String name) {
+        final BpMetric metric;
+        
         if (plain instanceof Timer) {
-            return new BpTimer((Timer) plain, name, "");
+            metric = new BpTimer((Timer) plain, name, "");
         } else if (plain instanceof Gauge) {
-            return new BpGauge((Gauge) plain, name, "");
+            metric = new BpGauge((Gauge) plain, name, "");
         } else if (plain instanceof Counter) {
-            return new BpCounter((Counter) plain, name, "");
+            metric = new BpCounter((Counter) plain, name, "");
         } else if (plain instanceof Meter) {
-            return new BpMeter((Meter) plain, name, "");
+            metric = new BpMeter((Meter) plain, name, "");
         } else if (plain instanceof Histogram) {
-            return new BpHistogram((Histogram) plain, name, "");
+            metric = new BpHistogram((Histogram) plain, name, "");
         } else {
-            return null;
+            metric = null;
         }
+
+        return metric;
     }
 
     protected abstract void startProbe();

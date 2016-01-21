@@ -51,12 +51,12 @@ public class BpMetricSet {
 
     /**
      * Sample the current metric set.
-     * @return The current metric sample set mapped to each metrics name.
+     * @return The current metric aggregateSample set mapped to each metrics name.
      */
     public Map<String, BpMetric.Sample> sample() {
         return this.metrics.entrySet()
                 .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, (entry) -> entry.getValue().sample()));
+                .collect(Collectors.toMap(Map.Entry::getKey, (entry) -> entry.getValue().aggregateSample()));
     }
 
     public BpMetric.Sample sample(final Class owningClass, final String metricName) {
@@ -64,6 +64,6 @@ public class BpMetricSet {
     }
 
     public BpMetric.Sample sample(final String fullName) {
-        return this.metrics.get(fullName).sample();
+        return this.metrics.get(fullName).aggregateSample();
     }
 }

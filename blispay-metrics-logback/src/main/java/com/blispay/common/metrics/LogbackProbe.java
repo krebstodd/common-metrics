@@ -52,9 +52,19 @@ public class LogbackProbe extends BpMetricProbe {
 
         private BpMeter error = metricService.createMeter(getClass(), "logback-error", "Meter for logback error log types.");
 
-
+        /**
+         * Create a new appender to monitor logging events.
+         */
         public Appender() {
             setName(Appender.class.getName());
+
+            // Don't log an event every time a logger logs, creates feedback loop resulting in a stack overflow.
+            all.enableEventRecording(Boolean.FALSE);
+            trace.enableEventRecording(Boolean.FALSE);
+            debug.enableEventRecording(Boolean.FALSE);
+            info.enableEventRecording(Boolean.FALSE);
+            warn.enableEventRecording(Boolean.FALSE);
+            error.enableEventRecording(Boolean.FALSE);
         }
 
         @Override

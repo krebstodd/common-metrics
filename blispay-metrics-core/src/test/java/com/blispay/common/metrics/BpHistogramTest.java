@@ -17,7 +17,7 @@ public class BpHistogramTest extends AbstractMetricsTest {
         meter.update(1);
         meter.update(2L);
 
-        final Map<String, Object> stats = toMap(meter.sample().getSampleData());
+        final Map<String, Object> stats = toMap(meter.aggregateSample().getSampleData());
         assertEquals(2L, stats.get("count"));
         assertEquals(2L, stats.get("max"));
         assertEquals(1L, stats.get("min"));

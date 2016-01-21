@@ -21,7 +21,7 @@ public class BpTimerTest extends AbstractMetricsTest {
             resolver.done();
         }
 
-        final Map sample = toMap(timer.sample().getSampleData());
+        final Map sample = toMap(timer.aggregateSample().getSampleData());
         assertEquals(3L, sample.get("count"));
         final double medianMillis = (Double) sample.get("median") / 1000000;
         assertTrue(approximatelyEqual(1000D, medianMillis, 100D));

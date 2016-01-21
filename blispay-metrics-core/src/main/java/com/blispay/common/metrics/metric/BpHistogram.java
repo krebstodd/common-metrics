@@ -4,13 +4,12 @@ import com.blispay.common.metrics.util.ImmutablePair;
 import com.codahale.metrics.ExponentiallyDecayingReservoir;
 import com.codahale.metrics.Histogram;
 
-public class BpHistogram extends BpMetric {
+public class BpHistogram extends BpMetric<Long> {
 
     private final Histogram histogram;
 
     public BpHistogram(final String name, final String description) {
-        super(name, description);
-        this.histogram = new Histogram(new ExponentiallyDecayingReservoir());
+        this(new Histogram(new ExponentiallyDecayingReservoir()), name, description);
     }
 
     public BpHistogram(final Histogram histogram, final String name, final String description) {
@@ -19,10 +18,11 @@ public class BpHistogram extends BpMetric {
     }
 
     public void update(final Integer value) {
-        histogram.update(value);
+        update(Long.valueOf(value));
     }
 
     public void update(final Long value) {
+        recordEvent(eventSample(value));
         histogram.update(value);
     }
 
@@ -58,11 +58,11 @@ public class BpHistogram extends BpMetric {
         return histogram.getSnapshot().get999thPercentile();
     }
 
-    public long getMax() {
+    public Long getMax() {
         return histogram.getSnapshot().getMax();
     }
 
-    public long getMin() {
+    public Long getMin() {
         return histogram.getSnapshot().getMin();
     }
 
@@ -71,8 +71,15 @@ public class BpHistogram extends BpMetric {
     }
 
     // CHECK_OFF: MagicNumber
+    private EventSample<Long> eventSample(final Long update) {
+        final ImmutablePair[] sample = new ImmutablePair[2];
+        sample[0] = new ImmutablePair("name", getName());
+        sample[1] = new ImmutablePair("update", update);
+        return new EventSample<>(getName(), sample, SampleType.EVENT, update);
+    }
+
     @Override
-    public Sample sample() {
+    public Sample aggregateSample() {
         final ImmutablePair[] sample = new ImmutablePair[12];
 
         sample[0] = new ImmutablePair("name", getName());
@@ -88,7 +95,7 @@ public class BpHistogram extends BpMetric {
         sample[10] = new ImmutablePair("max", getMax());
         sample[11] = new ImmutablePair("min", getMin());
 
-        return new Sample(getName(), sample);
+        return new Sample(getName(), sample, SampleType.AGGREGATE);
     }
     // CHECK_ON: MagicNumber
 
