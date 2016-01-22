@@ -1,42 +1,35 @@
 package com.blispay.common.metrics.util;
 
-import com.blispay.common.metrics.metric.BpMetric;
-
-public class RecordableEvent {
+public class RecordableEvent<T> extends MetricEvent<T> {
 
     private static final Level DEFAULT_LEVEL = Level.INFO;
 
     private final Level level;
 
-    private final String message;
+    public RecordableEvent(final MetricEvent<T> baseEvent, final Level level) {
+        this(level, baseEvent.getOwner(), baseEvent.getMetricName(), baseEvent.getEventKey(), baseEvent.getValue());
+    }
 
-    private final BpMetric.Sample sample;
-
-    public RecordableEvent(final BpMetric.EventSample sample) {
-        this(DEFAULT_LEVEL, sample);
+    public RecordableEvent(final Class<?> owner, final String metricName, final String eventKey, final T eventValue) {
+        this(DEFAULT_LEVEL, owner, metricName, eventKey, eventValue);
     }
 
     /**
      * Create a new recordable event containing the events warning level and the sample at time of the event.
+     *
      * @param level Level for logging purposes.
-     * @param sample The event sample.
+     * @param owner The event owning class.
+     * @param metricName Metric name.
+     * @param eventKey Event description.
+     * @param eventValue The value of the event.
      */
-    public RecordableEvent(final Level level, final BpMetric.EventSample sample) {
+    public RecordableEvent(final Level level, final Class<?> owner, final String metricName, final String eventKey, final T eventValue) {
+        super(owner, metricName, eventKey, eventValue);
         this.level = level;
-        this.message = sample.toString();
-        this.sample = sample;
     }
 
     public Level getLevel() {
         return level;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public BpMetric.Sample getSample() {
-        return sample;
     }
 
     /**

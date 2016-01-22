@@ -59,12 +59,12 @@ public class LogbackProbe extends BpMetricProbe {
             setName(Appender.class.getName());
 
             // Don't log an event every time a logger logs, creates feedback loop resulting in a stack overflow.
-            all.enableEventRecording(Boolean.FALSE);
-            trace.enableEventRecording(Boolean.FALSE);
-            debug.enableEventRecording(Boolean.FALSE);
-            info.enableEventRecording(Boolean.FALSE);
-            warn.enableEventRecording(Boolean.FALSE);
-            error.enableEventRecording(Boolean.FALSE);
+            all.enableEventPublishing(Boolean.FALSE);
+            trace.enableEventPublishing(Boolean.FALSE);
+            debug.enableEventPublishing(Boolean.FALSE);
+            info.enableEventPublishing(Boolean.FALSE);
+            warn.enableEventPublishing(Boolean.FALSE);
+            error.enableEventPublishing(Boolean.FALSE);
         }
 
         @Override

@@ -75,7 +75,7 @@ public class VertxProbe extends BpMetricProbe {
 
         while (iter.hasNext()) {
             final String name = (String) iter.next();
-            wrapped.add(wrapMetric(metrics.get(name), name));
+            wrapped.add(wrapMetric(metrics.get(name), VertxProbe.class, name));
         }
 
         return wrapped;

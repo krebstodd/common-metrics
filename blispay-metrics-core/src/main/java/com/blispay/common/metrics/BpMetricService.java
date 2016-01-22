@@ -8,10 +8,11 @@ import com.blispay.common.metrics.metric.BpMeter;
 import com.blispay.common.metrics.metric.BpMetric;
 import com.blispay.common.metrics.metric.BpTimer;
 import com.blispay.common.metrics.probe.BpMetricProbe;
-import com.blispay.common.metrics.report.BpEventRecordingService;
+import com.blispay.common.metrics.report.BpEventListener;
 import com.blispay.common.metrics.report.BpEventReporter;
+import com.blispay.common.metrics.report.BpEventService;
 import com.blispay.common.metrics.report.BpMetricReporter;
-import com.blispay.common.metrics.report.DefaultBpEventRecordingService;
+import com.blispay.common.metrics.report.DefaultBpEventReportingService;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -28,33 +29,33 @@ public final class BpMetricService {
     private final Set<BpMetricReporter> reporters = new HashSet<>();
 
     private final BpMetricFactory metricFactory;
-    private final BpEventRecordingService eventRecordingService;
+    private final BpEventService eventService;
     private final BpMetricSet metrics;
 
     public BpMetricService() {
-        this(new DefaultBpEventRecordingService(), new BpMetricFactory());
+        this(new DefaultBpEventReportingService(), new BpMetricFactory());
     }
 
-    public BpMetricService(final BpEventRecordingService eventRecordingService) {
+    public BpMetricService(final BpEventService eventRecordingService) {
         this(eventRecordingService, new BpMetricFactory());
     }
 
     public BpMetricService(final BpMetricFactory metricFactory) {
-        this(new DefaultBpEventRecordingService(), metricFactory);
+        this(new DefaultBpEventReportingService(), metricFactory);
     }
 
     /**
      * Create a new bp metric service with a user provided event recording service and metric factory.
      *
-     * @param eventRecordingService Event recording service.
+     * @param eventService Event service.
      * @param metricFactory Metric factory.
      */
-    public BpMetricService(final BpEventRecordingService eventRecordingService, final BpMetricFactory metricFactory) {
-        this.eventRecordingService = eventRecordingService;
+    public BpMetricService(final BpEventService eventService, final BpMetricFactory metricFactory) {
+        this.eventService = eventService;
         this.metricFactory = metricFactory;
         this.metrics  = new BpMetricSet();
 
-        this.metricFactory.setEventRecordingService(this.eventRecordingService);
+        this.metricFactory.setEventRecordingService(this.eventService);
     }
 
     public BpCounter createCounter(final Class clazz, final String metricName, final String description) {
@@ -138,6 +139,14 @@ public final class BpMetricService {
         reporters.remove(reporter);
     }
 
+    public void addEventListener(final BpEventListener listener) {
+        this.eventService.addEventListener(listener);
+    }
+
+    public void removeEventListener(final BpEventReporter listener) {
+        this.eventService.removeEventListener(listener);
+    }
+
     /**
      * Start the bp metric service and all reporters.
      * @return The current instance.
@@ -169,14 +178,6 @@ public final class BpMetricService {
 
     public void flushReporters() {
         reporters.forEach(BpMetricReporter::report);
-    }
-
-    public void addEventReporter(final BpEventReporter reporter) {
-        this.eventRecordingService.addEventReporter(reporter);
-    }
-
-    public void removeEventReporter(final BpEventReporter reporter) {
-        this.eventRecordingService.removeEventReporter(reporter);
     }
 
     public static BpMetricService globalInstance() {

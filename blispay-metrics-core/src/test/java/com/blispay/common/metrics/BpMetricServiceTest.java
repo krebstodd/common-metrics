@@ -2,9 +2,9 @@ package com.blispay.common.metrics;
 
 import com.blispay.common.metrics.metric.BpCounter;
 import com.blispay.common.metrics.metric.BpMetric;
-import com.blispay.common.metrics.report.BpEventRecordingService;
+import com.blispay.common.metrics.report.BpEventService;
 import com.blispay.common.metrics.report.BpSlf4jEventReporter;
-import com.blispay.common.metrics.report.DefaultBpEventRecordingService;
+import com.blispay.common.metrics.report.DefaultBpEventReportingService;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
@@ -41,8 +41,8 @@ public class BpMetricServiceTest extends AbstractMetricsTest {
 
     @Test
     public void testLocalService() {
-        final BpEventRecordingService recordingService = new DefaultBpEventRecordingService();
-        recordingService.addEventReporter(new BpSlf4jEventReporter(LoggerFactory.getLogger(getClass())));
+        final BpEventService recordingService = new DefaultBpEventReportingService();
+        recordingService.addEventListener(new BpSlf4jEventReporter(LoggerFactory.getLogger(getClass())));
 
         final BpMetricService localService = new BpMetricService(recordingService);
 

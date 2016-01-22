@@ -1,48 +1,55 @@
 package com.blispay.common.metrics.metric;
 
-import com.blispay.common.metrics.report.BpEventRecordingService;
-import com.blispay.common.metrics.report.NoOpEventRecordingService;
+import com.blispay.common.metrics.report.BpEventEmitter;
+import com.blispay.common.metrics.report.BpEventService;
+import com.blispay.common.metrics.report.NoOpEventReportingService;
 import com.blispay.common.metrics.util.ImmutablePair;
+import com.blispay.common.metrics.util.MetricEvent;
 import com.blispay.common.metrics.util.RecordableEvent;
 import com.codahale.metrics.Metric;
 
 import java.time.Instant;
 import java.util.function.Function;
 
-public abstract class BpMetric<T> implements Metric {
+public abstract class BpMetric<T> implements Metric, BpEventEmitter {
 
-    private static final Boolean DEFAULT_RECORD_EVENTS = Boolean.FALSE;
+    private static final Boolean DEFAULT_PUBLISH_EVENTS = Boolean.FALSE;
 
     private static final String rateUnit = "PER_SECOND";
-
     private static final String durationUnit = "NANOSECOND";
 
+    private final Class<?> owner;
     private final String name;
-
     private final String description;
 
-    private BpEventRecordingService eventRecordingService;
+    private BpEventService eventService;
 
-    private Boolean recordEvents;
-    private Function<EventSample<T>, RecordableEvent.Level> recordLevelFn;
+    private Boolean enableEventPublishing;
+    private Function<MetricEvent<T>, RecordableEvent.Level> recordLevelFn;
 
-    public BpMetric(final String name, final String description) {
-        this(name, description, DEFAULT_RECORD_EVENTS);
+    public BpMetric(final Class<?> owner, final String name, final String description) {
+        this(owner, name, description, DEFAULT_PUBLISH_EVENTS);
     }
 
     /**
      * Create a new bp metric instance with default event recording set up.
      *
+     * @param owner The class that owns this particular metric.
      * @param name Name of the metric.
      * @param description Brief description of the metric.
-     * @param enableEventRecording Enable the recording of each sampling event.
+     * @param enableEventPublishing Enable the recording of each sampling event.
      */
-    public BpMetric(final String name, final String description, final Boolean enableEventRecording) {
+    public BpMetric(final Class<?> owner, final String name, final String description, final Boolean enableEventPublishing) {
+        this.owner = owner;
         this.name = name;
         this.description = description;
-        this.eventRecordingService = new NoOpEventRecordingService();
-        this.recordEvents = enableEventRecording;
+        this.eventService = new NoOpEventReportingService();
+        this.enableEventPublishing = enableEventPublishing;
         this.recordLevelFn = (in) -> RecordableEvent.Level.INFO;
+    }
+
+    public Class<?> getOwner() {
+        return owner;
     }
 
     public String getName() {
@@ -61,21 +68,22 @@ public abstract class BpMetric<T> implements Metric {
         return durationUnit;
     }
 
-    public void setEventRecordingService(final BpEventRecordingService service) {
-        this.eventRecordingService = service;
+    public void setEventService(final BpEventService service) {
+        this.eventService = service;
     }
 
-    public void enableEventRecording(final Boolean recordEvents) {
-        this.recordEvents = recordEvents;
+    public void enableEventPublishing(final Boolean enableEventPublishing) {
+        this.enableEventPublishing = enableEventPublishing;
     }
 
-    public void setEventRecordLevelFn(final Function<EventSample<T>, RecordableEvent.Level> recordLevelFn) {
+    public void setEventRecordLevelFn(final Function<MetricEvent<T>, RecordableEvent.Level> recordLevelFn) {
         this.recordLevelFn = recordLevelFn;
     }
 
-    protected void recordEvent(final EventSample<T> sample) {
-        if (recordEvents) {
-            eventRecordingService.recordEvent(new RecordableEvent(recordLevelFn.apply(sample), sample));
+    protected void publishEvent(final String eventKey, final T value) {
+        if (enableEventPublishing) {
+            final MetricEvent<T> metricEvent = new MetricEvent<>(owner, name, eventKey, value);
+            eventService.acceptEvent(new RecordableEvent<>(metricEvent, recordLevelFn.apply(metricEvent)));
         }
     }
 
@@ -89,13 +97,10 @@ public abstract class BpMetric<T> implements Metric {
 
         private final ImmutablePair[] sampleData;
 
-        private final SampleType type;
-
-        protected Sample(final String metricName, final ImmutablePair[] data, final SampleType type) {
+        protected Sample(final String metricName, final ImmutablePair[] data) {
             this.sampleTime = Instant.now();
             this.metricName = metricName;
             this.sampleData = data;
-            this.type = type;
         }
 
         public Instant getSampleTime() {
@@ -125,10 +130,6 @@ public abstract class BpMetric<T> implements Metric {
             return sampleData;
         }
 
-        public SampleType getType() {
-            return type;
-        }
-
         @Override
         public String toString() {
             return toString(false);
@@ -144,12 +145,6 @@ public abstract class BpMetric<T> implements Metric {
         // CHECK_OFF: NPathComplexity
         public String toString(final Boolean prettyPrint) {
             final StringBuilder sb = new StringBuilder();
-
-            sb.append("sampleType=").append(type.name()).append(",");
-
-            if (prettyPrint) {
-                sb.append("\n");
-            }
 
             final ImmutablePair[] sample = getSampleData();
             ImmutablePair current;
@@ -177,34 +172,6 @@ public abstract class BpMetric<T> implements Metric {
         // CHECK_ON: MultipleStringLiterals
         // CHECK_ON: NPathComplexity
 
-    }
-
-    public static class EventSample<T> extends Sample {
-
-        private final T sampleValue;
-
-        protected EventSample(final String metricName, final ImmutablePair[] data,
-                              final SampleType type, final T primarySample) {
-
-            super(metricName, data, type);
-            this.sampleValue = primarySample;
-        }
-
-        public T getSampleState() {
-            return sampleValue;
-        }
-
-    }
-
-    public static enum SampleType {
-        /**
-         * An event has occurred (a statistic sample has been added to the metric).
-         */
-        EVENT,
-        /**
-         * A current snapshot of the metric in recent history.
-         */
-        AGGREGATE
     }
 
 }

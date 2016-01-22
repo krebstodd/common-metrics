@@ -4,12 +4,12 @@ import com.blispay.common.metrics.util.ImmutablePair;
 
 import java.util.function.Supplier;
 
-public class BpHealthCheck extends BpMetric {
+public class BpHealthCheck extends BpMetric<Boolean> {
 
     private final Supplier<Result> healthGauge;
 
-    public BpHealthCheck(final String name, final String description, final Supplier<Result> healthGauge) {
-        super(name, description);
+    public BpHealthCheck(final Class<?> owner, final String name, final String description, final Supplier<Result> healthGauge) {
+        super(owner, name, description);
         this.healthGauge = healthGauge;
     }
 
@@ -25,7 +25,7 @@ public class BpHealthCheck extends BpMetric {
         sample[3] = new ImmutablePair("message", result.getMessage());
         sample[4] = new ImmutablePair("throwable", result.getThrowable());
 
-        return new Sample(getName(), sample, SampleType.AGGREGATE);
+        return new Sample(getName(), sample);
     }
     // CHECK_ON: MagicNumber
 

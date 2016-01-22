@@ -6,6 +6,8 @@ import com.blispay.common.metrics.metric.BpHistogram;
 import com.blispay.common.metrics.metric.BpMeter;
 import com.blispay.common.metrics.metric.BpMetric;
 import com.blispay.common.metrics.metric.BpTimer;
+import com.blispay.common.metrics.report.BpEventService;
+import com.blispay.common.metrics.report.NoOpEventReportingService;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Histogram;
@@ -31,21 +33,31 @@ public abstract class BpMetricProbe {
         }
     }
 
-    protected static BpMetric wrapMetric(final Metric plain, final String name) {
+    protected static BpMetric wrapMetric(final Metric plain, final Class<?> owner, final String name) {
+        return wrapMetric(plain, owner, name, new NoOpEventReportingService(), Boolean.FALSE);
+    }
+
+    protected static BpMetric wrapMetric(final Metric plain, final Class<?> owner, final String name,
+                                         final BpEventService eventService, final Boolean enablePublishing) {
         final BpMetric metric;
         
         if (plain instanceof Timer) {
-            metric = new BpTimer((Timer) plain, name, "");
+            metric = new BpTimer((Timer) plain, owner, name, "");
         } else if (plain instanceof Gauge) {
-            metric = new BpGauge((Gauge) plain, name, "");
+            metric = new BpGauge((Gauge) plain, owner, name, "");
         } else if (plain instanceof Counter) {
-            metric = new BpCounter((Counter) plain, name, "");
+            metric = new BpCounter((Counter) plain, owner, name, "");
         } else if (plain instanceof Meter) {
-            metric = new BpMeter((Meter) plain, name, "");
+            metric = new BpMeter((Meter) plain, owner, name, "");
         } else if (plain instanceof Histogram) {
-            metric = new BpHistogram((Histogram) plain, name, "");
+            metric = new BpHistogram((Histogram) plain, owner, name, "");
         } else {
             metric = null;
+        }
+
+        if (metric != null) {
+            metric.enableEventPublishing(enablePublishing);
+            metric.setEventService(eventService);
         }
 
         return metric;

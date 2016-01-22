@@ -1,5 +1,6 @@
 package com.blispay.common.metrics.report;
 
+import com.blispay.common.metrics.util.MetricEvent;
 import com.blispay.common.metrics.util.RecordableEvent;
 import org.slf4j.Logger;
 
@@ -10,6 +11,8 @@ import java.util.function.Consumer;
 
 public class BpSlf4jEventReporter extends BpEventReporter {
 
+    private static final RecordableEvent.Level DEFAULT_LEVEL = RecordableEvent.Level.INFO;
+
     private final Map<RecordableEvent.Level, Consumer<String>> eventLoggers;
 
     public BpSlf4jEventReporter(final Logger eventLogger) {
@@ -17,14 +20,23 @@ public class BpSlf4jEventReporter extends BpEventReporter {
     }
 
     @Override
-    public void reportEvent(final RecordableEvent event) {
-        final Consumer<String> logger = eventLoggers.get(event.getLevel());
+    public void acceptEvent(final MetricEvent event) {
 
-        if (logger == null) {
-            throw new IllegalArgumentException("Unknown log level - " + event.getLevel());
+        final Consumer<String> logger;
+
+        if (event instanceof RecordableEvent) {
+
+            logger = eventLoggers.get(((RecordableEvent) event).getLevel());
+
+            if (logger == null) {
+                throw new IllegalArgumentException("Unknown log level - " + ((RecordableEvent) event).getLevel());
+            }
+
+        } else {
+            logger = eventLoggers.get(DEFAULT_LEVEL);
         }
 
-        logger.accept(event.getMessage());
+        logger.accept(event.print());
     }
 
     private static Map<RecordableEvent.Level, Consumer<String>> loggerMap(final Logger logger) {
@@ -40,4 +52,5 @@ public class BpSlf4jEventReporter extends BpEventReporter {
         return Collections.unmodifiableMap(temp);
 
     }
+
 }

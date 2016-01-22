@@ -5,10 +5,12 @@ import com.blispay.common.metrics.metric.BpGauge;
 import com.blispay.common.metrics.metric.BpHistogram;
 import com.blispay.common.metrics.metric.BpMeter;
 import com.blispay.common.metrics.metric.BpTimer;
-import com.blispay.common.metrics.report.BpEventReporter;
+import com.blispay.common.metrics.report.BpEventListener;
 import com.blispay.common.metrics.report.BpSlf4jEventReporter;
-import com.blispay.common.metrics.report.DefaultBpEventRecordingService;
-import com.blispay.common.metrics.report.NoOpEventRecordingService;
+import com.blispay.common.metrics.report.DefaultBpEventReportingService;
+import com.blispay.common.metrics.report.EventFilter;
+import com.blispay.common.metrics.report.NoOpEventReportingService;
+import com.blispay.common.metrics.util.MetricEvent;
 import com.blispay.common.metrics.util.RecordableEvent;
 import com.blispay.common.metrics.util.StopWatch;
 import org.hamcrest.Description;
@@ -21,9 +23,12 @@ import uk.org.lidalia.slf4jtest.LoggingEvent;
 import uk.org.lidalia.slf4jtest.TestLogger;
 import uk.org.lidalia.slf4jtest.TestLoggerFactory;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.any;
@@ -43,7 +48,7 @@ public class EventRecorderTest extends AbstractMetricsTest {
 
         final String counterName = "testCounter";
         final BpCounter counter = service.createCounter(getClass(), counterName, "Event recording counter");
-        counter.enableEventRecording(Boolean.TRUE);
+        counter.enableEventPublishing(Boolean.TRUE);
 
         assertTrue(reporter.history().isEmpty());
 
@@ -52,13 +57,13 @@ public class EventRecorderTest extends AbstractMetricsTest {
         counter.decrement();
         counter.decrement(3L);
 
-        final Queue<RecordableEvent> events = reporter.history();
+        final Queue<MetricEvent> events = reporter.history();
 
         assertEquals(4, events.size());
-        assertThat(events.poll(), counterEventMatcher(counter.getName(), "1"));
-        assertThat(events.poll(), counterEventMatcher(counter.getName(), "2"));
-        assertThat(events.poll(), counterEventMatcher(counter.getName(), "-1"));
-        assertThat(events.poll(), counterEventMatcher(counter.getName(), "-3"));
+        assertThat(events.poll(), eventMatcher(BpCounter.DEFAULT_EVENT_KEY, "1"));
+        assertThat(events.poll(), eventMatcher(BpCounter.DEFAULT_EVENT_KEY, "2"));
+        assertThat(events.poll(), eventMatcher(BpCounter.DEFAULT_EVENT_KEY, "-1"));
+        assertThat(events.poll(), eventMatcher(BpCounter.DEFAULT_EVENT_KEY, "-3"));
 
     }
 
@@ -81,12 +86,12 @@ public class EventRecorderTest extends AbstractMetricsTest {
         Thread.sleep(100);
         stopWatch.stop("TimerDone");
 
-        final Queue<RecordableEvent> events = reporter.history();
+        final Queue<MetricEvent> events = reporter.history();
 
         assertEquals(3, events.size());
-        assertThat(events.poll(), timerEventMatcher(timer.getName(), "Lap 1", "1"));
-        assertThat(events.poll(), timerEventMatcher(timer.getName(), "Lap 2", "2"));
-        assertThat(events.poll(), timerEventMatcher(timer.getName(), "TimerDone", "3"));
+        assertThat(events.poll(), eventMatcher("Lap 1", "1"));
+        assertThat(events.poll(), eventMatcher("Lap 2", "2"));
+        assertThat(events.poll(), eventMatcher("TimerDone", "3"));
 
         thrown.expect(IllegalStateException.class);
         stopWatch.lap();
@@ -99,18 +104,18 @@ public class EventRecorderTest extends AbstractMetricsTest {
 
         final String counterName = "testHistogram";
         final BpHistogram histogram = service.createHistogram(getClass(), counterName, "Event recording counter");
-        histogram.enableEventRecording(Boolean.TRUE);
+        histogram.enableEventPublishing(Boolean.TRUE);
 
         assertTrue(reporter.history().isEmpty());
 
         histogram.update(2L);
         histogram.update(5);
 
-        final Queue<RecordableEvent> events = reporter.history();
+        final Queue<MetricEvent> events = reporter.history();
 
         assertEquals(2, events.size());
-        assertThat(events.poll(), histogramEventMatcher(histogram.getName(), "2"));
-        assertThat(events.poll(), histogramEventMatcher(histogram.getName(), "5"));
+        assertThat(events.poll(), eventMatcher(BpHistogram.DEFAULT_EVENT_KEY, "2"));
+        assertThat(events.poll(), eventMatcher(BpHistogram.DEFAULT_EVENT_KEY, "5"));
     }
     
     @Test
@@ -120,7 +125,7 @@ public class EventRecorderTest extends AbstractMetricsTest {
 
         final String counterName = "testMeter";
         final BpMeter meter = service.createMeter(getClass(), counterName, "Event recording counter");
-        meter.enableEventRecording(Boolean.TRUE);
+        meter.enableEventPublishing(Boolean.TRUE);
 
         assertTrue(reporter.history().isEmpty());
 
@@ -128,12 +133,12 @@ public class EventRecorderTest extends AbstractMetricsTest {
         meter.mark(2L);
         meter.mark(5);
 
-        final Queue<RecordableEvent> events = reporter.history();
+        final Queue<MetricEvent> events = reporter.history();
 
         assertEquals(3, events.size());
-        assertThat(events.poll(), meterEventMatcher(meter.getName(), "1"));
-        assertThat(events.poll(), meterEventMatcher(meter.getName(), "2"));
-        assertThat(events.poll(), meterEventMatcher(meter.getName(), "5"));
+        assertThat(events.poll(), eventMatcher(BpMeter.DEFAULT_EVENT_KEY, "1"));
+        assertThat(events.poll(), eventMatcher(BpMeter.DEFAULT_EVENT_KEY, "2"));
+        assertThat(events.poll(), eventMatcher(BpMeter.DEFAULT_EVENT_KEY, "5"));
     }
 
     @Test
@@ -148,21 +153,21 @@ public class EventRecorderTest extends AbstractMetricsTest {
 
         gauge.getValue();
 
-        final Queue<RecordableEvent> events = reporter.history();
+        final Queue<MetricEvent> events = reporter.history();
 
         assertEquals(0, events.size());
     }
 
     @Test
     public void testNoOpService() {
-        final BpMetricService service = new BpMetricService(new NoOpEventRecordingService());
+        final BpMetricService service = new BpMetricService(new NoOpEventReportingService());
 
         final TestableBpEventReporter reporter = new TestableBpEventReporter();
-        service.addEventReporter(reporter);
+        service.addEventListener(reporter);
 
         final String counterName = "testCounter";
         final BpCounter counter = service.createCounter(getClass(), counterName, "Event recording counter");
-        counter.enableEventRecording(Boolean.TRUE);
+        counter.enableEventPublishing(Boolean.TRUE);
 
         assertTrue(reporter.history().isEmpty());
 
@@ -184,9 +189,9 @@ public class EventRecorderTest extends AbstractMetricsTest {
         final BpCounter recordingCounter2 = service.createCounter(getClass(), c2Name, "Event recording counter");
         final BpCounter silentCounter = service.createCounter(getClass(), "silent", "Silent recording counter");
 
-        recordingCounter1.enableEventRecording(Boolean.TRUE);
-        recordingCounter2.enableEventRecording(Boolean.TRUE);
-        silentCounter.enableEventRecording(Boolean.FALSE);
+        recordingCounter1.enableEventPublishing(Boolean.TRUE);
+        recordingCounter2.enableEventPublishing(Boolean.TRUE);
+        silentCounter.enableEventPublishing(Boolean.FALSE);
 
         assertTrue(reporter.history().isEmpty());
 
@@ -194,11 +199,11 @@ public class EventRecorderTest extends AbstractMetricsTest {
         recordingCounter2.decrement();
         silentCounter.increment();
 
-        final Queue<RecordableEvent> events = reporter.history();
+        final Queue<MetricEvent> events = reporter.history();
 
         assertEquals(2, events.size());
-        assertThat(events.poll(), counterEventMatcher(recordingCounter1.getName(), "1"));
-        assertThat(events.poll(), counterEventMatcher(recordingCounter2.getName(), "-1"));
+        assertThat(events.poll(), eventMatcher(BpCounter.DEFAULT_EVENT_KEY, "1"));
+        assertThat(events.poll(), eventMatcher(BpCounter.DEFAULT_EVENT_KEY, "-1"));
 
     }
 
@@ -209,27 +214,27 @@ public class EventRecorderTest extends AbstractMetricsTest {
         final BpMetricService service = defaultService(reporter1);
 
         final TestableBpEventReporter reporter2 = new TestableBpEventReporter();
-        service.addEventReporter(reporter2);
+        service.addEventListener(reporter2);
 
         final String c1Name = "testCounter1";
 
         final BpCounter counter1 = service.createCounter(getClass(), c1Name, "Event recording counter");
-        counter1.enableEventRecording(Boolean.TRUE);
+        counter1.enableEventPublishing(Boolean.TRUE);
 
         assertTrue(reporter1.history().isEmpty());
         assertTrue(reporter2.history().isEmpty());
 
         counter1.increment();
 
-        final Queue<RecordableEvent> events1 = reporter1.history();
+        final Queue<MetricEvent> events1 = reporter1.history();
 
         assertEquals(1, events1.size());
-        assertThat(events1.poll(), counterEventMatcher(counter1.getName(), "1"));
+        assertThat(events1.poll(), eventMatcher(BpCounter.DEFAULT_EVENT_KEY, "1"));
 
-        final Queue<RecordableEvent> events2 = reporter2.history();
+        final Queue<MetricEvent> events2 = reporter2.history();
 
         assertEquals(1, events2.size());
-        assertThat(events2.poll(), counterEventMatcher(counter1.getName(), "1"));
+        assertThat(events2.poll(), eventMatcher(BpCounter.DEFAULT_EVENT_KEY, "1"));
 
     }
 
@@ -245,9 +250,9 @@ public class EventRecorderTest extends AbstractMetricsTest {
         final Long errTime = 200L;
 
         timer.setEventRecordLevelFn((evt) -> {
-                if (evt.getSampleState() < warnTime) {
+                if (evt.getValue() < warnTime) {
                     return RecordableEvent.Level.INFO;
-                } else if (evt.getSampleState() < errTime) {
+                } else if (evt.getValue() < errTime) {
                     return RecordableEvent.Level.WARN;
                 } else {
                     return RecordableEvent.Level.ERROR;
@@ -263,18 +268,18 @@ public class EventRecorderTest extends AbstractMetricsTest {
         Thread.sleep(errTime - warnTime);
         stopWatch.lap("Error");
 
-        final Queue<RecordableEvent> events = reporter.history();
+        final Queue<MetricEvent> events = reporter.history();
 
         assertEquals(3, events.size());
-        assertThat(events.poll(), new RecordableEventMatcher(any(String.class), equalTo(RecordableEvent.Level.INFO)));
-        assertThat(events.poll(), new RecordableEventMatcher(any(String.class), equalTo(RecordableEvent.Level.WARN)));
-        assertThat(events.poll(), new RecordableEventMatcher(any(String.class), equalTo(RecordableEvent.Level.ERROR)));
+        assertThat(events.poll(), new MetricEventMatcher(any(String.class), equalTo(RecordableEvent.Level.INFO)));
+        assertThat(events.poll(), new MetricEventMatcher(any(String.class), equalTo(RecordableEvent.Level.WARN)));
+        assertThat(events.poll(), new MetricEventMatcher(any(String.class), equalTo(RecordableEvent.Level.ERROR)));
     }
 
     @Test
     public void testSlf4jEventRecording() throws InterruptedException {
         final BpMetricService service = new BpMetricService();
-        service.addEventReporter(new BpSlf4jEventReporter(LoggerFactory.getLogger(EventRecorderTest.class)));
+        service.addEventListener(new BpSlf4jEventReporter(LoggerFactory.getLogger(EventRecorderTest.class)));
 
         final TestLogger testLogger = TestLoggerFactory.getTestLogger(EventRecorderTest.class);
 
@@ -285,9 +290,9 @@ public class EventRecorderTest extends AbstractMetricsTest {
         final Long errTime = 300L;
 
         timer.setEventRecordLevelFn(evt -> {
-                if (evt.getSampleState() < warnTime) {
+                if (evt.getValue() < warnTime) {
                     return RecordableEvent.Level.INFO;
-                } else if (evt.getSampleState() < errTime) {
+                } else if (evt.getValue() < errTime) {
                     return RecordableEvent.Level.WARN;
                 } else {
                     return RecordableEvent.Level.ERROR;
@@ -304,9 +309,9 @@ public class EventRecorderTest extends AbstractMetricsTest {
         final List<LoggingEvent> event = testLogger.getLoggingEvents();
 
         assertEquals(3, event.size());
-        assertThat(event.get(0), new Slf4jLogMessageMatcher(Level.INFO, keyValueMatcher("event", "Information")));
-        assertThat(event.get(1), new Slf4jLogMessageMatcher(Level.WARN, keyValueMatcher("event", "Warning")));
-        assertThat(event.get(2), new Slf4jLogMessageMatcher(Level.ERROR, keyValueMatcher("event", "Error")));
+        assertThat(event.get(0), new Slf4jLogMessageMatcher(Level.INFO, keyValueMatcher("eventKey", "Information")));
+        assertThat(event.get(1), new Slf4jLogMessageMatcher(Level.WARN, keyValueMatcher("eventKey", "Warning")));
+        assertThat(event.get(2), new Slf4jLogMessageMatcher(Level.ERROR, keyValueMatcher("eventKey", "Error")));
 
     }
 
@@ -316,12 +321,12 @@ public class EventRecorderTest extends AbstractMetricsTest {
         final BpMetricService service = defaultService(reporter1);
 
         final TestableBpEventReporter reporter2 = new TestableBpEventReporter();
-        reporter2.addFilter(event -> event.getMessage().contains("amount=2"));
-        service.addEventReporter(reporter2);
+        reporter2.addFilter(event -> event.print().contains("value=2"));
+        service.addEventListener(reporter2);
 
         final String c1Name = "testCounter1";
         final BpCounter counter1 = service.createCounter(getClass(), c1Name, "Event recording counter");
-        counter1.enableEventRecording(Boolean.TRUE);
+        counter1.enableEventPublishing(Boolean.TRUE);
 
         assertTrue(reporter1.history().isEmpty());
         assertTrue(reporter2.history().isEmpty());
@@ -329,31 +334,31 @@ public class EventRecorderTest extends AbstractMetricsTest {
         counter1.increment();
         counter1.increment(2L);
 
-        final Queue<RecordableEvent> events1 = reporter1.history();
+        final Queue<MetricEvent> events1 = reporter1.history();
 
         assertEquals(2, events1.size());
-        assertThat(events1.poll(), counterEventMatcher(counter1.getName(), "1"));
-        assertThat(events1.poll(), counterEventMatcher(counter1.getName(), "2"));
+        assertThat(events1.poll(), eventMatcher(BpCounter.DEFAULT_EVENT_KEY, "1"));
+        assertThat(events1.poll(), eventMatcher(BpCounter.DEFAULT_EVENT_KEY, "2"));
 
-        final Queue<RecordableEvent> events2 = reporter2.history();
+        final Queue<MetricEvent> events2 = reporter2.history();
 
         assertEquals(1, events2.size());
-        assertThat(events2.poll(), counterEventMatcher(counter1.getName(), "2"));
+        assertThat(events2.poll(), eventMatcher(BpCounter.DEFAULT_EVENT_KEY, "2"));
     }
 
     @Test
     public void testLevelFilter() {
         final TestableBpEventReporter reporter = new TestableBpEventReporter();
 
-        reporter.addFilter(evt -> evt.getLevel() == RecordableEvent.Level.ERROR);
+        reporter.addFilter(evt -> evt instanceof RecordableEvent && ((RecordableEvent) evt).getLevel() == RecordableEvent.Level.ERROR);
 
         final BpMetricService service = defaultService(reporter);
 
         final String histoName = "testHistogram";
         final BpHistogram histogram = service.createHistogram(getClass(), histoName, "Event recording counter");
-        histogram.enableEventRecording(Boolean.TRUE);
+        histogram.enableEventPublishing(Boolean.TRUE);
         histogram.setEventRecordLevelFn(sample -> {
-                if (sample.getSampleState() > 3L) {
+                if (sample.getValue() > 3L) {
                     return RecordableEvent.Level.ERROR;
                 } else {
                     return RecordableEvent.Level.INFO;
@@ -365,70 +370,70 @@ public class EventRecorderTest extends AbstractMetricsTest {
         histogram.update(2L);
         histogram.update(5);
 
-        final Queue<RecordableEvent> events = reporter.history();
+        final Queue<MetricEvent> events = reporter.history();
 
         assertEquals(1, events.size());
-        assertThat(events.poll(), new RecordableEventMatcher(keyValueMatcher("update", "5"), equalTo(RecordableEvent.Level.ERROR)));
+        assertThat(events.poll(), new MetricEventMatcher(keyValueMatcher("value", "5"), equalTo(RecordableEvent.Level.ERROR)));
     }
 
     private static BpMetricService defaultService(final TestableBpEventReporter testReporter) {
-        final BpMetricService service = new BpMetricService(new DefaultBpEventRecordingService());
-        service.addEventReporter(testReporter);
+        final BpMetricService service = new BpMetricService(new DefaultBpEventReportingService());
+        service.addEventListener(testReporter);
         return service;
     }
 
-    private static RecordableEventMatcher counterEventMatcher(final String name, final String amount) {
+    private static MetricEventMatcher eventMatcher(final String eventKey, final String value, final RecordableEvent.Level level) {
         final Matcher<String> messageMatcher = allOf(
-                keyValueMatcher("name", name),
-                keyValueMatcher("amount", amount));
+                keyValueMatcher("eventKey", eventKey),
+                keyValueMatcher("value", value));
 
-        return new RecordableEventMatcher(messageMatcher, equalTo(RecordableEvent.Level.INFO));
+        return new MetricEventMatcher(messageMatcher, equalTo(level));
     }
 
-    private static RecordableEventMatcher timerEventMatcher(final String name, final String event, final String firstDigitMillis) {
+    private static MetricEventMatcher eventMatcher(final String eventKey, final String value) {
         final Matcher<String> messageMatcher = allOf(
-                keyValueMatcher("name", name),
-                keyValueMatcher("event", event),
-                keyValueMatcher("elapsedMillis", firstDigitMillis));
+                keyValueMatcher("eventKey", eventKey),
+                keyValueMatcher("value", value));
 
-        return new RecordableEventMatcher(messageMatcher, equalTo(RecordableEvent.Level.INFO));
-    }
-
-    private static RecordableEventMatcher histogramEventMatcher(final String name, final String update) {
-        final Matcher<String> messageMatcher = allOf(
-                keyValueMatcher("name", name),
-                keyValueMatcher("update", update));
-
-        return new RecordableEventMatcher(messageMatcher, equalTo(RecordableEvent.Level.INFO));
-    }
-
-    private static RecordableEventMatcher meterEventMatcher(final String name, final String update) {
-        final Matcher<String> messageMatcher = allOf(
-                keyValueMatcher("name", name),
-                keyValueMatcher("numOccurrences", update));
-
-        return new RecordableEventMatcher(messageMatcher, equalTo(RecordableEvent.Level.INFO));
+        return new MetricEventMatcher(messageMatcher);
     }
 
     private static Matcher<String> keyValueMatcher(final String key, final String value) {
         return containsString(key + "=" + value);
     }
 
-    private static class RecordableEventMatcher extends TypeSafeMatcher<RecordableEvent> {
+    private static class MetricEventMatcher extends TypeSafeMatcher<MetricEvent> {
 
         private final Matcher<String> messageMatcher;
 
         private final Matcher<RecordableEvent.Level> levelMatcher;
 
-        public RecordableEventMatcher(final Matcher<String> messageMatcher, final Matcher<RecordableEvent.Level> levelMatcher) {
+        private final Boolean expectRecordable;
+
+        public MetricEventMatcher(final Matcher<String> messageMatcher) {
+            this.messageMatcher = messageMatcher;
+            this.levelMatcher = null;
+            this.expectRecordable = Boolean.FALSE;
+        }
+
+        public MetricEventMatcher(final Matcher<String> messageMatcher, final Matcher<RecordableEvent.Level> levelMatcher) {
             this.messageMatcher = messageMatcher;
             this.levelMatcher = levelMatcher;
+            this.expectRecordable = Boolean.TRUE;
         }
 
         @Override
-        protected boolean matchesSafely(final RecordableEvent recordableEvent) {
-            return messageMatcher.matches(recordableEvent.getMessage())
-                    && levelMatcher.matches(recordableEvent.getLevel());
+        protected boolean matchesSafely(final MetricEvent recordableEvent) {
+
+            Boolean levelMatches = Boolean.TRUE;
+
+            if (expectRecordable) {
+                levelMatches = levelMatcher.matches(((RecordableEvent) recordableEvent).getLevel());
+            }
+
+            return messageMatcher.matches(recordableEvent.print())
+                    && levelMatches;
+
         }
 
         @Override
@@ -466,16 +471,26 @@ public class EventRecorderTest extends AbstractMetricsTest {
         }
     }
 
-    private static class TestableBpEventReporter extends BpEventReporter {
+    private static class TestableBpEventReporter implements BpEventListener {
 
-        private final LinkedList<RecordableEvent> events = new LinkedList<>();
+        private final Set<EventFilter> filters = new HashSet<>();
+        private final LinkedList<MetricEvent> events = new LinkedList<>();
 
         @Override
-        public void reportEvent(final RecordableEvent event) {
+        public void acceptEvent(final MetricEvent event) {
             events.add(event);
         }
 
-        public LinkedList<RecordableEvent> history() {
+        @Override
+        public Collection<EventFilter> getFilters() {
+            return filters;
+        }
+
+        public void addFilter(final EventFilter filter) {
+            this.filters.add(filter);
+        }
+
+        public LinkedList<MetricEvent> history() {
             return events;
         }
     }

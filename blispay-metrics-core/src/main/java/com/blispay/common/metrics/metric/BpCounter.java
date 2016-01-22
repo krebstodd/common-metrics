@@ -5,14 +5,19 @@ import com.codahale.metrics.Counter;
 
 public class BpCounter extends BpMetric<Long> {
 
+    /**
+     * Default event key name.
+     */
+    public static final String DEFAULT_EVENT_KEY = "increment";
+
     private final Counter counter;
 
-    public BpCounter(final String name, final String description) {
-        this(new Counter(), name, description);
+    public BpCounter(final Class<?> owner, final String name, final String description) {
+        this(new Counter(), owner, name, description);
     }
 
-    public BpCounter(final Counter counter, final String name, final String description) {
-        super(name, description);
+    public BpCounter(final Counter counter, final Class<?> owner, final String name, final String description) {
+        super(owner, name, description);
         this.counter = counter;
     }
 
@@ -21,7 +26,7 @@ public class BpCounter extends BpMetric<Long> {
     }
 
     public void increment(final Long incrementBy) {
-        recordEvent(eventSample(incrementBy));
+        publishEvent(DEFAULT_EVENT_KEY, incrementBy);
         counter.inc(incrementBy);
     }
 
@@ -30,7 +35,7 @@ public class BpCounter extends BpMetric<Long> {
     }
 
     public void decrement(final Long decrementBy) {
-        recordEvent(eventSample(decrementBy * -1));
+        publishEvent(DEFAULT_EVENT_KEY, negate(decrementBy));
         counter.dec(decrementBy);
     }
 
@@ -38,15 +43,11 @@ public class BpCounter extends BpMetric<Long> {
         return this.counter.getCount();
     }
 
-    // CHECK_OFF: MagicNumber
-    private EventSample<Long> eventSample(final Long by) {
-        final ImmutablePair[] sample = new ImmutablePair[2];
-
-        sample[0] = new ImmutablePair("name", getName());
-        sample[1] = new ImmutablePair("amount", by);
-
-        return new EventSample<>(getName(), sample, SampleType.EVENT, by);
+    private Long negate(final Long absolute) {
+        return absolute * -1L;
     }
+
+    // CHECK_OFF: MagicNumber
 
     @Override
     public Sample aggregateSample() {
@@ -54,7 +55,7 @@ public class BpCounter extends BpMetric<Long> {
         sample[0] = new ImmutablePair("name", getName());
         sample[1] = new ImmutablePair("description", getDescription());
         sample[2] = new ImmutablePair("count", getCount());
-        return new Sample(getName(), sample, SampleType.AGGREGATE);
+        return new Sample(getName(), sample);
     }
     // CHECK_ON: MagicNumber
 

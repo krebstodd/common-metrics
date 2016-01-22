@@ -9,16 +9,16 @@ import java.util.concurrent.TimeUnit;
 
 public class BpTimer extends BpMetric<Long> {
 
-    private static final Boolean DEFAULT_RECORD_EVENTS = Boolean.TRUE;
+    private static Boolean DEFAULT_PUBLISH_EVENTS = Boolean.TRUE;
 
     private final Timer timer;
 
-    public BpTimer(final String name, final String description) {
-        this(new Timer(), name, description);
+    public BpTimer(final Class<?> owner, final String name, final String description) {
+        this(new Timer(), owner, name, description);
     }
 
-    public BpTimer(final Timer timer, final String name, final String description) {
-        super(name, description, DEFAULT_RECORD_EVENTS);
+    public BpTimer(final Timer timer, final Class<?> owner, final String name, final String description) {
+        super(owner, name, description, DEFAULT_PUBLISH_EVENTS);
         this.timer = timer;
     }
 
@@ -39,7 +39,7 @@ public class BpTimer extends BpMetric<Long> {
         final StopWatch stopWatch = new StopWatch();
 
         stopWatch.setCompletionNotifier(elapsedMillis -> this.timer.update(elapsedMillis, TimeUnit.MILLISECONDS));
-        stopWatch.setLapNotifier((eventName, elapsedMillis) -> recordEvent(eventSample(eventName, elapsedMillis)));
+        stopWatch.setLapNotifier(this::publishEvent);
 
         stopWatch.start();
 
@@ -107,16 +107,6 @@ public class BpTimer extends BpMetric<Long> {
     }
 
     // CHECK_OFF: MagicNumber
-    private EventSample<Long> eventSample(final String event, final Long elapsedMillis) {
-        final ImmutablePair[] sample = new ImmutablePair[3];
-
-        sample[0] = new ImmutablePair("name", getName());
-        sample[1] = new ImmutablePair("event", event);
-        sample[2] = new ImmutablePair("elapsedMillis", elapsedMillis);
-
-        return new EventSample<>(getName(), sample, SampleType.EVENT, elapsedMillis);
-    }
-
     @Override
     public Sample aggregateSample() {
         final ImmutablePair[] sample = new ImmutablePair[19];
@@ -141,7 +131,7 @@ public class BpTimer extends BpMetric<Long> {
         sample[17] = new ImmutablePair("min", getMin());
         sample[18] = new ImmutablePair("mean", getMean());
 
-        return new Sample(getName(), sample, SampleType.AGGREGATE);
+        return new Sample(getName(), sample);
     }
     // CHECK_ON: MagicNumber
 

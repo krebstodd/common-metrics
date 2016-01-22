@@ -5,14 +5,19 @@ import com.codahale.metrics.Meter;
 
 public class BpMeter extends BpMetric<Long> {
 
+    /**
+     * Default event key name.
+     */
+    public static final String DEFAULT_EVENT_KEY = "newOccurrences";
+
     private final Meter meter;
 
-    public BpMeter(final String name, final String description) {
-        this(new Meter(), name, description);
+    public BpMeter(final Class<?> owner, final String name, final String description) {
+        this(new Meter(), owner, name, description);
     }
 
-    public BpMeter(final Meter meter, final String name, final String description) {
-        super(name, description);
+    public BpMeter(final Meter meter, final Class<?> owner, final String name, final String description) {
+        super(owner, name, description);
         this.meter = meter;
     }
 
@@ -25,7 +30,7 @@ public class BpMeter extends BpMetric<Long> {
     }
 
     public void mark(final Long numberOfOccurrences) {
-        recordEvent(eventSample(numberOfOccurrences));
+        publishEvent(DEFAULT_EVENT_KEY, numberOfOccurrences);
         meter.mark(numberOfOccurrences);
     }
 
@@ -51,15 +56,6 @@ public class BpMeter extends BpMetric<Long> {
 
     // CHECK_OFF: MagicNumber
 
-    private EventSample<Long> eventSample(final Long newOccurrences) {
-        final ImmutablePair[] sample = new ImmutablePair[2];
-
-        sample[0] = new ImmutablePair("name", getName());
-        sample[1] = new ImmutablePair("numOccurrences", newOccurrences);
-
-        return new EventSample<>(getName(), sample, SampleType.EVENT, newOccurrences);
-    }
-
     @Override
     public Sample aggregateSample() {
         final ImmutablePair[] sample = new ImmutablePair[8];
@@ -73,7 +69,7 @@ public class BpMeter extends BpMetric<Long> {
         sample[6] = new ImmutablePair("fiveMinuteRate", getFiveMinuteRate());
         sample[7] = new ImmutablePair("fifteenMinuteRate", getFifteenMinuteRate());
 
-        return new Sample(getName(), sample, SampleType.AGGREGATE);
+        return new Sample(getName(), sample);
     }
     // CHECK_ON: MagicNumber
 

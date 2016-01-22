@@ -46,7 +46,7 @@ public class JvmProbe extends BpMetricProbe {
         final Iterator iter = rawMetrics.keySet().iterator();
         while (iter.hasNext()) {
             final String current = (String) iter.next();
-            metrics.add(wrapMetric(rawMetrics.get(current), name(prefix, current)));
+            metrics.add(wrapMetric(rawMetrics.get(current), JvmProbe.class, name(prefix, current)));
         }
 
         return metrics;

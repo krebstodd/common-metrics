@@ -6,14 +6,19 @@ import com.codahale.metrics.Histogram;
 
 public class BpHistogram extends BpMetric<Long> {
 
+    /**
+     * Default event key name.
+     */
+    public static final String DEFAULT_EVENT_KEY = "newValue";
+
     private final Histogram histogram;
 
-    public BpHistogram(final String name, final String description) {
-        this(new Histogram(new ExponentiallyDecayingReservoir()), name, description);
+    public BpHistogram(final Class<?> owner, final String name, final String description) {
+        this(new Histogram(new ExponentiallyDecayingReservoir()), owner, name, description);
     }
 
-    public BpHistogram(final Histogram histogram, final String name, final String description) {
-        super(name, description);
+    public BpHistogram(final Histogram histogram, final Class<?> owner, final String name, final String description) {
+        super(owner, name, description);
         this.histogram = histogram;
     }
 
@@ -22,7 +27,7 @@ public class BpHistogram extends BpMetric<Long> {
     }
 
     public void update(final Long value) {
-        recordEvent(eventSample(value));
+        publishEvent(DEFAULT_EVENT_KEY, value);
         histogram.update(value);
     }
 
@@ -71,12 +76,6 @@ public class BpHistogram extends BpMetric<Long> {
     }
 
     // CHECK_OFF: MagicNumber
-    private EventSample<Long> eventSample(final Long update) {
-        final ImmutablePair[] sample = new ImmutablePair[2];
-        sample[0] = new ImmutablePair("name", getName());
-        sample[1] = new ImmutablePair("update", update);
-        return new EventSample<>(getName(), sample, SampleType.EVENT, update);
-    }
 
     @Override
     public Sample aggregateSample() {
@@ -95,7 +94,7 @@ public class BpHistogram extends BpMetric<Long> {
         sample[10] = new ImmutablePair("max", getMax());
         sample[11] = new ImmutablePair("min", getMin());
 
-        return new Sample(getName(), sample, SampleType.AGGREGATE);
+        return new Sample(getName(), sample);
     }
     // CHECK_ON: MagicNumber
 

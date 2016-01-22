@@ -1,9 +1,9 @@
 package com.blispay.common.metrics.report;
 
-import com.blispay.common.metrics.util.RecordableEvent;
+import com.blispay.common.metrics.util.MetricEvent;
 
 public interface EventFilter {
 
-    Boolean shouldReportEvent(RecordableEvent event);
+    Boolean acceptsEvent(MetricEvent event);
 
 }
