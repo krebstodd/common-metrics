@@ -3,7 +3,6 @@ package com.blispay.common.metrics.util;
 import com.blispay.common.metrics.metric.BpTimer.Resolver;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -124,7 +123,7 @@ public class StopWatch implements Closeable, Resolver {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         stop();
     }
 
