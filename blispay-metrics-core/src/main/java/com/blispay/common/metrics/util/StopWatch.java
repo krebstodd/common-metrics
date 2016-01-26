@@ -45,17 +45,21 @@ public class StopWatch implements Closeable, Resolver {
         return lap(DEFAULT_LAP_MSG);
     }
 
+    public Long lap(final MetricEventKey key) {
+        return lap(key.buildKey());
+    }
+
     /**
      * Hit the lap button on the stopwatch.
      *
-     * @param message The message to provide the lap notifier.
+     * @param eventKey The event key to provide to the lap notifier.
      * @return Milliseconds since start.
      */
-    public Long lap(final String message) {
+    public Long lap(final String eventKey) {
         assertRunning(Boolean.TRUE);
 
         final Long elapsed = elapsedMillis();
-        lapNotifier.accept(message, elapsed);
+        lapNotifier.accept(eventKey, elapsed);
         return elapsed;
     }
 
@@ -63,17 +67,21 @@ public class StopWatch implements Closeable, Resolver {
         return stop(DEFAULT_COMPLETE_MSG);
     }
 
+    public Long stop(final MetricEventKey key) {
+        return stop(key.buildKey());
+    }
+
     /**
      * Stop the watch using hte provided message to notify lap and completion.
      *
-     * @param message Message to privde in the final lap.
+     * @param eventKey Event key or use in the final lap.
      * @return Milliseconds since start.
      */
-    public Long stop(final String message) {
+    public Long stop(final String eventKey) {
         assertRunning(Boolean.TRUE);
 
         final Long elapsed = elapsedMillis();
-        lapNotifier.accept(message, elapsed);
+        lapNotifier.accept(eventKey, elapsed);
         completionNotifier.accept(elapsed);
 
         isRunning.set(Boolean.FALSE);

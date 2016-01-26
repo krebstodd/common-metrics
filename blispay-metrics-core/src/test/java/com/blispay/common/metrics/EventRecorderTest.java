@@ -11,6 +11,7 @@ import com.blispay.common.metrics.report.DefaultBpEventReportingService;
 import com.blispay.common.metrics.report.EventFilter;
 import com.blispay.common.metrics.report.NoOpEventReportingService;
 import com.blispay.common.metrics.util.MetricEvent;
+import com.blispay.common.metrics.util.MultiDimensionEventKey;
 import com.blispay.common.metrics.util.RecordableEvent;
 import com.blispay.common.metrics.util.StopWatch;
 import org.hamcrest.Description;
@@ -92,6 +93,37 @@ public class EventRecorderTest extends AbstractMetricsTest {
         assertThat(events.poll(), eventMatcher("Lap 1", "1"));
         assertThat(events.poll(), eventMatcher("Lap 2", "2"));
         assertThat(events.poll(), eventMatcher("TimerDone", "3"));
+
+        thrown.expect(IllegalStateException.class);
+        stopWatch.lap();
+    }
+
+    @Test
+    public void testMultiDimensionEventKey() throws InterruptedException {
+        final TestableBpEventReporter reporter = new TestableBpEventReporter();
+        final BpMetricService service = defaultService(reporter);
+
+        final String timerName = "testTimer";
+        final BpTimer timer = service.createTimer(getClass(), timerName, "Event recording timer");
+
+        assertTrue(reporter.history().isEmpty());
+
+        final StopWatch stopWatch = timer.time();
+
+        final MultiDimensionEventKey key = new MultiDimensionEventKey()
+                .dimension("keyB", "valB")
+                .dimension("keyC", "valC")
+                .dimension("keyA", "valA");
+
+        stopWatch.stop(key);
+
+        final Queue<MetricEvent> events = reporter.history();
+
+        Thread.sleep(100);
+
+        assertEquals(1, events.size());
+        assertThat(events.poll(),
+                new MetricEventMatcher(keyValueMatcher("eventKey", "{\"keyA\":\"valA\",\"keyB\":\"valB\",\"keyC\":\"valC\"}")));
 
         thrown.expect(IllegalStateException.class);
         stopWatch.lap();
@@ -440,8 +472,13 @@ public class EventRecorderTest extends AbstractMetricsTest {
         public void describeTo(final Description description) {
             description.appendText("[message=")
                     .appendDescriptionOf(messageMatcher)
-                    .appendText(", level=")
-                    .appendDescriptionOf(levelMatcher);
+                    .appendText(", level=");
+
+            if (levelMatcher != null) {
+                description.appendDescriptionOf(levelMatcher);
+            } else {
+                description.appendText("null]");
+            }
         }
     }
 
