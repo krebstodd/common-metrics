@@ -47,13 +47,13 @@ public class MetricEvent<T> {
      */
     public String print() {
         return new StringBuilder()
-                .append("[owner=")
+                .append("owner=[")
                 .append(owner.getName())
-                .append(",name=")
+                .append("],name=[")
                 .append(metricName)
-                .append(",eventKey=")
+                .append("],eventKey=[")
                 .append(eventKey)
-                .append(",value=")
+                .append("],value=[")
                 .append(value)
                 .append("]").toString();
     }

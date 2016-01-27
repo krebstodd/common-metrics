@@ -90,9 +90,10 @@ public class EventRecorderTest extends AbstractMetricsTest {
         final Queue<MetricEvent> events = reporter.history();
 
         assertEquals(3, events.size());
-        assertThat(events.poll(), eventMatcher("Lap 1", "1"));
-        assertThat(events.poll(), eventMatcher("Lap 2", "2"));
-        assertThat(events.poll(), eventMatcher("TimerDone", "3"));
+
+        assertEquals(events.poll().getEventKey(), "Lap 1");
+        assertEquals(events.poll().getEventKey(), "Lap 2");
+        assertEquals(events.poll().getEventKey(), "TimerDone");
 
         thrown.expect(IllegalStateException.class);
         stopWatch.lap();
@@ -353,7 +354,7 @@ public class EventRecorderTest extends AbstractMetricsTest {
         final BpMetricService service = defaultService(reporter1);
 
         final TestableBpEventReporter reporter2 = new TestableBpEventReporter();
-        reporter2.addFilter(event -> event.print().contains("value=2"));
+        reporter2.addFilter(event -> event.print().contains("value=[2]"));
         service.addEventListener(reporter2);
 
         final String c1Name = "testCounter1";
@@ -431,7 +432,7 @@ public class EventRecorderTest extends AbstractMetricsTest {
     }
 
     private static Matcher<String> keyValueMatcher(final String key, final String value) {
-        return containsString(key + "=" + value);
+        return containsString(key + "=[" + value + "]");
     }
 
     private static class MetricEventMatcher extends TypeSafeMatcher<MetricEvent> {

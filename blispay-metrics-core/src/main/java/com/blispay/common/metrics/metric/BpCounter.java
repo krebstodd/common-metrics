@@ -35,8 +35,8 @@ public class BpCounter extends BpMetric<Long> {
     }
 
     public void decrement(final Long decrementBy) {
-        publishEvent(DEFAULT_EVENT_KEY, negate(decrementBy));
         counter.dec(decrementBy);
+        publishEvent(DEFAULT_EVENT_KEY, negate(decrementBy));
     }
 
     public Long getCount() {

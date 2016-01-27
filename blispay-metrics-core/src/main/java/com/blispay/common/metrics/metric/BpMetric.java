@@ -7,11 +7,15 @@ import com.blispay.common.metrics.util.ImmutablePair;
 import com.blispay.common.metrics.util.MetricEvent;
 import com.blispay.common.metrics.util.RecordableEvent;
 import com.codahale.metrics.Metric;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.function.Function;
 
 public abstract class BpMetric<T> implements Metric, BpEventEmitter {
+
+    private static final Logger LOG = LoggerFactory.getLogger(BpMetric.class);
 
     private static final Boolean DEFAULT_PUBLISH_EVENTS = Boolean.FALSE;
 
@@ -81,10 +85,18 @@ public abstract class BpMetric<T> implements Metric, BpEventEmitter {
     }
 
     protected void publishEvent(final String eventKey, final T value) {
-        if (enableEventPublishing) {
-            final MetricEvent<T> metricEvent = new MetricEvent<>(owner, name, eventKey, value);
-            eventService.acceptEvent(new RecordableEvent<>(metricEvent, recordLevelFn.apply(metricEvent)));
+        try {
+            if (enableEventPublishing) {
+                final MetricEvent<T> metricEvent = new MetricEvent<>(owner, name, eventKey, value);
+                eventService.acceptEvent(new RecordableEvent<>(metricEvent, recordLevelFn.apply(metricEvent)));
+            }
+
+        // CHECK_OFF: IllegalCatch
+        } catch (Exception ex) {
+            LOG.error("Caught exception attempting to publish event metric", ex);
         }
+        // CHECK_ON: IllegalCatch
+
     }
 
     public abstract Sample aggregateSample();
