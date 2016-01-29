@@ -3,6 +3,10 @@ package com.blispay.common.metrics;
 import com.blispay.common.metrics.metric.BpGauge;
 import com.blispay.common.metrics.metric.BpMeter;
 import com.blispay.common.metrics.metric.BpTimer;
+import com.blispay.common.metrics.report.BpEventListener;
+import com.blispay.common.metrics.report.DefaultBpEventReportingService;
+import com.blispay.common.metrics.report.EventFilter;
+import com.blispay.common.metrics.util.MetricEvent;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.server.ConnectionFactory;
@@ -14,14 +18,24 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Test;
 
+import java.time.Duration;
 import java.time.Instant;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -89,6 +103,27 @@ public class JettyProbeTest {
     }
 
     @Test
+    public void testProducesEndpointTimingEvents() throws Exception {
+        final BpMetricService service = new BpMetricService(new DefaultBpEventReportingService());
+        final TestableBpEventReporter testReporter = new TestableBpEventReporter();
+        service.addEventListener(testReporter);
+
+        final Duration execTime = Duration.ofSeconds(2);
+        final JettyProbe probe = new JettyProbe(queuedThreadPool(), simulatedHandler(execTime), service);
+        final Server jettyServer = probe.getInstrumentedServer();
+        jettyServer.start();
+
+        jettyServer.handle(mockChannel("POST", "/user/create/v1", 200));
+
+        final Queue<MetricEvent> events = testReporter.history();
+        assertEquals(1, events.size());
+
+        final MetricEvent evt = events.poll();
+        assertThat(evt.print(), CoreMatchers.containsString("eventKey=[[method=[POST],path=[/user/create/v1],statusCode=[200]]]"));
+        assertTrue(approximatelyEqual(2000L, Long.valueOf(evt.getValue().toString()), 50L));
+    }
+
+    @Test
     public void testThreadPoolMetrics() throws Exception {
         final CountDownLatch countDownLatch = new CountDownLatch(1);
 
@@ -112,11 +147,21 @@ public class JettyProbeTest {
         assertEquals(0, jobs.getValue());
     }
 
+    private static Consumer<HttpChannel<?>> simulatedHandler(final Duration simulatedExecutionTime) {
+        return (channel) -> {
+            try {
+                Thread.sleep(simulatedExecutionTime.toMillis());
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
+        };
+    }
+
     private QueuedThreadPool queuedThreadPool() {
         return new QueuedThreadPool();
     }
 
-    private HttpChannel mockChannel(final String method, final String uri, final Integer responseCode) {
+    private HttpChannel mockChannel(final String method, final String uri, final Integer responseCode) throws InterruptedException {
         final HttpChannel<?> channel = mock(HttpChannel.class);
         final Request request = mock(Request.class);
         final Response response = mock(Response.class);
@@ -136,8 +181,32 @@ public class JettyProbeTest {
         return channel;
     }
 
-    private Boolean approximatelyEqual(final Double expected, final Double actual, final Double acceptableDelta) {
+    private Boolean approximatelyEqual(final Long expected, final Long actual, final Long acceptableDelta) {
         return Math.abs(expected - actual) < acceptableDelta;
+    }
+
+    private static class TestableBpEventReporter implements BpEventListener {
+
+        private final Set<EventFilter> filters = new HashSet<>();
+        private final LinkedList<MetricEvent> events = new LinkedList<>();
+
+        @Override
+        public void acceptEvent(final MetricEvent event) {
+            events.add(event);
+        }
+
+        @Override
+        public Collection<EventFilter> getFilters() {
+            return filters;
+        }
+
+        public void addFilter(final EventFilter filter) {
+            this.filters.add(filter);
+        }
+
+        public LinkedList<MetricEvent> history() {
+            return events;
+        }
     }
 
 }

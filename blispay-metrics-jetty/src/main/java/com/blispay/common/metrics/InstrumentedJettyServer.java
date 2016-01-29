@@ -3,12 +3,14 @@ package com.blispay.common.metrics;
 import com.blispay.common.metrics.metric.BpCounter;
 import com.blispay.common.metrics.metric.BpMeter;
 import com.blispay.common.metrics.metric.BpTimer;
+import com.blispay.common.metrics.util.StopWatch;
 import com.codahale.metrics.RatioGauge;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.server.AsyncContextState;
 import org.eclipse.jetty.server.HttpChannel;
 import org.eclipse.jetty.server.HttpChannelState;
 import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.ThreadPool;
 import org.slf4j.Logger;
@@ -35,7 +37,7 @@ public class InstrumentedJettyServer extends Server {
 
     private final ConcurrentHashMap<String, BpTimer> endpointTimers = new ConcurrentHashMap<>();
 
-    private BpTimer requests;
+    private BpTimer requestTimer;
     private BpTimer dispatches;
     private BpCounter activeRequests;
     private BpCounter activeDispatches;
@@ -71,9 +73,9 @@ public class InstrumentedJettyServer extends Server {
     @Override
     public void handle(final HttpChannel<?> channel) throws IOException, ServletException {
         LOG.info("Collecting metrics on jetty https request");
-        activeDispatches.increment();
 
-        final BpTimer.Resolver endpointTimer = getEndpointTimer(channel.getRequest()).time();
+        final StopWatch requestStopwatch = requestTimer.time();
+        activeDispatches.increment();
 
         final long start;
         final HttpChannelState state = channel.getState();
@@ -99,8 +101,6 @@ public class InstrumentedJettyServer extends Server {
             activeDispatches.decrement();
             dispatches.update(dispatched, TimeUnit.MILLISECONDS);
 
-            endpointTimer.done();
-
             if (state.isSuspended()) {
                 if (state.isInitial()) {
                     state.addListener(listener);
@@ -109,6 +109,8 @@ public class InstrumentedJettyServer extends Server {
             } else if (state.isInitial()) {
                 updateResponses(channel.getRequest(), channel.getResponse(), start);
             }
+
+            requestStopwatch.stop(buildEndpointKey(channel.getRequest(), channel.getResponse()));
         }
     }
 
@@ -122,7 +124,7 @@ public class InstrumentedJettyServer extends Server {
     public void doStart() throws Exception {
         super.doStart();
 
-        this.requests = metricService.createTimer(InstrumentedJettyServer.class, "requests", "Total number of requests and response time statistics");
+        this.requestTimer = metricService.createTimer(InstrumentedJettyServer.class, "requests", "Total number of requests and response time statistics");
         this.dispatches = metricService.createTimer(InstrumentedJettyServer.class, "dispatches", "Total number of disptaches and timing statistics.");
         this.activeRequests = metricService.createCounter(InstrumentedJettyServer.class, "acive-requests", "Total number of in flight requests");
         this.activeDispatches = metricService.createCounter(InstrumentedJettyServer.class, "active-dispatches", "Total number of requests being processed");
@@ -149,29 +151,32 @@ public class InstrumentedJettyServer extends Server {
         this.otherRequests = metricService.createTimer(InstrumentedJettyServer.class, "other-requests", "End to end execution time for http OTHER requests");
 
         metricService.createGauge(InstrumentedJettyServer.class, "percent-4xx-1m", "Percentage of requests that resulted in a 400 level response over past 1 minutes",
-                () -> RatioGauge.Ratio.of(responses[3].getOneMinuteRate(), requests.getOneMinuteRate()).getValue());
+                () -> RatioGauge.Ratio.of(responses[3].getOneMinuteRate(), requestTimer.getOneMinuteRate()).getValue());
         metricService.createGauge(InstrumentedJettyServer.class, "percent-4xx-5m", "Percentage of requests that resulted in a 400 level response over past 5 minutes",
-                () -> RatioGauge.Ratio.of(responses[3].getFiveMinuteRate(), requests.getFiveMinuteRate()).getValue());
+                () -> RatioGauge.Ratio.of(responses[3].getFiveMinuteRate(), requestTimer.getFiveMinuteRate()).getValue());
         metricService.createGauge(InstrumentedJettyServer.class, "percent-4xx-15m", "Percentage of requests that resulted in a 400 level response over past 15 minutes",
-                () -> RatioGauge.Ratio.of(responses[3].getFifteenMinuteRate(), requests.getFifteenMinuteRate()).getValue());
+                () -> RatioGauge.Ratio.of(responses[3].getFifteenMinuteRate(), requestTimer.getFifteenMinuteRate()).getValue());
 
         metricService.createGauge(InstrumentedJettyServer.class, "percent-5xx-1m", "Percentage of requests that resulted in a 500 level response over past 1 minutes",
-                () -> RatioGauge.Ratio.of(responses[4].getOneMinuteRate(), requests.getOneMinuteRate()).getValue());
+                () -> RatioGauge.Ratio.of(responses[4].getOneMinuteRate(), requestTimer.getOneMinuteRate()).getValue());
         metricService.createGauge(InstrumentedJettyServer.class, "percent-5xx-5m", "Percentage of requests that resulted in a 500 level response over past 5 minutes",
-                () -> RatioGauge.Ratio.of(responses[4].getFiveMinuteRate(), requests.getFiveMinuteRate()).getValue());
+                () -> RatioGauge.Ratio.of(responses[4].getFiveMinuteRate(), requestTimer.getFiveMinuteRate()).getValue());
         metricService.createGauge(InstrumentedJettyServer.class, "percent-5xx-15m", "Percentage of requests that resulted in a 500 level response over past 15 minutes",
-                () -> RatioGauge.Ratio.of(responses[4].getFifteenMinuteRate(), requests.getFifteenMinuteRate()).getValue());
+                () -> RatioGauge.Ratio.of(responses[4].getFifteenMinuteRate(), requestTimer.getFifteenMinuteRate()).getValue());
 
         this.listener = new WrappedAsyncListener();
     }
 
-    private BpTimer getEndpointTimer(final Request request) {
-        return endpointTimers.computeIfAbsent(buildEndpointKey(request), (timerName) ->
-                metricService.createTimer(InstrumentedJettyServer.class, timerName, "Timer for " + request.getMethod() + " to uri " + request.getRequestURI()));
-    }
-
-    private String buildEndpointKey(final Request request) {
-        return request.getMethod() + ":" + request.getRequestURI();
+    private String buildEndpointKey(final Request request, final Response response) {
+        return new StringBuilder()
+                .append("[method=[")
+                .append(request.getMethod())
+                .append("],path=[")
+                .append(request.getRequestURI())
+                .append("],statusCode=[")
+                .append(response.getStatus())
+                .append("]]")
+                .toString();
     }
 
     private BpTimer requestTimer(final String method) {
@@ -212,7 +217,6 @@ public class InstrumentedJettyServer extends Server {
 
         this.activeRequests.decrement();
         final long elapsedTime = System.currentTimeMillis() - start;
-        this.requests.update(elapsedTime, TimeUnit.MILLISECONDS);
         this.requestTimer(request.getMethod()).update(elapsedTime, TimeUnit.MILLISECONDS);
     }
 
