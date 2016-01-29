@@ -1,7 +1,5 @@
 package com.blispay.common.metrics.util;
 
-import org.json.JSONObject;
-
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -21,6 +19,10 @@ public class MultiDimensionEventKey implements MetricEventKey {
 
     @Override
     public String buildKey() {
-        return new JSONObject(nameValMap).toString();
+        return nameValMap.entrySet()
+                .stream()
+                .map(entry -> entry.getKey() + "=[" + entry.getValue() + "]")
+                .reduce((accum, keyVal) -> accum + "," + keyVal)
+                .orElse("");
     }
 }

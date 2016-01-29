@@ -123,8 +123,7 @@ public class EventRecorderTest extends AbstractMetricsTest {
         Thread.sleep(100);
 
         assertEquals(1, events.size());
-        assertThat(events.poll(),
-                new MetricEventMatcher(keyValueMatcher("eventKey", "{\"keyA\":\"valA\",\"keyB\":\"valB\",\"keyC\":\"valC\"}")));
+        assertThat(events.poll(), new MetricEventMatcher(keyValueMatcher("eventKey", "keyA=[valA],keyB=[valB],keyC=[valC]")));
 
         thrown.expect(IllegalStateException.class);
         stopWatch.lap();
