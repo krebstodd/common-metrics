@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Instant;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -34,8 +33,6 @@ public class InstrumentedJettyServer extends Server {
     private final BpMetricService metricService;
 
     private final Consumer<HttpChannel<?>> handler;
-
-    private final ConcurrentHashMap<String, BpTimer> endpointTimers = new ConcurrentHashMap<>();
 
     private BpTimer requestTimer;
     private BpTimer dispatches;
