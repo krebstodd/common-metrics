@@ -93,10 +93,7 @@ public class JettyProbeTest {
         final BpMeter meter4xx = (BpMeter) metricService.getMetric(InstrumentedJettyServer.class, "4xx-responses");
         assertEquals(1L, meter4xx.getCount().longValue());
 
-        final BpTimer endpointTimer = (BpTimer) metricService.getMetric(InstrumentedJettyServer.class, "POST:/user/create/v1");
-        assertEquals(1L, endpointTimer.getCount());
-
-        //wiat for gauge to update
+        // wait for gauge to update
         Thread.sleep(5000);
         final BpGauge gauge4xx = (BpGauge) metricService.getMetric(InstrumentedJettyServer.class, "percent-4xx-1m");
         assertEquals(0.5D, (Double) gauge4xx.getValue(), 0.05D);
