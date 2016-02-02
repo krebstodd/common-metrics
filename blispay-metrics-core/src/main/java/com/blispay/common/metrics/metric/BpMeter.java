@@ -1,6 +1,7 @@
 package com.blispay.common.metrics.metric;
 
 import com.blispay.common.metrics.util.ImmutablePair;
+import com.blispay.common.metrics.util.MetricEventKey;
 import com.codahale.metrics.Meter;
 
 public class BpMeter extends BpMetric<Long> {
@@ -30,7 +31,19 @@ public class BpMeter extends BpMetric<Long> {
     }
 
     public void mark(final Long numberOfOccurrences) {
-        publishEvent(DEFAULT_EVENT_KEY, numberOfOccurrences);
+        mark(DEFAULT_EVENT_KEY, numberOfOccurrences);
+    }
+
+    public void mark(final MetricEventKey eventKey) {
+        mark(eventKey, 1L);
+    }
+
+    public void mark(final MetricEventKey eventKey, final Long numberOfOccurrences) {
+        mark(eventKey.buildKey(), numberOfOccurrences);
+    }
+
+    public void mark(final String eventKey, final Long numberOfOccurrences) {
+        publishEvent(eventKey, numberOfOccurrences);
         meter.mark(numberOfOccurrences);
     }
 
