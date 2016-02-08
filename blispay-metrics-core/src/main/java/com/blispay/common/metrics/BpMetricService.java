@@ -152,12 +152,12 @@ public final class BpMetricService {
      * @return The current instance.
      */
     public BpMetricService start() {
-        if (!isRunning.compareAndSet(false, true)) {
-            throw new IllegalStateException("Metric service is already running and cannot be started.");
+
+        if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
+            reporters.forEach(BpMetricReporter::start);
+            probes.forEach(BpMetricProbe::start);
         }
 
-        reporters.forEach(BpMetricReporter::start);
-        probes.forEach(BpMetricProbe::start);
         return this;
     }
 
@@ -165,11 +165,9 @@ public final class BpMetricService {
      * Stop the metric service from reporting metrics.
      */
     public void stop() {
-        if (!isRunning.compareAndSet(true, false)) {
-            throw new IllegalStateException("Metric service is stopped.");
+        if (isRunning.compareAndSet(Boolean.TRUE, Boolean.FALSE)) {
+            reporters.forEach(BpMetricReporter::stop);
         }
-
-        reporters.forEach(BpMetricReporter::stop);
     }
 
     public boolean isRunning() {
