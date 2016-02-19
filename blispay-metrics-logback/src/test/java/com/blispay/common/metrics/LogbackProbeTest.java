@@ -1,6 +1,6 @@
 package com.blispay.common.metrics;
 
-import com.blispay.common.metrics.metric.BpMeter;
+import com.blispay.common.metrics.model.BpMeter;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +10,7 @@ import static org.junit.Assert.assertEquals;
 // CHECK_OFF: MagicNumber
 public class LogbackProbeTest {
 
-    private final BpMetricService metricService = BpMetricService.globalInstance();
+    private final MetricService metricService = MetricService.globalInstance();
 
     @Test
     public void testLogbackProbe() {

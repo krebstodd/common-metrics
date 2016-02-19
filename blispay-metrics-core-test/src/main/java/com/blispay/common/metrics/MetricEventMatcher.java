@@ -1,9 +1,9 @@
 package com.blispay.common.metrics;
 
 import com.blispay.common.metrics.event.MetricEvent;
-import com.blispay.common.metrics.metric.MetricType;
-import com.blispay.common.metrics.metric.MetricName;
-import com.blispay.common.metrics.metric.MetricClass;
+import com.blispay.common.metrics.model.MetricType;
+import com.blispay.common.metrics.model.MetricName;
+import com.blispay.common.metrics.model.MetricClass;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;

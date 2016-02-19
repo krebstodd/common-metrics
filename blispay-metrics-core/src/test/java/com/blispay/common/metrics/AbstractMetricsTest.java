@@ -9,7 +9,7 @@ public abstract class AbstractMetricsTest {
         System.setProperty("metrics.jmx.enabled", "true");
     }
 
-    protected static final BpMetricService metricService = BpMetricService.globalInstance();
+    protected static final MetricService metricService = MetricService.globalInstance();
 
     // CHECK_OFF: JavadocVariable
     // CHECK_OFF: VisibilityModifier

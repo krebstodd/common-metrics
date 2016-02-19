@@ -1,6 +1,6 @@
 package com.blispay.common.metrics;
 
-import com.blispay.common.metrics.metric.BpTimer;
+import com.blispay.common.metrics.model.BpTimer;
 import com.blispay.common.metrics.util.StopWatch;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.EndPoint;

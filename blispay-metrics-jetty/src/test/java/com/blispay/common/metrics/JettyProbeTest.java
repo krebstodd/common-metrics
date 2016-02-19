@@ -1,9 +1,9 @@
 package com.blispay.common.metrics;
 
 import com.blispay.common.metrics.event.MetricEvent;
-import com.blispay.common.metrics.metric.InfrastructureMetricName;
-import com.blispay.common.metrics.metric.MetricClass;
-import com.blispay.common.metrics.metric.MetricType;
+import com.blispay.common.metrics.model.InfrastructureMetricName;
+import com.blispay.common.metrics.model.MetricClass;
+import com.blispay.common.metrics.model.MetricType;
 import com.blispay.common.metrics.report.SnapshotReporter;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.EndPoint;
@@ -42,7 +42,7 @@ public class JettyProbeTest {
 
         final TestMetricEventListener testReporter = new TestMetricEventListener();
         testReporter.addFilter(evt -> evt.getName().toString().equals("metrics.jettyApp.jetty.connection.time"));
-        final BpMetricService metricService = new BpMetricService();
+        final MetricService metricService = new MetricService();
 
         final JettyProbe probe = new JettyProbe(appId, queuedThreadPool(), (channel) -> { }, metricService);
         final ConnectionFactory instrumentedFactory = probe.setAndInstrumentConnectionFactory(new ConnectionFactory() {
@@ -70,7 +70,7 @@ public class JettyProbeTest {
         final TestMetricEventListener testReporter = new TestMetricEventListener();
         testReporter.addFilter(evt -> evt.getName().toString().equals("metrics.jettyApp.jetty.http.request"));
 
-        final BpMetricService metricService = new BpMetricService();
+        final MetricService metricService = new MetricService();
         metricService.addEventListener(testReporter);
 
         final CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -103,7 +103,7 @@ public class JettyProbeTest {
     public void testThreadPoolMetrics() throws Exception {
         final SnapshotReporter testReporter = new TestSnapshotReporter();
 
-        final BpMetricService metricService = new BpMetricService();
+        final MetricService metricService = new MetricService();
         metricService.addSnapshotReporter(testReporter);
 
         final CountDownLatch countDownLatch = new CountDownLatch(1);

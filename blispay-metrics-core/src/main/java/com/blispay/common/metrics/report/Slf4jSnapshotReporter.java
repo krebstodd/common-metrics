@@ -1,6 +1,6 @@
 package com.blispay.common.metrics.report;
 
-import com.blispay.common.metrics.event.MetricEvent;
+import com.blispay.common.metrics.model.BaseMetricModel;
 import org.slf4j.Logger;
 
 import java.util.HashSet;
@@ -29,9 +29,9 @@ public class Slf4jSnapshotReporter extends ScheduledSnapshotReporter {
     }
 
     @Override
-    public Set<MetricEvent> report() {
-        final Set<MetricEvent> snapshot = snapshotProviderSupplier.get().stream().map(SnapshotProvider::snapshot).collect(Collectors.toSet());
-        snapshot.forEach(ss -> logger.info(ss.printJson()));
+    public Set<BaseMetricModel> report() {
+        final Set<BaseMetricModel> snapshot = snapshotProviderSupplier.get().stream().map(SnapshotProvider::snapshot).collect(Collectors.toSet());
+        snapshot.forEach(ss -> logger.info(ss.toString()));
         return snapshot;
     }
 

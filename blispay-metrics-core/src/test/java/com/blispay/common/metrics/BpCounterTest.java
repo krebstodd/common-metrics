@@ -2,31 +2,24 @@ package com.blispay.common.metrics;
 
 //CHECK_OFF: AvoidStarImport
 
-import com.blispay.common.metrics.metric.BpCounter;
-import com.blispay.common.metrics.metric.BusinessMetricName;
-import com.blispay.common.metrics.metric.MetricName;
-import com.blispay.common.metrics.metric.MetricClass;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 //CHECK_ON: AvoidStarImport
 
 // CHECK_OFF: MultipleStringLiterals
 // CHECK_OFF: MagicNumber
 public class BpCounterTest extends AbstractMetricsTest {
-
-    @Test
-    public void testIncrementAndDecrement() {
-        final MetricName metricName = new BusinessMetricName("counter", "test");
-
-        final BpCounter counter = metricService.createCounter(metricName, MetricClass.apiCall());
-
-        assertEquals(0L, counter.getCount().longValue());
-        counter.increment(5L);
-        assertEquals(5L, counter.getCount().longValue());
-        counter.decrement(5L);
-        assertEquals(0L, counter.getCount().longValue());
-    }
+//
+//    @Test
+//    public void testIncrementAndDecrement() {
+//        final MetricName metricName = new BusinessMetricName("counter", "test");
+//
+//        final BpCounter counter = metricService.createCounter(metricName, MetricClass.apiCall());
+//
+//        assertEquals(0L, counter.getCount().longValue());
+//        counter.increment(5L);
+//        assertEquals(5L, counter.getCount().longValue());
+//        counter.decrement(5L);
+//        assertEquals(0L, counter.getCount().longValue());
+//    }
 
 }
 // CHECK_ON: MagicNumber

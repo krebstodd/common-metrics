@@ -1,9 +1,9 @@
 package com.blispay.common.metrics;
 
-import com.blispay.common.metrics.metric.BpTimer;
-import com.blispay.common.metrics.metric.InfrastructureMetricName;
-import com.blispay.common.metrics.metric.Measurement;
-import com.blispay.common.metrics.metric.MetricClass;
+import com.blispay.common.metrics.model.BpTimer;
+import com.blispay.common.metrics.model.InfrastructureMetricName;
+import com.blispay.common.metrics.model.Measurement;
+import com.blispay.common.metrics.model.MetricClass;
 import com.codahale.metrics.RatioGauge;
 import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.HttpChannel;
@@ -18,7 +18,7 @@ public class JettyProbe {
 
     private ConnectionFactory instrumentedConnectionFactory;
 
-    private final BpMetricService metricService;
+    private final MetricService metricService;
     private final String appId;
 
     /**
@@ -32,7 +32,7 @@ public class JettyProbe {
     public JettyProbe(final String applicationId,
                       final QueuedThreadPool threadPool,
                       final Consumer<HttpChannel<?>> channelHandler,
-                      final BpMetricService metricService) {
+                      final MetricService metricService) {
         this.appId = applicationId;
         this.metricService = metricService;
         this.instrumentedServer = new InstrumentedJettyServer(applicationId, metricService, threadPool, channelHandler);
@@ -58,7 +58,7 @@ public class JettyProbe {
      * @param plain Plain jetty connection factory.
      * @return Instrumented facotry.
      */
-    private ConnectionFactory instrumentConnectionFactory(final BpMetricService metricService, final ConnectionFactory plain) {
+    private ConnectionFactory instrumentConnectionFactory(final MetricService metricService, final ConnectionFactory plain) {
         final BpTimer connectionTimer = metricService.createTimer(new InfrastructureMetricName(appId, "jetty", "connection", "time"), MetricClass.executionTime());
         return new InstrumentedConnectionFactory(plain, connectionTimer);
     }
@@ -68,7 +68,7 @@ public class JettyProbe {
      *
      * @param pool Queued thread pool to profile.
      */
-    private void instrumentThreadPool(final BpMetricService metricService, final QueuedThreadPool pool) {
+    private void instrumentThreadPool(final MetricService metricService, final QueuedThreadPool pool) {
 
         metricService.createGauge(new InfrastructureMetricName(appId, "jetty", "threadPool", "utilization"), MetricClass.threadPool(), Measurement.Units.PERCENTAGE,
                 () -> RatioGauge.Ratio.of(pool.getThreads() - pool.getIdleThreads(), pool.getThreads()).getValue());

@@ -1,6 +1,6 @@
 package com.blispay.common.metrics;
 
-import com.blispay.common.metrics.metric.BpMetric;
+import com.blispay.common.metrics.model.BpMetric;
 import com.blispay.common.metrics.probe.BpMetricProbe;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
@@ -26,7 +26,7 @@ public class VertxProbe extends BpMetricProbe {
      * @param vertx The active vertx instance to be probed.
      * @param metricService Metric service to register probe on.
      */
-    public VertxProbe(final Vertx vertx, final BpMetricService metricService) {
+    public VertxProbe(final Vertx vertx, final MetricService metricService) {
         final AbstractMetrics abstractMetrics = AbstractMetrics.unwrap(vertx);
 
         try {

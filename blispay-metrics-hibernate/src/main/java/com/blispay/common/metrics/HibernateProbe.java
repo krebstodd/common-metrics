@@ -1,6 +1,6 @@
 package com.blispay.common.metrics;
 
-import com.blispay.common.metrics.metric.BpGauge;
+import com.blispay.common.metrics.model.BpGauge;
 import com.blispay.common.metrics.probe.BpMetricProbe;
 import org.hibernate.SessionFactory;
 import org.hibernate.internal.SessionFactoryImpl;
@@ -26,7 +26,7 @@ public class HibernateProbe extends BpMetricProbe {
 
     private final ConcurrentHashMap<String, BpGauge> queryGauges = new ConcurrentHashMap<>();
 
-    private final BpMetricService metricService;
+    private final MetricService metricService;
 
     /**
      * Create a new hibernate probe for the provided entity manager factory.
@@ -37,7 +37,7 @@ public class HibernateProbe extends BpMetricProbe {
      * @param metricService Metric service to register probe on.
      */
     public HibernateProbe(final HibernateEntityManagerFactory entityManager, final String id,
-                          final Boolean collectQueryStats, final BpMetricService metricService) {
+                          final Boolean collectQueryStats, final MetricService metricService) {
 
         this.sessionFactory = entityManager.getSessionFactory();
         this.sessionFactory.getStatistics().setStatisticsEnabled(true);

@@ -1,9 +1,9 @@
 package com.blispay.common.metrics;
 
-import com.blispay.common.metrics.metric.BpTimer;
-import com.blispay.common.metrics.metric.InfrastructureMetricName;
-import com.blispay.common.metrics.metric.MetricContext;
-import com.blispay.common.metrics.metric.MetricClass;
+import com.blispay.common.metrics.model.BpTimer;
+import com.blispay.common.metrics.model.InfrastructureMetricName;
+import com.blispay.common.metrics.model.MetricContext;
+import com.blispay.common.metrics.model.MetricClass;
 import com.blispay.common.metrics.util.StopWatch;
 import org.eclipse.jetty.server.HttpChannel;
 import org.eclipse.jetty.server.Request;
@@ -22,7 +22,7 @@ public class InstrumentedJettyServer extends Server {
     private static final Logger LOG = LoggerFactory.getLogger(InstrumentedJettyServer.class);
 
     private final String applicationId;
-    private final BpMetricService metricService;
+    private final MetricService metricService;
 
     private final Consumer<HttpChannel<?>> handler;
 
@@ -37,7 +37,7 @@ public class InstrumentedJettyServer extends Server {
      * @param channelHandler Channel handler to pass off requests to post-metric collection.
      */
     public InstrumentedJettyServer(final String applicationId,
-                                   final BpMetricService metricService,
+                                   final MetricService metricService,
                                    final ThreadPool threadPool,
                                    final Consumer<HttpChannel<?>> channelHandler) {
 

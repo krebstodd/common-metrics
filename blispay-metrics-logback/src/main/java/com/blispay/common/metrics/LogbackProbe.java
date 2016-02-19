@@ -5,20 +5,20 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
-import com.blispay.common.metrics.metric.BpMeter;
+import com.blispay.common.metrics.model.BpMeter;
 import com.blispay.common.metrics.probe.BpMetricProbe;
 import org.slf4j.LoggerFactory;
 
 public class LogbackProbe extends BpMetricProbe {
 
-    private BpMetricService metricService;
+    private MetricService metricService;
 
     /**
      * Probe for profiling logback.
      *
      * @param metricService Metric service to register probe on.
      */
-    public LogbackProbe(final BpMetricService metricService) {
+    public LogbackProbe(final MetricService metricService) {
         this.metricService = metricService;
     }
 

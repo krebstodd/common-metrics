@@ -1,6 +1,6 @@
 package com.blispay.common.metrics;
 
-import com.blispay.common.metrics.metric.Measurement;
+import com.blispay.common.metrics.model.Measurement;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
