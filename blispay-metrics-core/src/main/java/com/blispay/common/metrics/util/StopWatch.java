@@ -1,28 +1,21 @@
 package com.blispay.common.metrics.util;
 
-import com.blispay.common.metrics.metric.BpTimer.Resolver;
+import com.blispay.common.metrics.metric.MetricContext;
 
-import java.io.Closeable;
+import java.time.Duration;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class StopWatch implements Closeable, Resolver {
+public class StopWatch implements AutoCloseable {
 
-    private static final String DEFAULT_COMPLETE_MSG = "COMPLETE";
+    private static Consumer<Duration> NO_OP = (val) -> { };
+    private static BiConsumer<Optional<MetricContext>, Duration> BI_NO_OP = (str, val) -> { };
 
-    private static final String DEFAULT_LAP_MSG = "LAP";
-
-    private static Consumer<Long> NO_OP = (val) -> { };
-
-    private static BiConsumer<String, Long> BI_NO_OP = (str, val) -> { };
-
-    private Consumer<Long> completionNotifier;
-
-    private BiConsumer<String, Long> lapNotifier;
-
+    private Consumer<Duration> completionNotifier;
+    private BiConsumer<Optional<MetricContext>, Duration> lapNotifier;
     private Long startMillis;
-
     private AtomicBoolean isRunning = new AtomicBoolean(false);
 
     public StopWatch() {
@@ -41,67 +34,50 @@ public class StopWatch implements Closeable, Resolver {
         }
     }
 
-    public Long lap() {
-        return lap(DEFAULT_LAP_MSG);
+    public Duration lap() {
+        return lap(Optional.empty());
     }
 
-    public Long lap(final MetricEventKey key) {
-        return lap(key.buildKey());
+    public Duration lap(final MetricContext context) {
+       return lap(Optional.of(context));
     }
 
-    /**
-     * Hit the lap button on the stopwatch.
-     *
-     * @param eventKey The event key to provide to the lap notifier.
-     * @return Milliseconds since start.
-     */
-    public Long lap(final String eventKey) {
+    private Duration lap(final Optional<MetricContext> context) {
         assertRunning(Boolean.TRUE);
 
-        final Long elapsed = elapsedMillis();
-        lapNotifier.accept(eventKey, elapsed);
+        final Duration elapsed = Duration.ofMillis(elapsedMillis());
+        lapNotifier.accept(context, elapsed);
         return elapsed;
     }
 
-    public Long stop() {
-        return stop(DEFAULT_COMPLETE_MSG);
+    public Duration stop() {
+        return stop(Optional.empty());
     }
 
-    public Long stop(final MetricEventKey key) {
-        return stop(key.buildKey());
+    public Duration stop(final MetricContext context) {
+        return stop(Optional.of(context));
     }
 
-    /**
-     * Stop the watch using hte provided message to notify lap and completion.
-     *
-     * @param eventKey Event key or use in the final lap.
-     * @return Milliseconds since start.
-     */
-    public Long stop(final String eventKey) {
+    private Duration stop(final Optional<MetricContext> context) {
         assertRunning(Boolean.TRUE);
 
-        final Long elapsed = elapsedMillis();
-        lapNotifier.accept(eventKey, elapsed);
+        final Duration elapsed = Duration.ofMillis(elapsedMillis());
+        lapNotifier.accept(context, elapsed);
         completionNotifier.accept(elapsed);
 
         isRunning.set(Boolean.FALSE);
         return elapsed;
     }
 
-    public Long getStartTimeMillis() {
-        assertRunning(Boolean.TRUE);
-        return startMillis;
-    }
-
     public AtomicBoolean isRunning() {
         return isRunning;
     }
 
-    public void setCompletionNotifier(final Consumer<Long> completionNotifier) {
+    public void setCompletionNotifier(final Consumer<Duration> completionNotifier) {
         this.completionNotifier = completionNotifier;
     }
 
-    public void setLapNotifier(final BiConsumer<String, Long> lapNotifier) {
+    public void setLapNotifier(final BiConsumer<Optional<MetricContext>, Duration> lapNotifier) {
         this.lapNotifier = lapNotifier;
     }
 
@@ -135,8 +111,4 @@ public class StopWatch implements Closeable, Resolver {
         stop();
     }
 
-    @Override
-    public void done() {
-        stop();
-    }
 }

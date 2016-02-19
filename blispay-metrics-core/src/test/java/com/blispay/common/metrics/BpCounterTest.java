@@ -3,6 +3,9 @@ package com.blispay.common.metrics;
 //CHECK_OFF: AvoidStarImport
 
 import com.blispay.common.metrics.metric.BpCounter;
+import com.blispay.common.metrics.metric.BusinessMetricName;
+import com.blispay.common.metrics.metric.MetricName;
+import com.blispay.common.metrics.metric.MetricClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -14,17 +17,15 @@ public class BpCounterTest extends AbstractMetricsTest {
 
     @Test
     public void testIncrementAndDecrement() {
-        final BpCounter counter = metricService.createCounter(BpCounterTest.class, "defaultIncrementerTestCount", "Test the default incrementer.");
+        final MetricName metricName = new BusinessMetricName("counter", "test");
 
-        assertEquals(0L, counter.aggregateSample().getAttribute("count"));
-        counter.increment();
-        assertEquals(1L, counter.aggregateSample().getAttribute("count"));
+        final BpCounter counter = metricService.createCounter(metricName, MetricClass.apiCall());
+
+        assertEquals(0L, counter.getCount().longValue());
         counter.increment(5L);
-        assertEquals(6L, counter.aggregateSample().getAttribute("count"));
-        counter.decrement();
-        assertEquals(5L, counter.aggregateSample().getAttribute("count"));
+        assertEquals(5L, counter.getCount().longValue());
         counter.decrement(5L);
-        assertEquals(0L, counter.aggregateSample().getAttribute("count"));
+        assertEquals(0L, counter.getCount().longValue());
     }
 
 }

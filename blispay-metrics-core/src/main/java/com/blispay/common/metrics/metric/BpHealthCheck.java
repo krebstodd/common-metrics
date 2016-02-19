@@ -1,33 +1,22 @@
 package com.blispay.common.metrics.metric;
 
-import com.blispay.common.metrics.util.ImmutablePair;
-
 import java.util.function.Supplier;
 
-public class BpHealthCheck extends BpMetric<Boolean> {
+public class BpHealthCheck extends BpMetric {
+
+    private static final MetricType mType = MetricType.HEALTH;
 
     private final Supplier<Result> healthGauge;
 
-    public BpHealthCheck(final Class<?> owner, final String name, final String description, final Supplier<Result> healthGauge) {
-        super(owner, name, description);
+    public BpHealthCheck(final MetricName mName, final MetricClass mClass, final Supplier<Result> healthGauge) {
+        super(mName, mClass, mType);
+
         this.healthGauge = healthGauge;
     }
 
-    // CHECK_OFF: MagicNumber
-    @Override
-    public Sample aggregateSample() {
-        final Result result = healthGauge.get();
-
-        final ImmutablePair[] sample = new ImmutablePair[5];
-        sample[0] = new ImmutablePair("name", getName());
-        sample[1] = new ImmutablePair("description", getDescription());
-        sample[2] = new ImmutablePair("healthy", result.isHealthy());
-        sample[3] = new ImmutablePair("message", result.getMessage());
-        sample[4] = new ImmutablePair("throwable", result.getThrowable());
-
-        return new Sample(getName(), sample);
+    public Result checkHealth() {
+        return healthGauge.get();
     }
-    // CHECK_ON: MagicNumber
 
     public static final class Result {
 

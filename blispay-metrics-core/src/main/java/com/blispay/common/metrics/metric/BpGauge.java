@@ -1,37 +1,51 @@
 package com.blispay.common.metrics.metric;
 
-import com.blispay.common.metrics.util.ImmutablePair;
+import com.blispay.common.metrics.event.MetricEvent;
+import com.blispay.common.metrics.report.SnapshotProvider;
 import com.codahale.metrics.Gauge;
 
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class BpGauge<T> extends BpMetric<T> {
+public class BpGauge<T> extends BpMetric implements SnapshotProvider {
+
+    private static final MetricType mType = MetricType.RESOURCE_UTILIZATION;
 
     private final Gauge<T> gauge;
 
-    public BpGauge(final Class<?> owner, final String name, final String description, final Supplier<T> supplier) {
-        super(owner, name, description);
-        this.gauge = supplier::get;
-    }
+    private Function<T, MetricEvent.Level> levelFn;
 
-    public BpGauge(final Gauge<T> gauge, final Class<?> owner, final String name, final String description) {
-        super(owner, name, description);
-        this.gauge = gauge;
+    private final Measurement.Units units;
+
+    public BpGauge(final MetricName mName, final MetricClass mClass,
+                   final Supplier<T> supplier, final Measurement.Units units) {
+        super(mName, mClass, mType);
+
+        this.gauge = supplier::get;
+        this.units = units;
     }
 
     public T getValue() {
         return this.gauge.getValue();
     }
 
-    // CHECK_OFF: MagicNumber
     @Override
-    public Sample aggregateSample() {
-        final ImmutablePair[] sample = new ImmutablePair[3];
-        sample[0] = new ImmutablePair("name", getName());
-        sample[1] = new ImmutablePair("description", getDescription());
-        sample[2] = new ImmutablePair("currentValue", getValue());
-        return new Sample(getName(), sample);
+    public MetricEvent snapshot() {
+        final T currVal = getValue();
+        return buildEvent(Optional.empty(), new Measurement<>(currVal, units), determineLevel(currVal));
     }
-    // CHECK_ON: MagicNumber
+
+    public void setEventRecordLevelFn(final Function<T, MetricEvent.Level> fn) {
+        this.levelFn = fn;
+    }
+
+    private MetricEvent.Level determineLevel(final T currValue) {
+        if (levelFn != null) {
+            return levelFn.apply(currValue);
+        } else {
+            return MetricEvent.Level.INFO;
+        }
+    }
 
 }

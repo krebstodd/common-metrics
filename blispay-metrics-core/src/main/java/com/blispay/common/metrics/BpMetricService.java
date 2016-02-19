@@ -1,185 +1,86 @@
 package com.blispay.common.metrics;
 
+import com.blispay.common.metrics.event.EventDispatcher;
+import com.blispay.common.metrics.event.EventListener;
 import com.blispay.common.metrics.metric.BpCounter;
 import com.blispay.common.metrics.metric.BpGauge;
 import com.blispay.common.metrics.metric.BpHealthCheck;
-import com.blispay.common.metrics.metric.BpHistogram;
-import com.blispay.common.metrics.metric.BpMeter;
 import com.blispay.common.metrics.metric.BpMetric;
 import com.blispay.common.metrics.metric.BpTimer;
-import com.blispay.common.metrics.probe.BpMetricProbe;
-import com.blispay.common.metrics.report.BpEventListener;
-import com.blispay.common.metrics.report.BpEventReporter;
-import com.blispay.common.metrics.report.BpEventService;
-import com.blispay.common.metrics.report.BpMetricReporter;
-import com.blispay.common.metrics.report.DefaultBpEventReportingService;
+import com.blispay.common.metrics.metric.Measurement;
+import com.blispay.common.metrics.metric.MetricName;
+import com.blispay.common.metrics.metric.MetricClass;
+import com.blispay.common.metrics.report.SnapshotProvider;
+import com.blispay.common.metrics.report.SnapshotReporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
-public final class BpMetricService {
+public class BpMetricService {
 
-    private static BpMetricService GLOBAL_INSTANCE = new BpMetricService();
+    private static final Logger LOG = LoggerFactory.getLogger(BpMetricService.class);
 
-    private final AtomicBoolean isRunning = new AtomicBoolean(false);
-    private final Set<BpMetricProbe> probes = new HashSet<>();
-    private final Set<BpMetricReporter> reporters = new HashSet<>();
+    private static final BpMetricService GLOBAL = new BpMetricService();
 
-    private final BpMetricFactory metricFactory;
-    private final BpEventService eventService;
-    private final BpMetricSet metrics;
+    private final EventDispatcher eventDispatcher = new EventDispatcher();
+    private final ConcurrentHashMap<String, BpMetric> metrics = new ConcurrentHashMap<>();
+    private final Set<SnapshotReporter> snapshotReporters = new HashSet<>();
 
-    public BpMetricService() {
-        this(new DefaultBpEventReportingService(), new BpMetricFactory());
+    public BpCounter createCounter(final MetricName name, final MetricClass type) {
+        return addMetric(new BpCounter(name, type));
     }
 
-    public BpMetricService(final BpEventService eventRecordingService) {
-        this(eventRecordingService, new BpMetricFactory());
+    public BpTimer createTimer(final MetricName name, final MetricClass type) {
+        return addMetric(new BpTimer(name, type));
     }
 
-    public BpMetricService(final BpMetricFactory metricFactory) {
-        this(new DefaultBpEventReportingService(), metricFactory);
+    public <R> BpGauge<R> createGauge(final MetricName name, final MetricClass type, final Measurement.Units supplierUnits,
+                                      final Supplier<R> resultSupplier) {
+
+        return addMetric(new BpGauge<>(name, type, resultSupplier, supplierUnits));
     }
 
-    /**
-     * Create a new bp metric service with a user provided event recording service and metric factory.
-     *
-     * @param eventService Event service.
-     * @param metricFactory Metric factory.
-     */
-    public BpMetricService(final BpEventService eventService, final BpMetricFactory metricFactory) {
-        this.eventService = eventService;
-        this.metricFactory = metricFactory;
-        this.metrics  = new BpMetricSet();
+    public BpHealthCheck createHealthCheck(final MetricName name, final MetricClass type, final Supplier<BpHealthCheck.Result> healthSupplier) {
 
-        this.metricFactory.setEventRecordingService(this.eventService);
+        return addMetric(new BpHealthCheck(name, type, healthSupplier));
     }
 
-    public BpCounter createCounter(final Class clazz, final String metricName, final String description) {
-        return registerNewMetric(metricFactory.createCounter(clazz, metricName, description));
+    public <M extends BpMetric> M addMetric(final M metric) {
+        return (M) metrics.computeIfAbsent(metric.getName().toString(), nameStr -> {
+                LOG.info("Registering new metric [{}]", nameStr);
+                metric.setEventEmitter(eventDispatcher.newEventEmitter());
+                return metric;
+            });
     }
 
-    public BpHistogram createHistogram(final Class clazz, final String metricName, final String description) {
-        return registerNewMetric(metricFactory.createHistogram(clazz, metricName, description));
+    public void addEventListener(final EventListener eventListener) {
+        this.eventDispatcher.addListener(eventListener);
     }
 
-    public BpMeter createMeter(final Class clazz, final String metricName, final String description) {
-        return registerNewMetric(metricFactory.createMeter(clazz, metricName, description));
+    public void addSnapshotReporter(final SnapshotReporter snReporter) {
+        snReporter.setSnapshotProviders(this::getSnapshotProviders);
+        snapshotReporters.add(snReporter);
     }
 
-    public BpTimer createTimer(final Class clazz, final String metricName, final String description) {
-        return registerNewMetric(metricFactory.createTimer(clazz, metricName, description));
+    public BpMetric getMetric(final String name) {
+        return metrics.get(name);
     }
 
-    public <R> BpGauge<R> createGauge(final Class clazz, final String metricName,
-                                      final String description, final Supplier<R> resultSupplier) {
-
-        return registerNewMetric(metricFactory.createGauge(clazz, metricName, description, resultSupplier));
-    }
-
-    public BpHealthCheck createHealthCheck(final Class clazz, final String metricName,
-                                           final String description, final Supplier<BpHealthCheck.Result> healthSupplier) {
-        return registerNewMetric(metricFactory.createHealthCheck(clazz, metricName, description, healthSupplier));
-    }
-
-    public BpMetric getMetric(final Class owningClass, final String metricName) {
-        return metrics.getMetric(owningClass, metricName);
-    }
-
-    public void addAll(final Collection<BpMetric> metrics) {
-        metrics.forEach(this::registerNewMetric);
-    }
-
-    public void removeMetric(final BpMetric metric) {
-        metrics.removeMetric(metric.getName());
-    }
-
-    public void clear() {
-        metrics.clear();
-    }
-
-    private <M extends BpMetric> M registerNewMetric(final M metric) {
-        return metrics.registerMetric(metric);
-    }
-
-    /**
-     * Add a new probe instance. Will start the probe if the service is already running.
-     * @param probe A new probe using the current metric service instance.
-     */
-    public void addProbe(final BpMetricProbe probe) {
-        probes.add(probe);
-
-        synchronized (isRunning) {
-            if (isRunning.get()) {
-                probe.start();
-            }
-        }
-    }
-
-    /**
-     * Add a new reporter to the metric service.
-     * @param reporter The reporter to add.
-     */
-    public void addReporter(final BpMetricReporter reporter) {
-        reporter.setSampler(metrics::sample);
-
-        synchronized (isRunning) {
-            if (isRunning.get()) {
-                reporter.start();
-            }
-        }
-
-        reporters.add(reporter);
-    }
-
-    public void removeReporter(final BpMetricReporter reporter) {
-        reporters.remove(reporter);
-    }
-
-    public void addEventListener(final BpEventListener listener) {
-        this.eventService.addEventListener(listener);
-    }
-
-    public void removeEventListener(final BpEventReporter listener) {
-        this.eventService.removeEventListener(listener);
-    }
-
-    /**
-     * Start the bp metric service and all reporters.
-     * @return The current instance.
-     */
-    public BpMetricService start() {
-
-        if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
-            reporters.forEach(BpMetricReporter::start);
-            probes.forEach(BpMetricProbe::start);
-        }
-
-        return this;
-    }
-
-    /**
-     * Stop the metric service from reporting metrics.
-     */
-    public void stop() {
-        if (isRunning.compareAndSet(Boolean.TRUE, Boolean.FALSE)) {
-            reporters.forEach(BpMetricReporter::stop);
-        }
-    }
-
-    public boolean isRunning() {
-        return isRunning.get();
-    }
-
-    public void flushReporters() {
-        reporters.forEach(BpMetricReporter::report);
+    public Set<SnapshotProvider> getSnapshotProviders() {
+        return metrics.values()
+                .stream()
+                .filter(met -> met instanceof SnapshotProvider)
+                .map(met -> (SnapshotProvider) met)
+                .collect(Collectors.toSet());
     }
 
     public static BpMetricService globalInstance() {
-        return GLOBAL_INSTANCE;
+        return GLOBAL;
     }
 
 }

@@ -1,12 +1,10 @@
 package com.blispay.common.metrics;
 
-import com.blispay.common.metrics.metric.BpGauge;
-import com.blispay.common.metrics.metric.BpMeter;
-import com.blispay.common.metrics.metric.BpTimer;
-import com.blispay.common.metrics.report.BpEventListener;
-import com.blispay.common.metrics.report.DefaultBpEventReportingService;
-import com.blispay.common.metrics.report.EventFilter;
-import com.blispay.common.metrics.util.MetricEvent;
+import com.blispay.common.metrics.event.MetricEvent;
+import com.blispay.common.metrics.metric.InfrastructureMetricName;
+import com.blispay.common.metrics.metric.MetricClass;
+import com.blispay.common.metrics.metric.MetricType;
+import com.blispay.common.metrics.report.SnapshotReporter;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.server.ConnectionFactory;
@@ -18,20 +16,15 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.hamcrest.CoreMatchers;
-import org.junit.After;
 import org.junit.Test;
 
-import java.time.Duration;
 import java.time.Instant;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -42,17 +35,16 @@ import static org.mockito.Mockito.when;
 // CHECK_OFF: MagicNumber
 public class JettyProbeTest {
 
-    private static final BpMetricService metricService = BpMetricService.globalInstance();
-
-    @After
-    public void clearMetrics() {
-        metricService.clear();
-    }
+    private static final String appId = "jettyApp";
 
     @Test
     public void testInstrumentedConnectionFactory() throws Exception {
 
-        final JettyProbe probe = new JettyProbe(queuedThreadPool(), (channel) -> { }, metricService);
+        final TestMetricEventListener testReporter = new TestMetricEventListener();
+        testReporter.addFilter(evt -> evt.getName().toString().equals("metrics.jettyApp.jetty.connection.time"));
+        final BpMetricService metricService = new BpMetricService();
+
+        final JettyProbe probe = new JettyProbe(appId, queuedThreadPool(), (channel) -> { }, metricService);
         final ConnectionFactory instrumentedFactory = probe.setAndInstrumentConnectionFactory(new ConnectionFactory() {
             @Override
             public String getProtocol() {
@@ -68,14 +60,21 @@ public class JettyProbeTest {
 
         final Connection connection = instrumentedFactory.newConnection(mock(Connector.class), mock(EndPoint.class));
         connection.onOpen();
-        Thread.sleep(1000);
+        Thread.sleep(300);
         connection.onClose();
+
     }
 
     @Test
     public void testInstrumentedServer() throws Exception {
+        final TestMetricEventListener testReporter = new TestMetricEventListener();
+        testReporter.addFilter(evt -> evt.getName().toString().equals("metrics.jettyApp.jetty.http.request"));
+
+        final BpMetricService metricService = new BpMetricService();
+        metricService.addEventListener(testReporter);
+
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        final JettyProbe probe = new JettyProbe(queuedThreadPool(), (HttpChannel<?> channel) -> countDownLatch.countDown(), metricService);
+        final JettyProbe probe = new JettyProbe(appId, queuedThreadPool(), (HttpChannel<?> channel) -> countDownLatch.countDown(), metricService);
         final Server jettyServer = probe.getInstrumentedServer();
         jettyServer.start();
 
@@ -84,73 +83,84 @@ public class JettyProbeTest {
 
         assertEquals(0L, countDownLatch.getCount());
 
-        final BpTimer requestsTimer = (BpTimer) metricService.getMetric(InstrumentedJettyServer.class, "requests");
-        assertEquals(2L, requestsTimer.getCount());
+        final MetricEvent event1 = testReporter.history().poll();
+        final MetricEvent event2 = testReporter.history().poll();
 
-        final BpMeter meter2xx = (BpMeter) metricService.getMetric(InstrumentedJettyServer.class, "2xx-responses");
-        assertEquals(1L, meter2xx.getCount().longValue());
+        final Map<String, String> contextMap = new HashMap<>();
+        contextMap.put("path", "/user/create/v1");
+        contextMap.put("method", "POST");
+        contextMap.put("statusCode", "200");
+        assertThat(event1, new MetricEventMatcher(new InfrastructureMetricName("jettyApp", "jetty", "http", "request"), MetricType.PERFORMANCE, MetricClass.apiCall(), contextMap));
 
-        final BpMeter meter4xx = (BpMeter) metricService.getMetric(InstrumentedJettyServer.class, "4xx-responses");
-        assertEquals(1L, meter4xx.getCount().longValue());
+        contextMap.put("path", "/user/v1");
+        contextMap.put("method", "GET");
+        contextMap.put("statusCode", "404");
+        assertThat(event2, new MetricEventMatcher(new InfrastructureMetricName("jettyApp", "jetty", "http", "request"), MetricType.PERFORMANCE, MetricClass.apiCall(), contextMap));
 
-        // wait for gauge to update
-        Thread.sleep(5000);
-        final BpGauge gauge4xx = (BpGauge) metricService.getMetric(InstrumentedJettyServer.class, "percent-4xx-1m");
-        assertEquals(0.5D, (Double) gauge4xx.getValue(), 0.05D);
-    }
-
-    @Test
-    public void testProducesEndpointTimingEvents() throws Exception {
-        final BpMetricService service = new BpMetricService(new DefaultBpEventReportingService());
-        final TestableBpEventReporter testReporter = new TestableBpEventReporter();
-        service.addEventListener(testReporter);
-
-        final Duration execTime = Duration.ofSeconds(2);
-        final JettyProbe probe = new JettyProbe(queuedThreadPool(), simulatedHandler(execTime), service);
-        final Server jettyServer = probe.getInstrumentedServer();
-        jettyServer.start();
-
-        jettyServer.handle(mockChannel("POST", "/user/create/v1", 200));
-
-        final Queue<MetricEvent> events = testReporter.history();
-        assertEquals(1, events.size());
-
-        final MetricEvent evt = events.poll();
-        assertThat(evt.print(), CoreMatchers.containsString("eventKey=[[method=[POST],path=[/user/create/v1],statusCode=[200]]]"));
-        assertTrue(approximatelyEqual(2000L, Long.valueOf(evt.getValue().toString()), 50L));
     }
 
     @Test
     public void testThreadPoolMetrics() throws Exception {
+        final SnapshotReporter testReporter = new TestSnapshotReporter();
+
+        final BpMetricService metricService = new BpMetricService();
+        metricService.addSnapshotReporter(testReporter);
+
         final CountDownLatch countDownLatch = new CountDownLatch(1);
+        final AtomicBoolean threadDispatched = new AtomicBoolean(false);
 
         final QueuedThreadPool tp = queuedThreadPool();
-        new JettyProbe(tp, (HttpChannel<?> channel) -> { }, metricService);
+        new JettyProbe(appId, tp, (HttpChannel<?> channel) -> { }, metricService);
         tp.start();
 
-        final BpGauge poolSize = (BpGauge) metricService.getMetric(QueuedThreadPool.class, "size");
-        final BpGauge utilization = (BpGauge) metricService.getMetric(QueuedThreadPool.class, "utilization");
-        final BpGauge jobs = (BpGauge) metricService.getMetric(QueuedThreadPool.class, "jobs");
+        final Supplier<Boolean> utilizationTest = () ->{
+            final MetricEvent event = testReporter.report()
+                    .stream()
+                    .filter(evt -> evt.getName().toString().equals("metrics.jettyApp.jetty.threadPool.utilization"))
+                    .findAny()
+                    .orElseThrow(() -> new IllegalStateException("Unable to locate utilization metric"));
+
+            assertThat(event, new MetricEventMatcher("metrics.jettyApp.jetty.threadPool.utilization", "UTIL", "TP", new HashMap<>(), measurementMatcher("0.125", "PCT")));
+            return Boolean.TRUE;
+        };
+
+        final Supplier<Boolean> countTest = () ->{
+            final MetricEvent event = testReporter.report()
+                    .stream()
+                    .filter(evt -> evt.getName().toString().equals("metrics.jettyApp.jetty.threadPool.threadCount"))
+                    .findAny()
+                    .orElseThrow(() -> new IllegalStateException("Unable to locate count metric"));
+
+            assertThat(event, new MetricEventMatcher("metrics.jettyApp.jetty.threadPool.threadCount", "UTIL", "TP", new HashMap<>(), measurementMatcher("8", "COUNT")));
+            return Boolean.TRUE;
+        };
+
+        final Supplier<Boolean> queueSize = () ->{
+            final MetricEvent event = testReporter.report()
+                    .stream()
+                    .filter(evt -> evt.getName().toString().equals("metrics.jettyApp.jetty.threadPool.queueSize"))
+                    .findAny()
+                    .orElseThrow(() -> new IllegalStateException("Unable to locate queue size metric"));
+
+            assertThat(event, new MetricEventMatcher("metrics.jettyApp.jetty.threadPool.queueSize", "UTIL", "TP", new HashMap<>(), measurementMatcher("0", "COUNT")));
+            return Boolean.TRUE;
+        };
 
         tp.execute(() -> {
-                assertEquals(0.125D, utilization.getValue()); // There are 8 threads and we're using one.
+                utilizationTest.get();
+                countTest.get();
+                queueSize.get();
+
+                threadDispatched.set(true);
                 countDownLatch.countDown();
             });
 
         countDownLatch.await(1, TimeUnit.SECONDS);
-
-        assertEquals(tp.getThreads(), poolSize.getValue());
-        assertEquals(0, jobs.getValue());
+        assertTrue(threadDispatched.get());
     }
 
-    private static Consumer<HttpChannel<?>> simulatedHandler(final Duration simulatedExecutionTime) {
-        return (channel) -> {
-            try {
-                Thread.sleep(simulatedExecutionTime.toMillis());
-            } catch (InterruptedException e) {
-                throw new IllegalStateException(e);
-            }
-        };
+    private static <T> MeasurementMatcher measurementMatcher(final T val, final String units) {
+        return new MeasurementMatcher("value", val.toString(), "units", units);
     }
 
     private QueuedThreadPool queuedThreadPool() {
@@ -179,30 +189,6 @@ public class JettyProbeTest {
 
     private Boolean approximatelyEqual(final Long expected, final Long actual, final Long acceptableDelta) {
         return Math.abs(expected - actual) < acceptableDelta;
-    }
-
-    private static class TestableBpEventReporter implements BpEventListener {
-
-        private final Set<EventFilter> filters = new HashSet<>();
-        private final LinkedList<MetricEvent> events = new LinkedList<>();
-
-        @Override
-        public void acceptEvent(final MetricEvent event) {
-            events.add(event);
-        }
-
-        @Override
-        public Collection<EventFilter> getFilters() {
-            return filters;
-        }
-
-        public void addFilter(final EventFilter filter) {
-            this.filters.add(filter);
-        }
-
-        public LinkedList<MetricEvent> history() {
-            return events;
-        }
     }
 
 }

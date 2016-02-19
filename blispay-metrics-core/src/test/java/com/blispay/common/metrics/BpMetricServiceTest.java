@@ -1,55 +1,40 @@
 package com.blispay.common.metrics;
 
 import com.blispay.common.metrics.metric.BpCounter;
-import com.blispay.common.metrics.metric.BpMetric;
-import com.blispay.common.metrics.report.BpEventService;
-import com.blispay.common.metrics.report.BpSlf4jEventReporter;
-import com.blispay.common.metrics.report.DefaultBpEventReportingService;
+import com.blispay.common.metrics.metric.BusinessMetricName;
+import com.blispay.common.metrics.metric.MetricName;
+import com.blispay.common.metrics.metric.MetricClass;
 import org.junit.Test;
-import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
 // CHECK_OFF: MultipleStringLiterals
 public class BpMetricServiceTest extends AbstractMetricsTest {
 
     @Test
     public void testIsSingleton() {
-        final BpCounter counter = metricService.createCounter(BpMetricServiceTest.class, "defaultIncrementerTestCount", "Test the default incrementer.");
+        final MetricName counterName = new BusinessMetricName("testCounter", "count");
+        final BpCounter counter = BpMetricService.globalInstance().createCounter(counterName, MetricClass.businessEvent());
 
-        assertEquals(0L, counter.aggregateSample().getAttribute("count"));
-        counter.increment();
+        assertEquals(0L, counter.getCount().longValue());
+        counter.increment(1L);
 
-        final BpMetricService metricServiceInstance = BpMetricService.globalInstance();
-        final BpCounter counter2 = (BpCounter) metricServiceInstance.getMetric(BpMetricServiceTest.class, "defaultIncrementerTestCount");
+        final BpCounter counter2 = BpMetricService.globalInstance().createCounter(counterName, MetricClass.businessEvent());
 
-        counter2.increment();
+        counter2.increment(1L);
 
-        assertEquals(2L, counter2.aggregateSample().getAttribute("count"));
-        assertEquals(counter.aggregateSample().getAttribute("count"), counter2.aggregateSample().getAttribute("count"));
+        assertEquals(2L, counter2.getCount().longValue());
+        assertEquals(counter.getCount().longValue(), counter2.getCount().longValue());
     }
 
     @Test
-    public void testRemoveMetricByObject() {
-        final BpMetric metric = metricService.createCounter(BpMetricServiceTest.class, "testRemoveMetricByObject", "Test to ensure we can remove a metric given the obj.");
-        assertTrue(metricService.getMetric(BpMetricServiceTest.class, "testRemoveMetricByObject") instanceof BpCounter);
-        metricService.removeMetric(metric);
-        assertNull(metricService.getMetric(BpMetricServiceTest.class, "testRemoveMetricByObject"));
-    }
+    public void testGetMetric() {
+        final MetricName counterName = new BusinessMetricName("testCounter", "count");
+        final BpCounter counter = BpMetricService.globalInstance().createCounter(counterName, MetricClass.businessEvent());
 
-    @Test
-    public void testLocalService() {
-        final BpEventService recordingService = new DefaultBpEventReportingService();
-        recordingService.addEventListener(new BpSlf4jEventReporter(LoggerFactory.getLogger(getClass())));
-
-        final BpMetricService localService = new BpMetricService(recordingService);
-
-        final BpCounter counter = localService.createCounter(BpMetricServiceTest.class, "defaultIncrementerTestCount", "Test the default incrementer.");
-
-        assertEquals(0L, counter.aggregateSample().getAttribute("count"));
-        counter.increment();
+        assertNull(BpMetricService.globalInstance().getMetric("unknown"));
+        assertEquals(counter, BpMetricService.globalInstance().getMetric(counterName.toString()));
     }
 
 }

@@ -1,25 +1,26 @@
 package com.blispay.common.metrics.metric;
 
-import com.blispay.common.metrics.util.ImmutablePair;
+import com.blispay.common.metrics.event.MetricEvent;
 import com.blispay.common.metrics.util.StopWatch;
 import com.codahale.metrics.Timer;
 
+import java.time.Duration;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
-public class BpTimer extends BpMetric<Long> {
+public class BpTimer extends BpMetric {
 
-    private static Boolean DEFAULT_PUBLISH_EVENTS = Boolean.TRUE;
+    private static final MetricType mType = MetricType.PERFORMANCE;
 
     private final Timer timer;
 
-    public BpTimer(final Class<?> owner, final String name, final String description) {
-        this(new Timer(), owner, name, description);
-    }
+    private Function<Duration, MetricEvent.Level> levelFn;
 
-    public BpTimer(final Timer timer, final Class<?> owner, final String name, final String description) {
-        super(owner, name, description, DEFAULT_PUBLISH_EVENTS);
-        this.timer = timer;
+    public BpTimer(final MetricName mName, final MetricClass mClass) {
+        super(mName, mClass, mType);
+        this.timer = new Timer();
     }
 
     public void update(final long duration, final TimeUnit timeUnit) {
@@ -27,7 +28,14 @@ public class BpTimer extends BpMetric<Long> {
     }
 
     public <T> T time(final Callable<T> event) throws Exception {
-        return timer.time(event);
+
+        final StopWatch sw = time();
+
+        final T result = event.call();
+
+        sw.stop();
+
+        return result;
     }
 
     /**
@@ -38,12 +46,28 @@ public class BpTimer extends BpMetric<Long> {
     public StopWatch time() {
         final StopWatch stopWatch = new StopWatch();
 
-        stopWatch.setCompletionNotifier(elapsedMillis -> this.timer.update(elapsedMillis, TimeUnit.MILLISECONDS));
-        stopWatch.setLapNotifier(this::publishEvent);
+        stopWatch.setCompletionNotifier(elapsedMillis -> this.timer.update(elapsedMillis.toMillis(), TimeUnit.MILLISECONDS));
+        stopWatch.setLapNotifier(this::emitLapEvent);
 
         stopWatch.start();
 
         return stopWatch;
+    }
+
+    public void setEventRecordLevelFn(final Function<Duration, MetricEvent.Level> fn) {
+        this.levelFn = fn;
+    }
+
+    private void emitLapEvent(final Optional<MetricContext> context, final Duration elapsed) {
+        emitEvent(context, new Measurement<>(elapsed.toMillis(), Measurement.Units.MILLISECONDS), determineLevel(elapsed));
+    }
+
+    private MetricEvent.Level determineLevel(final Duration elapsed) {
+        if (levelFn != null) {
+            return levelFn.apply(elapsed);
+        } else {
+            return MetricEvent.Level.INFO;
+        }
     }
 
     public long getCount() {
@@ -104,40 +128,6 @@ public class BpTimer extends BpMetric<Long> {
 
     public long[] getValues() {
         return timer.getSnapshot().getValues();
-    }
-
-    // CHECK_OFF: MagicNumber
-    @Override
-    public Sample aggregateSample() {
-        final ImmutablePair[] sample = new ImmutablePair[19];
-
-        sample[0] = new ImmutablePair("name", getName());
-        sample[1] = new ImmutablePair("description", getDescription());
-        sample[2] = new ImmutablePair("durationUnit", getDurationUnit());
-        sample[3] = new ImmutablePair("rateUnit", getRateUnit());
-        sample[4] = new ImmutablePair("count", getCount());
-        sample[5] = new ImmutablePair("meanRate", getMeanRate());
-        sample[6] = new ImmutablePair("oneMinuteRate", getOneMinuteRate());
-        sample[7] = new ImmutablePair("fiveMinuteRate", getFiveMinuteRate());
-        sample[8] = new ImmutablePair("fifteenMinuteRate", getFifteenMinuteRate());
-        sample[9] = new ImmutablePair("median", getMedian());
-        sample[10] = new ImmutablePair("mean", getMean());
-        sample[11] = new ImmutablePair("75thPercentile", get75thPercentile());
-        sample[12] = new ImmutablePair("95thPercentile", get95thPercentile());
-        sample[13] = new ImmutablePair("98thPercentile", get98thPercentile());
-        sample[14] = new ImmutablePair("99thPercentile", get99thPercentile());
-        sample[15] = new ImmutablePair("999thPercentile", get999thPercentile());
-        sample[16] = new ImmutablePair("max", getMax());
-        sample[17] = new ImmutablePair("min", getMin());
-        sample[18] = new ImmutablePair("mean", getMean());
-
-        return new Sample(getName(), sample);
-    }
-    // CHECK_ON: MagicNumber
-
-    @FunctionalInterface
-    public interface Resolver {
-        void done();
     }
 
 }

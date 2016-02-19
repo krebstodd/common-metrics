@@ -1,15 +1,17 @@
 package com.blispay.common.metrics;
 
 import com.blispay.common.metrics.metric.BpHealthCheck;
+import com.blispay.common.metrics.metric.BusinessMetricName;
+import com.blispay.common.metrics.metric.MetricClass;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 // CHECK_OFF: MultipleStringLiterals
 public class BpHealthCheckTest extends AbstractMetricsTest {
@@ -26,14 +28,14 @@ public class BpHealthCheckTest extends AbstractMetricsTest {
             }
         };
 
-        final BpHealthCheck healthCheck = metricService.createHealthCheck(BpHealthCheckTest.class, "currentHealth", "Current health of the bp health check test", healthProbe);
+        final BpHealthCheck healthCheck = metricService.createHealthCheck(new BusinessMetricName("healthCheck", "isHealthy"), MetricClass.businessEvent(), healthProbe);
 
-        assertTrue((Boolean) healthCheck.aggregateSample().getAttribute("healthy"));
-        assertNull(healthCheck.aggregateSample().getAttribute("message"));
-        assertNull(healthCheck.aggregateSample().getAttribute("throwable"));
+        assertTrue(healthCheck.checkHealth().isHealthy());
+        assertNull(healthCheck.checkHealth().getMessage());
+        assertNull(healthCheck.checkHealth().getThrowable());
         currentHealth.set(false);
-        assertFalse((Boolean) healthCheck.aggregateSample().getAttribute("healthy"));
-        assertEquals("UNHEALTHY", healthCheck.aggregateSample().getAttribute("message"));
+        assertFalse(healthCheck.checkHealth().isHealthy());
+        assertEquals("UNHEALTHY", healthCheck.checkHealth().getMessage());
     }
 
 }

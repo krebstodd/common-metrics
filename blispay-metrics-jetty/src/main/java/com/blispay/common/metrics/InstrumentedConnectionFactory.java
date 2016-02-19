@@ -1,6 +1,7 @@
 package com.blispay.common.metrics;
 
 import com.blispay.common.metrics.metric.BpTimer;
+import com.blispay.common.metrics.util.StopWatch;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.server.ConnectionFactory;
@@ -8,8 +9,9 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.util.component.ContainerLifeCycle;
 
 public class InstrumentedConnectionFactory extends ContainerLifeCycle implements ConnectionFactory {
+
     private final ConnectionFactory connectionFactory;
-    private final BpTimer timer; //NOPMD
+    private final BpTimer timer;
 
     /**
      * Create a new instrumented connection factory.
@@ -34,18 +36,20 @@ public class InstrumentedConnectionFactory extends ContainerLifeCycle implements
      * @return An instrumented jetty connection.
      */
     public Connection newConnection(final Connector connector, final EndPoint endPoint) {
+
         final Connection connection = this.connectionFactory.newConnection(connector, endPoint);
         connection.addListener(new Connection.Listener() {
-            private BpTimer.Resolver resolver;
+            private StopWatch stopWatch;
 
             public void onOpened(final Connection connection) {
-                this.resolver = InstrumentedConnectionFactory.this.timer.time();
+                this.stopWatch = InstrumentedConnectionFactory.this.timer.time();
             }
 
             public void onClosed(final Connection connection) {
-                this.resolver.done();
+                this.stopWatch.stop();
             }
         });
+
         return connection;
     }
 }

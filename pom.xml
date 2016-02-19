@@ -12,7 +12,7 @@
 
     <groupId>com.blispay.common</groupId>
     <artifactId>blispay-metrics-parent</artifactId>
-    <version>0</version>
+    <version>1.0.52</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -22,6 +22,7 @@
         <module>blispay-metrics-vertx</module>
         <module>blispay-metrics-logback</module>
         <module>blispay-metrics-jvm</module>
+        <module>blispay-metrics-core-test</module>
     </modules>
 
     <properties>

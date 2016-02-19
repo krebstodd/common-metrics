@@ -1,39 +1,41 @@
 package com.blispay.common.metrics;
 
 import com.blispay.common.metrics.metric.BpTimer;
-import com.blispay.common.metrics.probe.BpMetricProbe;
+import com.blispay.common.metrics.metric.InfrastructureMetricName;
+import com.blispay.common.metrics.metric.Measurement;
+import com.blispay.common.metrics.metric.MetricClass;
 import com.codahale.metrics.RatioGauge;
 import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.HttpChannel;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
-public class JettyProbe extends BpMetricProbe {
-
-    private static final Logger LOG = LoggerFactory.getLogger(JettyProbe.class);
+public class JettyProbe {
 
     private final Server instrumentedServer;
 
     private ConnectionFactory instrumentedConnectionFactory;
 
     private final BpMetricService metricService;
+    private final String appId;
 
     /**
      * Probe jetty for metrics around connections usage, thread usage, and generatl http metrics.
      *
+     * @param applicationId The applications unique identifier.
      * @param threadPool Thread pool to be used to serve http requests.
      * @param channelHandler Channel handler being handed to http server.
      * @param metricService Metric service to register probe on.
      */
-    public JettyProbe(final QueuedThreadPool threadPool,
+    public JettyProbe(final String applicationId,
+                      final QueuedThreadPool threadPool,
                       final Consumer<HttpChannel<?>> channelHandler,
                       final BpMetricService metricService) {
+        this.appId = applicationId;
         this.metricService = metricService;
-        this.instrumentedServer = new InstrumentedJettyServer(metricService, threadPool, channelHandler);
+        this.instrumentedServer = new InstrumentedJettyServer(applicationId, metricService, threadPool, channelHandler);
         instrumentThreadPool(metricService, threadPool);
     }
 
@@ -50,23 +52,14 @@ public class JettyProbe extends BpMetricProbe {
         return this.instrumentedConnectionFactory;
     }
 
-    @Override
-    protected void startProbe() { }
-
-    @Override
-    protected Logger getLogger() {
-        return LOG;
-    }
-
     /**
      * Instrument a jetty connection factory to collect behavioral metrics on the amount of time connections spend open.
      *
      * @param plain Plain jetty connection factory.
      * @return Instrumented facotry.
      */
-    private static ConnectionFactory instrumentConnectionFactory(final BpMetricService metricService, final ConnectionFactory plain) {
-        final BpTimer connectionTimer
-                = metricService.createTimer(InstrumentedConnectionFactory.class, "connectionTimer", "Gather metrics on the amount of time a Jetty Connection remains open.");
+    private ConnectionFactory instrumentConnectionFactory(final BpMetricService metricService, final ConnectionFactory plain) {
+        final BpTimer connectionTimer = metricService.createTimer(new InfrastructureMetricName(appId, "jetty", "connection", "time"), MetricClass.executionTime());
         return new InstrumentedConnectionFactory(plain, connectionTimer);
     }
 
@@ -75,19 +68,16 @@ public class JettyProbe extends BpMetricProbe {
      *
      * @param pool Queued thread pool to profile.
      */
-    private static void instrumentThreadPool(final BpMetricService metricService, final QueuedThreadPool pool) {
+    private void instrumentThreadPool(final BpMetricService metricService, final QueuedThreadPool pool) {
 
-        metricService.createGauge(QueuedThreadPool.class, "utilization", "Utilization percentage of the jetty thread pool.",
+        metricService.createGauge(new InfrastructureMetricName(appId, "jetty", "threadPool", "utilization"), MetricClass.threadPool(), Measurement.Units.PERCENTAGE,
                 () -> RatioGauge.Ratio.of(pool.getThreads() - pool.getIdleThreads(), pool.getThreads()).getValue());
 
-        metricService.createGauge(QueuedThreadPool.class, "utilization-max", "Maximum utilization percentage of the jetty thread pool.",
-                () ->  RatioGauge.Ratio.of(pool.getThreads() - pool.getIdleThreads(), pool.getMaxThreads()));
+        metricService.createGauge(new InfrastructureMetricName(appId, "jetty", "threadPool", "utilization-max"), MetricClass.threadPool(), Measurement.Units.PERCENTAGE,
+                () -> RatioGauge.Ratio.of(pool.getThreads() - pool.getIdleThreads(), pool.getMaxThreads()).getValue());
 
-        metricService.createGauge(QueuedThreadPool.class, "size", "The current size of the thread pool.",
-                () -> pool.getThreads());
-
-        metricService.createGauge(QueuedThreadPool.class, "jobs", "The current number of jobs waiting in the thread pool queue.",
-                () -> pool.getQueueSize());
+        metricService.createGauge(new InfrastructureMetricName(appId, "jetty", "threadPool", "threadCount"), MetricClass.threadPool(), Measurement.Units.TOTAL, pool::getThreads);
+        metricService.createGauge(new InfrastructureMetricName(appId, "jetty", "threadPool", "queueSize"), MetricClass.threadPool(), Measurement.Units.TOTAL, pool::getQueueSize);
 
     }
 

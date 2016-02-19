@@ -1,62 +1,53 @@
 package com.blispay.common.metrics.metric;
 
-import com.blispay.common.metrics.util.ImmutablePair;
+import com.blispay.common.metrics.event.MetricEvent;
 import com.codahale.metrics.Counter;
 
-public class BpCounter extends BpMetric<Long> {
+import java.util.Optional;
 
-    /**
-     * Default event key name.
-     */
-    public static final String DEFAULT_EVENT_KEY = "increment";
+public class BpCounter extends BpMetric {
+
+    public static final MetricType mType = MetricType.COUNT;
 
     private final Counter counter;
 
-    public BpCounter(final Class<?> owner, final String name, final String description) {
-        this(new Counter(), owner, name, description);
+    public BpCounter(final MetricName mName, final MetricClass mClass) {
+        super(mName, mClass, mType);
+        this.counter = new Counter();
     }
 
-    public BpCounter(final Counter counter, final Class<?> owner, final String name, final String description) {
-        super(owner, name, description);
-        this.counter = counter;
-    }
-
-    public void increment() {
-        increment(1L);
+    public void increment(final MetricContext ec, final Long incrementBy) {
+        updateCounter(Optional.of(ec), incrementBy);
     }
 
     public void increment(final Long incrementBy) {
-        publishEvent(DEFAULT_EVENT_KEY, incrementBy);
-        counter.inc(incrementBy);
+        updateCounter(Optional.empty(), incrementBy);
     }
 
-    public void decrement() {
-        decrement(1L);
+    public void decrement(final MetricContext ec, final Long decrementBy) {
+        updateCounter(Optional.of(ec), negate(decrementBy));
     }
 
     public void decrement(final Long decrementBy) {
-        counter.dec(decrementBy);
-        publishEvent(DEFAULT_EVENT_KEY, negate(decrementBy));
+        updateCounter(Optional.empty(), negate(decrementBy));
     }
 
     public Long getCount() {
         return this.counter.getCount();
     }
 
-    private Long negate(final Long absolute) {
+    private void updateCounter(final Optional<MetricContext> ctx, final Long val) {
+        counter.inc(val);
+
+        emitEvent(ctx, new Measurement<>(val, Measurement.Units.TOTAL), determineLevel(val));
+    }
+
+    private MetricEvent.Level determineLevel(final Long val) {
+        return MetricEvent.Level.INFO;
+    }
+
+    private static Long negate(final Long absolute) {
         return absolute * -1L;
     }
-
-    // CHECK_OFF: MagicNumber
-
-    @Override
-    public Sample aggregateSample() {
-        final ImmutablePair[] sample = new ImmutablePair[3];
-        sample[0] = new ImmutablePair("name", getName());
-        sample[1] = new ImmutablePair("description", getDescription());
-        sample[2] = new ImmutablePair("count", getCount());
-        return new Sample(getName(), sample);
-    }
-    // CHECK_ON: MagicNumber
 
 }
