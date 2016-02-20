@@ -1,5 +1,6 @@
 package com.blispay.common.metrics;
 
+import com.blispay.common.metrics.event.DefaultEventDispatcher;
 import com.blispay.common.metrics.event.EventDispatcher;
 import com.blispay.common.metrics.event.EventEmitter;
 import com.blispay.common.metrics.event.EventSubscriber;
@@ -21,18 +22,30 @@ import com.blispay.common.metrics.model.utilization.ResourceUtilizationData;
 import com.blispay.common.metrics.model.utilization.ResourceUtilizationMetricFactory;
 import com.blispay.common.metrics.report.SnapshotProvider;
 import com.blispay.common.metrics.report.SnapshotReporter;
+import com.blispay.common.metrics.util.StartupPhase;
+import org.springframework.context.SmartLifecycle;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-public class MetricService {
+public class MetricService implements SmartLifecycle {
 
     private static final MetricService GLOBAL = new MetricService();
 
-    private final EventDispatcher eventDispatcher = new EventDispatcher();
+    private final EventDispatcher eventDispatcher;
     private final Set<SnapshotProvider> snapshotProviders = new HashSet<>();
     private final Set<SnapshotReporter> snapshotReporters = new HashSet<>();
+    private final AtomicBoolean isRunning = new AtomicBoolean(Boolean.FALSE);
+
+    public MetricService() {
+        this(new DefaultEventDispatcher());
+    }
+
+    public MetricService(final EventDispatcher eventDispatcher) {
+        this.eventDispatcher = eventDispatcher;
+    }
 
     public ResourceCounter createResourceCounter(final MetricGroup group, final String name) {
         final ResourceCounterMetricFactory factory = new ResourceCounterMetricFactory(group, name);
@@ -42,11 +55,20 @@ public class MetricService {
     public ResourceUtilizationGauge createResourceUtilizationGauge(final MetricGroup group, final String name,
                                                                    final Supplier<ResourceUtilizationData> rGauge) {
 
+        return createResourceUtilizationGauge(group, name, rGauge, Boolean.TRUE);
+    }
+
+    public ResourceUtilizationGauge createResourceUtilizationGauge(final MetricGroup group, final String name,
+                                                                   final Supplier<ResourceUtilizationData> rGauge,
+                                                                   final Boolean allowSnapshots) {
+
         final EventEmitter emitter = eventDispatcher.newEventEmitter();
         final ResourceUtilizationMetricFactory factory = new ResourceUtilizationMetricFactory(group, name);
         final ResourceUtilizationGauge gauge = new ResourceUtilizationGauge(emitter, factory, rGauge);
 
-        snapshotProviders.add(gauge);
+        if (allowSnapshots) {
+            snapshotProviders.add(gauge);
+        }
 
         return gauge;
 
@@ -72,8 +94,8 @@ public class MetricService {
         return new MqCallTimer(eventDispatcher.newEventEmitter(), new MqResourceCallMetricFactory(group, name));
     }
 
-    public void addEventListener(final EventSubscriber eventListener) {
-        this.eventDispatcher.addListener(eventListener);
+    public void addEventSubscriber(final EventSubscriber eventListener) {
+        this.eventDispatcher.subscribe(eventListener);
     }
 
     public void addSnapshotReporter(final SnapshotReporter snReporter) {
@@ -85,4 +107,40 @@ public class MetricService {
         return GLOBAL;
     }
 
+    @Override
+    public boolean isAutoStartup() {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public void stop(final Runnable runnable) {
+
+
+
+        runnable.run();
+    }
+
+    @Override
+    public void start() {
+        if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
+
+        }
+    }
+
+    @Override
+    public void stop() {
+        if (isRunning.compareAndSet(Boolean.TRUE, Boolean.FALSE)) {
+
+        }
+    }
+
+    @Override
+    public boolean isRunning() {
+        return isRunning.get();
+    }
+
+    @Override
+    public int getPhase() {
+        return StartupPhase.SERVICE.value();
+    }
 }

@@ -2,7 +2,7 @@ package com.blispay.common.metrics.model.call;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public abstract class BaseResourceCallEventData {
+public abstract class BaseResourceCallEventData<R extends Resource, A extends Action> {
 
     @JsonProperty("direction")
     private final Direction direction;
@@ -11,15 +11,16 @@ public abstract class BaseResourceCallEventData {
     private final Long durationMillis;
 
     @JsonProperty("action")
-    private final Action action;
+    private final A action;
 
     @JsonProperty("resource")
-    private final Resource resource;
+    private final R resource;
 
     @JsonProperty("status")
     private final Integer status;
 
-    public BaseResourceCallEventData(final Direction direction, final Long durationMillis, final Action action, final Resource resource, final Status status) {
+    public BaseResourceCallEventData(final Direction direction, final Long durationMillis,
+                                     final A action, final R resource, final Status status) {
         this.direction = direction;
         this.durationMillis = durationMillis;
         this.action = action;

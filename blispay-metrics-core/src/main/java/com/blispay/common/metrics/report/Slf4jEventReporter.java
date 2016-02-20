@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 
 public class Slf4jEventReporter extends EventReporter {
 
+    user mapper to secure jsonify
+
     private final Logger logger;
 
     public Slf4jEventReporter(final Logger eventLogger) {

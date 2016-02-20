@@ -1,15 +1,13 @@
 package com.blispay.common.metrics.model;
 
-import com.blispay.common.metrics.util.JsonHelper;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.time.ZonedDateTime;
 
 @JsonIgnoreProperties(ignoreUnknown=true)
-public abstract class BaseMetricModel<E> {
+public abstract class BaseMetricModel<D> {
 
     @JsonProperty("timestamp")
     private final ZonedDateTime timestamp;
@@ -51,7 +49,7 @@ public abstract class BaseMetricModel<E> {
     }
 
     @JsonProperty("eventData")
-    public abstract E eventData();
+    public abstract D eventData();
 
     public enum Type {
 
@@ -72,15 +70,5 @@ public abstract class BaseMetricModel<E> {
         }
 
     }
-
-    @Override
-    public String toString() {
-        try {
-            return JsonHelper.toJson(this);
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
 
 }

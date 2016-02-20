@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 
 public class Slf4jSnapshotReporter extends ScheduledSnapshotReporter {
 
+    use mapper to jsonify
+
     private final Logger logger;
     private Supplier<Set<SnapshotProvider>> snapshotProviderSupplier;
 

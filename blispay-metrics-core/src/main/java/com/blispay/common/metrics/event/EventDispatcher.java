@@ -1,49 +1,57 @@
 package com.blispay.common.metrics.event;
 
 import com.blispay.common.metrics.model.BaseMetricModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.blispay.common.metrics.util.StartupPhase;
+import org.springframework.context.SmartLifecycle;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class EventDispatcher {
+// TODO - Investigate any lightweight frameworks that do in-memory dispatching. May be over-engineering.
+public abstract class EventDispatcher implements SmartLifecycle {
 
-    private static final Logger LOG = LoggerFactory.getLogger(EventDispatcher.class);
+    private final AtomicBoolean isRunning = new AtomicBoolean(Boolean.FALSE);
 
-    final Set<EventSubscriber> eventListeners;
+    public abstract void dispatch(final BaseMetricModel evt);
 
-    public EventDispatcher() {
-        this.eventListeners = new HashSet<>();
+    public abstract EventEmitter newEventEmitter();
+
+    public abstract void subscribe(final EventSubscriber listener);
+
+    @Override
+    public boolean isAutoStartup() {
+        return Boolean.TRUE;
     }
 
-    // TODO - If we ever have listeners that do longer running things than simple SLF4J logging, we'll need to put a thread pool in here.
-    public void dispatch(final BaseMetricModel evt) {
-        eventListeners.stream()
-                .filter(reporter -> passesFilters(reporter, evt))
-                .forEach(reporter -> {
+    @Override
+    public void stop(final Runnable runnable) {
 
-                    try {
-                        reporter.acceptEvent(evt);
-                    } catch (Exception ex) {
-                        LOG.error("Received error attempting to accept event [{}]", evt.getName().toString());
-                    }
 
-                });
+
+        runnable.run();
     }
 
-    public EventEmitter newEventEmitter() {
-        return this::dispatch;
+    @Override
+    public void start() {
+        if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
+
+        }
     }
 
-    public void addListener(final EventSubscriber listener) {
-        eventListeners.add(listener);
+    @Override
+    public void stop() {
+        if (isRunning.compareAndSet(Boolean.TRUE, Boolean.FALSE)) {
+
+        }
     }
 
-    private static Boolean passesFilters(final EventSubscriber reporter, final BaseMetricModel event) {
-        return reporter.getFilters()
-                .stream()
-                .allMatch(filter -> filter.acceptsEvent(event));
+    @Override
+    public boolean isRunning() {
+        return isRunning.get();
+    }
+
+    @Override
+    public int getPhase() {
+        return StartupPhase.DISPATCHER.value();
     }
 
 }
