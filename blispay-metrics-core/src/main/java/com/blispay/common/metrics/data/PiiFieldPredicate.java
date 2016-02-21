@@ -8,47 +8,73 @@ import java.util.stream.Collectors;
 
 public class PiiFieldPredicate implements Predicate<String> {
 
-    private static final Set<String> piiFieldNames = new HashSet<>();
+    private static final Set<String> bannedSubstrings = new HashSet<>();
 
     static {
 
-        // Person name
-        piiFieldNames.add("first_name");
-        piiFieldNames.add("middle_name");
-        piiFieldNames.add("last_name");
+        // Person name - Handles person name, user name.
+        bannedSubstrings.add("name");
+        bannedSubstrings.add("pass_word");
 
-        // Address - Allow zip, state, country
-        piiFieldNames.add("line_1");
-        piiFieldNames.add("line_2");
-        piiFieldNames.add("line_3");
+        // Address - Allow state, country
+        // http://www.lexisnexis.com/legalnewsroom/top-emerging-trends/b/emerging-trends-law-blog/archive/2011/02/15/california-supreme-court-zip-code-personal-identification-information-bullivant-houser-bailey-song-beverly-credit-card-act.aspx
+        bannedSubstrings.add("delivery");
+        bannedSubstrings.add("street");
+        bannedSubstrings.add("line_1");
+        bannedSubstrings.add("line_2");
+        bannedSubstrings.add("line_3");
+        bannedSubstrings.add("secondary_designator");
+        bannedSubstrings.add("addressee");
+        bannedSubstrings.add("first_line");
+        bannedSubstrings.add("last_line");
+        bannedSubstrings.add("zip");
+        bannedSubstrings.add("plus_4_code");
+        bannedSubstrings.add("latitude");
+        bannedSubstrings.add("longitude");
+        bannedSubstrings.add("po_box");
+        bannedSubstrings.add("post_office");
+        bannedSubstrings.add("postal_code");
+
+        // Email
+        bannedSubstrings.add("email");
 
         // Ssn
-        piiFieldNames.add("ssn");
-        piiFieldNames.add("social_security");
-        piiFieldNames.add("nid");
-        piiFieldNames.add("national_id");
+        bannedSubstrings.add("ssn");
+        bannedSubstrings.add("social_security");
+        bannedSubstrings.add("nid");
+        bannedSubstrings.add("national_id");
 
         // dob
-        piiFieldNames.add("birth");
-        piiFieldNames.add("birth");
-        piiFieldNames.add("dob");
-        piiFieldNames.add("age");
+        bannedSubstrings.add("birth");
+        bannedSubstrings.add("dob");
+        bannedSubstrings.add("age");
+        bannedSubstrings.add("birth_place");
+
+        // phone
+        bannedSubstrings.add("phone");
+        bannedSubstrings.add("telephone");
+        bannedSubstrings.add("phone_number");
+        bannedSubstrings.add("telephone_number");
 
         // card related info
-        piiFieldNames.add("cvv");
-        piiFieldNames.add("expiration");
-        piiFieldNames.add("card_number");
-        piiFieldNames.add("pan");
-        piiFieldNames.add("primary_account_number");
-        piiFieldNames.add("card_holder");
+        bannedSubstrings.add("cvv");
+        bannedSubstrings.add("expiration");
+        bannedSubstrings.add("card_number");
+        bannedSubstrings.add("pan");
+        bannedSubstrings.add("primary_account_number");
+        bannedSubstrings.add("card_holder");
 
         // blispay tokens
-        piiFieldNames.add("blispay-session-token");
-        piiFieldNames.add("blispay-agent-token");
+        bannedSubstrings.add("session_token");
+        bannedSubstrings.add("agent_token");
+
+        // Miscellaneous
+        bannedSubstrings.add("drivers_license");
+        bannedSubstrings.add("pass_port");
 
         // Add all existing fields both with underscores replaced by dashes and with them replaced by nothing (handles all one word lower, upper, camel cased)
-        piiFieldNames.addAll(replaceAll("_", "-", piiFieldNames));
-        piiFieldNames.addAll(replaceAll("_", "", piiFieldNames));
+        bannedSubstrings.addAll(replaceAll("_", "-", bannedSubstrings));
+        bannedSubstrings.addAll(replaceAll("_", "", bannedSubstrings));
 
     }
 
@@ -68,6 +94,11 @@ public class PiiFieldPredicate implements Predicate<String> {
 
     @Override
     public boolean test(final String key) {
-        return !overrides.contains(key) && piiFieldNames.contains(key.toLowerCase(Locale.ROOT));
+        return !overrides.contains(key) && isBanned(key.toLowerCase(Locale.ROOT));
+    }
+
+    public boolean isBanned(final String key) {
+        // Test if the key contains a banned substring.
+        return bannedSubstrings.stream().anyMatch(key::contains);
     }
 }
