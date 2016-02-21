@@ -23,6 +23,8 @@ import com.blispay.common.metrics.model.utilization.ResourceUtilizationMetricFac
 import com.blispay.common.metrics.report.SnapshotProvider;
 import com.blispay.common.metrics.report.SnapshotReporter;
 import com.blispay.common.metrics.util.StartupPhase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.SmartLifecycle;
 
 import java.util.HashSet;
@@ -33,6 +35,8 @@ import java.util.function.Supplier;
 public class MetricService implements SmartLifecycle {
 
     private static final MetricService GLOBAL = new MetricService();
+
+    private static final Logger LOG = LoggerFactory.getLogger(MetricService.class);
 
     private final EventDispatcher eventDispatcher;
     private final Set<SnapshotProvider> snapshotProviders = new HashSet<>();
@@ -115,15 +119,25 @@ public class MetricService implements SmartLifecycle {
     @Override
     public void stop(final Runnable runnable) {
 
+        if (isRunning.compareAndSet(Boolean.TRUE, Boolean.FALSE)) {
 
+            eventDispatcher.stop(runnable);
 
-        runnable.run();
+        } else {
+            LOG.warn("Metric service is already stopped");
+            runnable.run();
+        }
+
     }
 
     @Override
     public void start() {
         if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
 
+            eventDispatcher.start();
+
+        } else {
+            LOG.warn("Metric service is already running.");
         }
     }
 
@@ -131,6 +145,10 @@ public class MetricService implements SmartLifecycle {
     public void stop() {
         if (isRunning.compareAndSet(Boolean.TRUE, Boolean.FALSE)) {
 
+            eventDispatcher.stop();
+
+        } else {
+            LOG.warn("Metric service is already stopped.");
         }
     }
 

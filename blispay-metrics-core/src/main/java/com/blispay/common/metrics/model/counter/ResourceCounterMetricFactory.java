@@ -1,6 +1,7 @@
 package com.blispay.common.metrics.model.counter;
 
 import com.blispay.common.metrics.model.BaseMetricFactory;
+import com.blispay.common.metrics.model.InfraMetricName;
 import com.blispay.common.metrics.model.MetricGroup;
 
 public class ResourceCounterMetricFactory extends BaseMetricFactory<ResourceCounterMetric, ResourceCounterEventData> {

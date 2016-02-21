@@ -1,7 +1,10 @@
 package com.blispay.common.metrics.model;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum MetricGroup {
 
+    GENERIC("metrics.generic"),
     EH_CACHE("metrics.resources.ehcache");
 
     private final String groupName;
@@ -10,6 +13,7 @@ public enum MetricGroup {
         this.groupName = groupName;
     }
 
+    @JsonValue
     public String getValue() {
         return groupName;
     }

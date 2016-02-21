@@ -18,6 +18,7 @@ public class UserTrackingInfo {
 
     public UserTrackingInfo(final String userTrackingId, final String agentTrackingId,
                             final String sessionTrackingId, final String apiTrackingId) {
+
         this.agentTrackingId = agentTrackingId;
         this.userTrackingId = userTrackingId;
         this.apiTrackingId = apiTrackingId;

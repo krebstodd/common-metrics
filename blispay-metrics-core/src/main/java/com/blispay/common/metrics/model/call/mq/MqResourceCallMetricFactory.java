@@ -1,6 +1,7 @@
 package com.blispay.common.metrics.model.call.mq;
 
 import com.blispay.common.metrics.model.BaseMetricFactory;
+import com.blispay.common.metrics.model.InfraMetricName;
 import com.blispay.common.metrics.model.MetricGroup;
 
 public class MqResourceCallMetricFactory extends BaseMetricFactory<MqResourceCallMetric, MqResourceCallEventData> {

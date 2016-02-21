@@ -23,8 +23,8 @@ public class HttpCallTimer extends ResourceCallTimer<HttpCallTimer.Context> {
         final HttpResourceCallEventData eventData = new HttpResourceCallEventData(
                 context.getDirection(),
                 context.getDuration().toMillis(),
-                context.getAction(),
                 context.getResource(),
+                context.getAction(),
                 context.getStatus());
 
         return factory.newMetric(eventData);

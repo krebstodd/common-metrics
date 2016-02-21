@@ -6,10 +6,10 @@ import org.springframework.context.SmartLifecycle;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-// TODO - Investigate any lightweight frameworks that do in-memory dispatching. May be over-engineering.
+// TODO - Investigate any lightweight frameworks that do in-memory dispatching we can wrap in this interface. May be over-engineering.
 public abstract class EventDispatcher implements SmartLifecycle {
 
-    private final AtomicBoolean isRunning = new AtomicBoolean(Boolean.FALSE);
+    protected final AtomicBoolean isRunning = new AtomicBoolean(Boolean.FALSE);
 
     public abstract void dispatch(final BaseMetricModel evt);
 
@@ -20,28 +20,6 @@ public abstract class EventDispatcher implements SmartLifecycle {
     @Override
     public boolean isAutoStartup() {
         return Boolean.TRUE;
-    }
-
-    @Override
-    public void stop(final Runnable runnable) {
-
-
-
-        runnable.run();
-    }
-
-    @Override
-    public void start() {
-        if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
-
-        }
-    }
-
-    @Override
-    public void stop() {
-        if (isRunning.compareAndSet(Boolean.TRUE, Boolean.FALSE)) {
-
-        }
     }
 
     @Override

@@ -1,13 +1,15 @@
 package com.blispay.common.metrics.model.utilization;
 
 import com.blispay.common.metrics.model.BaseMetricModel;
+import com.blispay.common.metrics.model.InfraMetricName;
 import com.blispay.common.metrics.model.MetricGroup;
+import com.blispay.common.metrics.model.MetricType;
 
 import java.time.ZonedDateTime;
 
 public class ResourceUtilizationMetric extends BaseMetricModel<ResourceUtilizationData> {
 
-    private static final Type type = Type.RESOURCE_UTILIZATION;
+    private static final MetricType type = MetricType.RESOURCE_UTILIZATION;
 
     private final ResourceUtilizationData utilizationEventData;
 

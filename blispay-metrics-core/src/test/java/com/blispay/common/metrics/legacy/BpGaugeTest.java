@@ -1,4 +1,6 @@
-package com.blispay.common.metrics;
+package com.blispay.common.metrics.legacy;
+
+import com.blispay.common.metrics.AbstractMetricsTest;
 
 // CHECK_OFF: MultipleStringLiterals
 // CHECK_OFF: MagicNumber

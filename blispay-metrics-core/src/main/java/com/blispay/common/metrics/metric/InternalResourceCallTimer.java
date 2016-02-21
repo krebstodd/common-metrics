@@ -23,8 +23,8 @@ public class InternalResourceCallTimer extends ResourceCallTimer<InternalResourc
         final InternalResourceCallEventData eventData = new InternalResourceCallEventData(
                 context.getDirection(),
                 context.getDuration().toMillis(),
-                context.getAction(),
                 context.getResource(),
+                context.getAction(),
                 context.getStatus());
 
         return factory.newMetric(eventData);

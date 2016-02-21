@@ -12,22 +12,24 @@ public class SecureObjectMapper extends ObjectMapper {
     private final ObjectMapper mapper;
 
     public SecureObjectMapper() {
-        this(new PiiBeanPropertyFilter(new PiiFieldPredicate()));
+        this(new PiiBeanPropertyFilter());
     }
 
     public SecureObjectMapper(final PiiBeanPropertyFilter piiFilter) {
-        final FilterProvider piiFilterProvider = new SimpleFilterProvider().addFilter("pii_filter", piiFilter);
+        final FilterProvider piiFilterProvider = new SimpleFilterProvider().addFilter(PiiBeanPropertyFilter.NAME, piiFilter);
 
         this.mapper = new ObjectMapper();
+        this.mapper.setAnnotationIntrospector(new SecureJacksonAnnotationIntrospector());
         this.mapper.setFilterProvider(piiFilterProvider);
     }
 
-    public String toJsonString(final Object obj) throws JsonProcessingException {
-        return new ObjectMapper().writeValueAsString(obj);
+    @Override
+    public String writeValueAsString(final Object obj) throws JsonProcessingException {
+        return mapper.writeValueAsString(obj);
     }
 
     public <M> M fromJson(final String json, final Class<M> type) throws IOException {
-        return new ObjectMapper().readValue(json, type);
+        return mapper.readValue(json, type);
     }
 
 }

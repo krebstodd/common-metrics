@@ -20,7 +20,7 @@ public abstract class BaseResourceCallEventData<R extends Resource, A extends Ac
     private final Integer status;
 
     public BaseResourceCallEventData(final Direction direction, final Long durationMillis,
-                                     final A action, final R resource, final Status status) {
+                                     final R resource, final A action, final Status status) {
         this.direction = direction;
         this.durationMillis = durationMillis;
         this.action = action;

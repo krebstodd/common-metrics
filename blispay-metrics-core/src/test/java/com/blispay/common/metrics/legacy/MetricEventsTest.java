@@ -1,4 +1,6 @@
-package com.blispay.common.metrics;
+package com.blispay.common.metrics.legacy;
+
+import com.blispay.common.metrics.AbstractMetricsTest;
 
 public class MetricEventsTest extends AbstractMetricsTest {
 

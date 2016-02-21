@@ -23,8 +23,8 @@ public class MqCallTimer extends ResourceCallTimer<MqCallTimer.Context> {
         final MqResourceCallEventData eventData = new MqResourceCallEventData(
                 context.getDirection(),
                 context.getDuration().toMillis(),
-                context.getAction(),
                 context.getResource(),
+                context.getAction(),
                 context.getStatus());
 
         return factory.newMetric(eventData);

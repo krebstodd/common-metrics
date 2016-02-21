@@ -1,6 +1,7 @@
 package com.blispay.common.metrics.model.call.internal;
 
 import com.blispay.common.metrics.model.BaseMetricFactory;
+import com.blispay.common.metrics.model.InfraMetricName;
 import com.blispay.common.metrics.model.MetricGroup;
 
 public class InternalResourceCallMetricFactory extends BaseMetricFactory<InternalResourceCallMetric, InternalResourceCallEventData> {

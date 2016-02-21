@@ -1,6 +1,7 @@
 package com.blispay.common.metrics.model.call.http;
 
 import com.blispay.common.metrics.model.BaseMetricFactory;
+import com.blispay.common.metrics.model.InfraMetricName;
 import com.blispay.common.metrics.model.MetricGroup;
 
 public class HttpResourceCallMetricFactory extends BaseMetricFactory<HttpResourceCallMetric, HttpResourceCallEventData> {

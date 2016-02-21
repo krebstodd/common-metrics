@@ -19,10 +19,16 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
 
     @Override
     public void dispatch(final BaseMetricModel evt) {
+
+        if (!isRunning()) {
+            throw new IllegalStateException("Dispatcher not yet started");
+        }
+
         eventListeners.stream()
                 .filter(reporter -> passesFilters(reporter, evt))
                 .forEach(reporter -> {
 
+                    // TODO - Collect failed dispatches and retry w/ backoff, eventually just logging them as error and moving on.
                     try {
                         reporter.acceptEvent(evt);
                     } catch (Exception ex) {
@@ -49,27 +55,39 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
     }
 
     @Override
-    public boolean isAutoStartup() {
-        return Boolean.TRUE;
-    }
-
-    @Override
     public void stop(final Runnable runnable) {
+
+        if (isRunning.compareAndSet(Boolean.TRUE, Boolean.FALSE)) {
+
+            // TODO - Flush the collections of failed events awaiting retry
+
+            runnable.run();
+
+        } else {
+            LOG.warn("Dispatcher is already stopped");
+            runnable.run();
+        }
 
     }
 
     @Override
     public void start() {
+        if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
 
+        } else {
+            LOG.warn("Dispatcher is already running.");
+        }
     }
 
     @Override
     public void stop() {
+        if (isRunning.compareAndSet(Boolean.TRUE, Boolean.FALSE)) {
 
+            // TODO - Flush the collections of failed events awaiting retry
+
+        } else {
+            LOG.warn("Dispatcher is already stopped.");
+        }
     }
 
-    @Override
-    public int getPhase() {
-        return 0;
-    }
 }

@@ -1,13 +1,15 @@
 package com.blispay.common.metrics.model.counter;
 
 import com.blispay.common.metrics.model.BaseMetricModel;
+import com.blispay.common.metrics.model.InfraMetricName;
 import com.blispay.common.metrics.model.MetricGroup;
+import com.blispay.common.metrics.model.MetricType;
 
 import java.time.ZonedDateTime;
 
 public class ResourceCounterMetric extends BaseMetricModel<ResourceCounterEventData> {
 
-    private static final Type type = Type.RESOURCE_COUNTER;
+    private static final MetricType type = MetricType.RESOURCE_COUNTER;
 
     private ResourceCounterEventData eventData;
 

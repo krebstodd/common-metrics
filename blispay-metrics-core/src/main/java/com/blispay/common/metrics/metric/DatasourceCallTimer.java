@@ -23,8 +23,8 @@ public class DatasourceCallTimer extends ResourceCallTimer<DatasourceCallTimer.C
         final DataSourceResourceCallEventData eventData = new DataSourceResourceCallEventData(
                 context.getDirection(),
                 context.getDuration().toMillis(),
-                context.getAction(),
                 context.getResource(),
+                context.getAction(),
                 context.getStatus());
 
         return factory.newMetric(eventData);

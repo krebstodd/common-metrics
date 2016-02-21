@@ -12,11 +12,9 @@ public abstract class BaseUserTrackingMetric<D> extends BaseMetricModel<D> {
     public BaseUserTrackingMetric(final ZonedDateTime timestamp,
                                   final MetricGroup group,
                                   final String name,
-                                  final Type type) {
+                                  final MetricType type) {
 
         super(timestamp, group, name, type);
-
-        this.trackingInfo = trackingInfo;
     }
 
     public void setTrackingInfo(final UserTrackingInfo trackingInfo) {

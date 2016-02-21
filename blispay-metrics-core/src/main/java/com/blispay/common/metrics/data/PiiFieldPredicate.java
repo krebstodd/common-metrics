@@ -13,7 +13,12 @@ public class PiiFieldPredicate implements Predicate<String> {
     static {
 
         // Person name - Handles person name, user name.
-        bannedSubstrings.add("name");
+        bannedSubstrings.add("first_name");
+        bannedSubstrings.add("last_name");
+        bannedSubstrings.add("middle_name");
+        bannedSubstrings.add("user_name");
+        bannedSubstrings.add("login");
+        bannedSubstrings.add("full_name");
         bannedSubstrings.add("pass_word");
 
         // Address - Allow state, country
@@ -47,7 +52,9 @@ public class PiiFieldPredicate implements Predicate<String> {
         // dob
         bannedSubstrings.add("birth");
         bannedSubstrings.add("dob");
-        bannedSubstrings.add("age");
+        bannedSubstrings.add("user_age");
+        bannedSubstrings.add("customer_age");
+        bannedSubstrings.add("applicant_age");
         bannedSubstrings.add("birth_place");
 
         // phone
@@ -71,6 +78,7 @@ public class PiiFieldPredicate implements Predicate<String> {
         // Miscellaneous
         bannedSubstrings.add("drivers_license");
         bannedSubstrings.add("pass_port");
+        bannedSubstrings.add("ip_address");
 
         // Add all existing fields both with underscores replaced by dashes and with them replaced by nothing (handles all one word lower, upper, camel cased)
         bannedSubstrings.addAll(replaceAll("_", "-", bannedSubstrings));

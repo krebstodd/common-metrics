@@ -1,5 +1,7 @@
 package com.blispay.common.metrics.report;
 
+import com.blispay.common.metrics.data.JsonMetricSerializer;
+import com.blispay.common.metrics.data.MetricSerializer;
 import com.blispay.common.metrics.model.BaseMetricModel;
 import org.slf4j.Logger;
 
@@ -11,8 +13,7 @@ import java.util.stream.Collectors;
 
 public class Slf4jSnapshotReporter extends ScheduledSnapshotReporter {
 
-    use mapper to jsonify
-
+    private final MetricSerializer serializer;
     private final Logger logger;
     private Supplier<Set<SnapshotProvider>> snapshotProviderSupplier;
 
@@ -24,8 +25,13 @@ public class Slf4jSnapshotReporter extends ScheduledSnapshotReporter {
      * @param unit   The time unit of the period argument.
      */
     public Slf4jSnapshotReporter(final Logger logger, final Integer period, final TimeUnit unit) {
-        super(period, unit);
+        this(new JsonMetricSerializer(), logger, period, unit);
+    }
 
+    public Slf4jSnapshotReporter(final MetricSerializer serializer, final Logger logger, final Integer period, final TimeUnit timeUnit) {
+        super(period, timeUnit);
+
+        this.serializer = serializer;
         this.logger = logger;
         this.snapshotProviderSupplier = HashSet::new;
     }
@@ -33,7 +39,7 @@ public class Slf4jSnapshotReporter extends ScheduledSnapshotReporter {
     @Override
     public Set<BaseMetricModel> report() {
         final Set<BaseMetricModel> snapshot = snapshotProviderSupplier.get().stream().map(SnapshotProvider::snapshot).collect(Collectors.toSet());
-        snapshot.forEach(ss -> logger.info(ss.toString()));
+        snapshot.forEach(ss -> logger.info(serializer.serialize(ss)));
         return snapshot;
     }
 

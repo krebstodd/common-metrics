@@ -2,41 +2,44 @@ package com.blispay.common.metrics.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 @JsonIgnoreProperties(ignoreUnknown=true)
 public abstract class BaseMetricModel<D> {
 
+    private static final DateTimeFormatter dtFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+
     @JsonProperty("timestamp")
-    private final ZonedDateTime timestamp;
+    private final String timestamp;
 
     @JsonProperty("group")
-    private final String group;
+    private final MetricGroup group;
 
     @JsonProperty("name")
     private final String name;
 
     @JsonProperty("type")
-    private final Type type;
+    private final MetricType type;
 
     public BaseMetricModel(final ZonedDateTime timestamp,
                            final MetricGroup group,
                            final String name,
-                           final Type type) {
+                           final MetricType type) {
 
-        this.timestamp = timestamp;
-        this.group = group.toString();
+        this.timestamp = dtFormatter.format(timestamp.withZoneSameInstant(ZoneId.of("UTC")));
+        this.group = group;
         this.name = name;
         this.type = type;
     }
 
-    public ZonedDateTime getTimestamp() {
+    public String getTimestamp() {
         return timestamp;
     }
 
-    public String getGroup() {
+    public MetricGroup getGroup() {
         return group;
     }
 
@@ -44,31 +47,11 @@ public abstract class BaseMetricModel<D> {
         return name;
     }
 
-    public Type getType() {
+    public MetricType getType() {
         return type;
     }
 
     @JsonProperty("eventData")
     public abstract D eventData();
-
-    public enum Type {
-
-        RESOURCE_CALL("CAL"),
-        RESOURCE_UTILIZATION("UTL"),
-        RESOURCE_COUNTER("CNT"),
-        EVENT("EVENT");
-
-        private final String type;
-
-        private Type(final String type) {
-            this.type = type;
-        }
-
-        @JsonValue
-        public String getType() {
-            return type;
-        }
-
-    }
 
 }

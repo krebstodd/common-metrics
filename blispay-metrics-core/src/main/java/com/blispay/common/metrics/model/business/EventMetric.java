@@ -1,14 +1,16 @@
 package com.blispay.common.metrics.model.business;
 
-import com.blispay.common.metrics.model.MetricGroup;
-import com.blispay.common.metrics.model.UserTrackingInfo;
 import com.blispay.common.metrics.model.BaseUserTrackingMetric;
+import com.blispay.common.metrics.model.BusinessEventName;
+import com.blispay.common.metrics.model.MetricGroup;
+import com.blispay.common.metrics.model.MetricType;
+import com.blispay.common.metrics.model.UserTrackingInfo;
 
 import java.time.ZonedDateTime;
 
 public class EventMetric<T> extends BaseUserTrackingMetric<T> {
 
-    private static final Type type = Type.EVENT;
+    private static final MetricType type = MetricType.EVENT;
 
     private final T eventData;
 

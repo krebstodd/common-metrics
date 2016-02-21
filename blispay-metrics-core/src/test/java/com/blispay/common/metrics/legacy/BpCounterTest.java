@@ -1,8 +1,10 @@
-package com.blispay.common.metrics;
+package com.blispay.common.metrics.legacy;
 
 //CHECK_OFF: AvoidStarImport
 
 //CHECK_ON: AvoidStarImport
+
+import com.blispay.common.metrics.AbstractMetricsTest;
 
 // CHECK_OFF: MultipleStringLiterals
 // CHECK_OFF: MagicNumber
