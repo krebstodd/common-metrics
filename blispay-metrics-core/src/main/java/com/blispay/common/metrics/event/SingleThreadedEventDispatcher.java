@@ -51,7 +51,18 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
     private static Boolean passesFilters(final EventSubscriber reporter, final BaseMetricModel event) {
         return reporter.getFilters()
                 .stream()
-                .allMatch(filter -> filter.acceptsEvent(event));
+                .allMatch(filter -> safeFilter(filter, event));
+    }
+
+    private static Boolean safeFilter(final EventFilter filter, final BaseMetricModel model) {
+        try {
+
+            return filter.acceptsEvent(model);
+
+        } catch (Exception ex) {
+            LOG.error("Caught exception determining whether filter can accept event occurring on [{}]", model.getTimestamp(), ex);
+            return Boolean.FALSE;
+        }
     }
 
     @Override
@@ -60,6 +71,7 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
         if (isRunning.compareAndSet(Boolean.TRUE, Boolean.FALSE)) {
 
             // TODO - Flush the collections of failed events awaiting retry
+            LOG.info("Dispatcher stopped.");
 
             runnable.run();
 
@@ -74,6 +86,8 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
     public void start() {
         if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
 
+            LOG.info("Dispatcher started.");
+
         } else {
             LOG.warn("Dispatcher is already running.");
         }
@@ -82,6 +96,8 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
     @Override
     public void stop() {
         if (isRunning.compareAndSet(Boolean.TRUE, Boolean.FALSE)) {
+
+            LOG.info("Dispatcher stopped.");
 
             // TODO - Flush the collections of failed events awaiting retry
 

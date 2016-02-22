@@ -21,7 +21,7 @@ public enum HttpAction implements Action {
 
     @Override
     public String getValue() {
-        return null;
+        return this.action;
     }
 
 }

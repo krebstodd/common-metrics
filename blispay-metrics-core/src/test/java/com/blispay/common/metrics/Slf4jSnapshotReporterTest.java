@@ -4,11 +4,12 @@ import org.junit.Test;
 
 import static org.junit.Assert.fail;
 
-public class SecureObjectMapperTest {
+public class Slf4jSnapshotReporterTest {
 
     @Test
-    public void testRemovesPii() {
+    public void testSlf4jSnapshotReporter() {
         fail();
     }
+
 
 }

@@ -32,13 +32,10 @@ public class PiiFieldPredicate implements Predicate<String> {
         bannedSubstrings.add("addressee");
         bannedSubstrings.add("first_line");
         bannedSubstrings.add("last_line");
-        bannedSubstrings.add("zip");
-        bannedSubstrings.add("plus_4_code");
         bannedSubstrings.add("latitude");
         bannedSubstrings.add("longitude");
         bannedSubstrings.add("po_box");
         bannedSubstrings.add("post_office");
-        bannedSubstrings.add("postal_code");
 
         // Email
         bannedSubstrings.add("email");
@@ -105,7 +102,7 @@ public class PiiFieldPredicate implements Predicate<String> {
         return !overrides.contains(key) && isBanned(key.toLowerCase(Locale.ROOT));
     }
 
-    public boolean isBanned(final String key) {
+    private boolean isBanned(final String key) {
         // Test if the key contains a banned substring.
         return bannedSubstrings.stream().anyMatch(key::contains);
     }

@@ -18,6 +18,15 @@ public class HttpCallTimer extends ResourceCallTimer<HttpCallTimer.Context> {
         this.factory = metricFactory;
     }
 
+    public StopWatch start(final Direction direction,
+                           final HttpResource resource,
+                           final HttpAction action,
+                           final UserTrackingInfo trackingInfo) {
+
+        return start(new Context(direction, action, resource, trackingInfo));
+
+    }
+
     @Override
     protected HttpResourceCallMetric buildEvent(final Context context) {
         final HttpResourceCallEventData eventData = new HttpResourceCallEventData(
@@ -30,7 +39,7 @@ public class HttpCallTimer extends ResourceCallTimer<HttpCallTimer.Context> {
         return factory.newMetric(eventData);
     }
 
-    public static final class Context extends ResourceCallTimer.Context {
+    protected static final class Context extends ResourceCallTimer.Context {
 
         private final HttpAction action;
         private final HttpResource resource;

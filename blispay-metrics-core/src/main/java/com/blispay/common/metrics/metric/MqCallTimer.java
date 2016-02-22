@@ -18,6 +18,10 @@ public class MqCallTimer extends ResourceCallTimer<MqCallTimer.Context> {
         this.factory = metricFactory;
     }
 
+    public StopWatch start(final MqResource resource, final MqAction action, final UserTrackingInfo trackingInfo) {
+        return start(new Context(Direction.OUTBOUND, action, resource, trackingInfo));
+    }
+
     @Override
     protected MqResourceCallMetric buildEvent(final Context context) {
         final MqResourceCallEventData eventData = new MqResourceCallEventData(

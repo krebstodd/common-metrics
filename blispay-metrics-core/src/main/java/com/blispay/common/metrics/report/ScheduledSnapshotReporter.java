@@ -5,7 +5,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class ScheduledSnapshotReporter extends SnapshotReporter {
+public abstract class ScheduledSnapshotReporter implements SnapshotReporter {
 
     private final ScheduledExecutorService executorService;
 

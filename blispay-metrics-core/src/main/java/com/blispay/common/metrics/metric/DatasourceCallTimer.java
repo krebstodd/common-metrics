@@ -3,11 +3,11 @@ package com.blispay.common.metrics.metric;
 import com.blispay.common.metrics.event.EventEmitter;
 import com.blispay.common.metrics.model.UserTrackingInfo;
 import com.blispay.common.metrics.model.call.Direction;
+import com.blispay.common.metrics.model.call.ds.DataSourceResourceCallEventData;
 import com.blispay.common.metrics.model.call.ds.DataSourceResourceCallMetric;
 import com.blispay.common.metrics.model.call.ds.DataSourceResourceCallMetricFactory;
 import com.blispay.common.metrics.model.call.ds.DsAction;
 import com.blispay.common.metrics.model.call.ds.DsResource;
-import com.blispay.common.metrics.model.call.ds.DataSourceResourceCallEventData;
 
 public class DatasourceCallTimer extends ResourceCallTimer<DatasourceCallTimer.Context> {
 
@@ -16,6 +16,14 @@ public class DatasourceCallTimer extends ResourceCallTimer<DatasourceCallTimer.C
     public DatasourceCallTimer(final EventEmitter emitter, final DataSourceResourceCallMetricFactory metricFactory) {
         super(emitter);
         this.factory = metricFactory;
+    }
+
+    public StopWatch start(final DsResource resource,
+                           final DsAction action,
+                           final UserTrackingInfo trackingInfo) {
+
+        return start(new Context(Direction.OUTBOUND, action, resource, trackingInfo));
+
     }
 
     @Override

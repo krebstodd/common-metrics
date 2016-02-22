@@ -18,6 +18,10 @@ public class InternalResourceCallTimer extends ResourceCallTimer<InternalResourc
         this.factory = metricFactory;
     }
 
+    public StopWatch start(final InternalResource resource, final InternalAction action, final UserTrackingInfo trackingInfo) {
+        return start(new Context(Direction.OUTBOUND, action, resource, trackingInfo));
+    }
+
     @Override
     protected InternalResourceCallMetric buildEvent(final Context context) {
         final InternalResourceCallEventData eventData = new InternalResourceCallEventData(

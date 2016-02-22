@@ -5,15 +5,7 @@ import com.blispay.common.metrics.model.BaseMetricModel;
 import java.util.Set;
 import java.util.function.Supplier;
 
-public abstract class SnapshotReporter {
-
-    public void start() {
-
-    }
-
-    public void stop() {
-
-    }
+public interface SnapshotReporter {
 
     public abstract Set<BaseMetricModel> report();
 

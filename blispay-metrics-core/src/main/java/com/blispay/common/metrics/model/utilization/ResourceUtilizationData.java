@@ -4,16 +4,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ResourceUtilizationData {
 
-    @JsonProperty("minValue")
+    @JsonProperty("min")
     private final Long minValue;
 
-    @JsonProperty("maxValue")
+    @JsonProperty("max")
     private final Long maxValue;
 
-    @JsonProperty("currentValue")
+    @JsonProperty("curr")
     private final Long currentValue;
 
-    @JsonProperty("currentPercentage")
+    @JsonProperty("util")
     private final Double currentPercentage;
 
     public ResourceUtilizationData(final Long minValue,

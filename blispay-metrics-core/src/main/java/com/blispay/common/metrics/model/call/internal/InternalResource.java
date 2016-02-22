@@ -15,7 +15,7 @@ public class InternalResource extends Resource {
         return resource;
     }
 
-    public InternalResource fromClass(final Class resource) {
+    public static InternalResource fromClass(final Class resource) {
         return new InternalResource(resource.getName());
     }
 }

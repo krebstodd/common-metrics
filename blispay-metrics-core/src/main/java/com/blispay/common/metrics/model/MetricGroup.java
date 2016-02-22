@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum MetricGroup {
 
     GENERIC("metrics.generic"),
+    APPLICATION("metrics.account.application"),
     EH_CACHE("metrics.resources.ehcache");
 
     private final String groupName;

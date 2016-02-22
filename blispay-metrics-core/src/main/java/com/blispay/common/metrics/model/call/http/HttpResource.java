@@ -12,7 +12,7 @@ public class HttpResource extends Resource {
 
     @Override
     public String getValue() {
-        return null;
+        return this.url;
     }
 
     public static HttpResource fromUrl(final String url) {

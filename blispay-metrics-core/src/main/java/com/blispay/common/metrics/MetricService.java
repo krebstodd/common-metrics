@@ -120,22 +120,20 @@ public class MetricService implements SmartLifecycle {
     public void stop(final Runnable runnable) {
 
         if (isRunning.compareAndSet(Boolean.TRUE, Boolean.FALSE)) {
-
             eventDispatcher.stop(runnable);
-
         } else {
             LOG.warn("Metric service is already stopped");
-            runnable.run();
         }
+
+        runnable.run();
 
     }
 
     @Override
     public void start() {
         if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
-
             eventDispatcher.start();
-
+            System.out.println(eventDispatcher);
         } else {
             LOG.warn("Metric service is already running.");
         }
@@ -144,9 +142,7 @@ public class MetricService implements SmartLifecycle {
     @Override
     public void stop() {
         if (isRunning.compareAndSet(Boolean.TRUE, Boolean.FALSE)) {
-
             eventDispatcher.stop();
-
         } else {
             LOG.warn("Metric service is already stopped.");
         }

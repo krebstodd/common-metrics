@@ -16,7 +16,7 @@ public class BusinessEventRepository<T> extends MetricRepository {
     }
 
     public void save(final UserTrackingInfo trackingInfo, final T eventData) {
-        eventFactory.newMetric(trackingInfo, eventData);
+        super.save(eventFactory.newMetric(trackingInfo, eventData));
     }
 
 }

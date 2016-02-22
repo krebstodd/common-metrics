@@ -88,7 +88,7 @@ public abstract class ResourceCallTimer<C extends ResourceCallTimer.Context> ext
             }
         }
 
-        private Duration stop(final Status callStatus) {
+        public Duration stop(final Status callStatus) {
             assertRunning(Boolean.TRUE);
 
             final Duration elapsed = Duration.ofMillis(elapsedMillis());
@@ -100,8 +100,8 @@ public abstract class ResourceCallTimer<C extends ResourceCallTimer.Context> ext
             return elapsed;
         }
 
-        public AtomicBoolean isRunning() {
-            return isRunning;
+        public Boolean isRunning() {
+            return isRunning.get();
         }
 
         public Long elapsedMillis() {

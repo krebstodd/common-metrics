@@ -16,7 +16,7 @@ public enum MqAction implements Action {
 
     @Override
     public String getValue() {
-        return null;
+        return this.action;
     }
 
 }

@@ -6,7 +6,6 @@ import org.springframework.context.SmartLifecycle;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-// TODO - Investigate any lightweight frameworks that do in-memory dispatching we can wrap in this interface. May be over-engineering.
 public abstract class EventDispatcher implements SmartLifecycle {
 
     protected final AtomicBoolean isRunning = new AtomicBoolean(Boolean.FALSE);
