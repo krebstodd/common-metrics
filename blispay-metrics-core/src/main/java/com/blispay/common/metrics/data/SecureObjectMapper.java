@@ -17,6 +17,9 @@ import java.util.List;
 
 public class SecureObjectMapper extends ObjectMapper {
 
+    /**
+     * String used to mask pii data fields.
+     */
     public static final String PII_MASK = "*** PII DETECTED ***";
 
     private final ObjectMapper mapper;
@@ -25,6 +28,11 @@ public class SecureObjectMapper extends ObjectMapper {
         this(new PiiFieldPredicate());
     }
 
+    /**
+     * Create a new secure object mapper. Strips out any fields that are likely to contain PII.
+     *
+     * @param piiPredicate Predicate testing whether a field key is likely to contain a PII value.
+     */
     public SecureObjectMapper(final PiiFieldPredicate piiPredicate) {
 
         this.mapper = new ObjectMapper();
@@ -42,7 +50,7 @@ public class SecureObjectMapper extends ObjectMapper {
         return mapper.writeValueAsString(obj);
     }
 
-    public class SecureSerializerModifier extends BeanSerializerModifier {
+    private static class SecureSerializerModifier extends BeanSerializerModifier {
 
         private final PiiFieldPredicate piiPredicate;
 
@@ -51,10 +59,11 @@ public class SecureObjectMapper extends ObjectMapper {
         }
 
         @Override
-        public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription beanDesc, List<BeanPropertyWriter> beanProperties) {
+        public List<BeanPropertyWriter> changeProperties(final SerializationConfig config, final BeanDescription beanDesc, final List<BeanPropertyWriter> beanProperties) {
 
             for (int i = 0; i < beanProperties.size(); i++) {
-                BeanPropertyWriter beanPropertyWriter = beanProperties.get(i);
+
+                final BeanPropertyWriter beanPropertyWriter = beanProperties.get(i);
 
                 if (piiPredicate.test(beanPropertyWriter.getName())) {
                     beanPropertyWriter.assignSerializer(new PiiSerializer());
@@ -70,7 +79,7 @@ public class SecureObjectMapper extends ObjectMapper {
     private static class PiiSerializer extends JsonSerializer {
 
         @Override
-        public void serialize(final Object pojo, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider) throws IOException, JsonProcessingException {
+        public void serialize(final Object pojo, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider) throws IOException {
             jsonGenerator.writeString(SecureObjectMapper.PII_MASK);
         }
 

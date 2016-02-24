@@ -6,6 +6,8 @@ import java.util.Arrays;
 
 public final class JsonMetricUtil {
 
+    private static final String pathSeparator = ".";
+
     private JsonMetricUtil() {
 
     }
@@ -38,12 +40,12 @@ public final class JsonMetricUtil {
         return parseValue(obj, "eventData", JSONObject.class);
     }
 
-    public static <T> T parseValue(final JSONObject obj, final String key, final Class<T> type) {
+    private static <T> T parseValue(final JSONObject obj, final String key, final Class<T> type) {
 
-        if (key.contains(".")) {
+        if (key.contains(pathSeparator)) {
 
-            final String[] keyPath = key.split(".");
-            final String newKey = String.join(".", Arrays.copyOfRange(keyPath, 1, keyPath.length));
+            final String[] keyPath = key.split(pathSeparator);
+            final String newKey = String.join(pathSeparator, Arrays.copyOfRange(keyPath, 1, keyPath.length));
 
             return parseValue(obj.getJSONObject(keyPath[0]), newKey, type);
 

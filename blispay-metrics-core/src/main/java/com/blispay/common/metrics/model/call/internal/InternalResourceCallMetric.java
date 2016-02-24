@@ -9,6 +9,15 @@ public class InternalResourceCallMetric extends BaseResourceCallMetric<InternalR
 
     private final InternalResourceCallEventData eventData;
 
+    /**
+     * Immutable resource call metric, used to profile method calls internal to an app.
+     *
+     * @param timestamp timestamp for when the call occurred.
+     * @param applicationId application name.
+     * @param group metric group.
+     * @param name metric name.
+     * @param eventData summary of resource call.
+     */
     public InternalResourceCallMetric(final ZonedDateTime timestamp,
                                       final String applicationId,
                                       final MetricGroup group,

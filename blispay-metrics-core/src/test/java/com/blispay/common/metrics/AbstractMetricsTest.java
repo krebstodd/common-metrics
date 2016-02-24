@@ -1,7 +1,7 @@
 package com.blispay.common.metrics;
 
 import com.blispay.common.metrics.model.MetricGroup;
-import com.blispay.common.metrics.model.UserTrackingInfo;
+import com.blispay.common.metrics.model.TrackingInfo;
 import com.blispay.common.metrics.model.business.EventMetric;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hamcrest.Description;
@@ -39,8 +39,8 @@ public abstract class AbstractMetricsTest {
         return new PiiBusinessEventDataMatcher(username, "Some notes", 1);
     }
 
-    protected static UserTrackingInfo trackingInfo() {
-        return new UserTrackingInfo(
+    protected static TrackingInfo trackingInfo() {
+        return new TrackingInfo(
                 UUID.randomUUID().toString(),
                 UUID.randomUUID().toString(),
                 UUID.randomUUID().toString(),
@@ -61,13 +61,13 @@ public abstract class AbstractMetricsTest {
     protected static class PiiBusinessEventData {
 
         @JsonProperty("user_name")
-        public final String userName;
+        private final String userName;
 
         @JsonProperty("notes")
-        public final String notes;
+        private final String notes;
 
         @JsonProperty("count")
-        public final Integer count;
+        private final Integer count;
 
         public PiiBusinessEventData(final String username, final String notes, final Integer count) {
             this.userName = username;

@@ -8,7 +8,7 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 
-public class BusinessEventMatcher<T> extends TypeSafeMatcher<EventMetric<T>> {
+public class EventMatcher<T> extends TypeSafeMatcher<EventMetric<T>> {
 
     private final Matcher<String> timestampMatcher;
     private final Matcher<String> groupMatcher;
@@ -16,24 +16,31 @@ public class BusinessEventMatcher<T> extends TypeSafeMatcher<EventMetric<T>> {
     private final Matcher<String> typeMatcher;
     private final Matcher<T> dataMatcher;
 
-    public BusinessEventMatcher(final MetricGroup group, final String name,
-                                final MetricType mType, final Matcher<T> eventDataMatcher) {
+    /**
+     * Business event matcher.
+     * @param group group
+     * @param name name
+     * @param type type
+     * @param eventDataMatcher data
+     */
+    public EventMatcher(final MetricGroup group, final String name,
+                        final MetricType type, final Matcher<T> eventDataMatcher) {
 
         this.timestampMatcher = Matchers.endsWith("Z");
         this.groupMatcher = Matchers.equalTo(group.getValue());
         this.nameMatcher = Matchers.equalTo(name);
-        this.typeMatcher = Matchers.equalTo(mType.getValue());
+        this.typeMatcher = Matchers.equalTo(type.getValue());
         this.dataMatcher = eventDataMatcher;
 
     }
 
     @Override
-    public boolean matchesSafely(final EventMetric<T> tEventMetric) {
-        return timestampMatcher.matches(tEventMetric.getTimestamp())
-                && groupMatcher.matches(tEventMetric.getGroup().getValue())
-                && nameMatcher.matches(tEventMetric.getName())
-                && typeMatcher.matches(tEventMetric.getType().getValue())
-                && dataMatcher.matches(tEventMetric.eventData());
+    public boolean matchesSafely(final EventMetric<T> metric) {
+        return timestampMatcher.matches(metric.getTimestamp())
+                && groupMatcher.matches(metric.getGroup().getValue())
+                && nameMatcher.matches(metric.getName())
+                && typeMatcher.matches(metric.getType().getValue())
+                && dataMatcher.matches(metric.eventData());
     }
 
     @Override

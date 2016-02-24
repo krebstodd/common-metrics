@@ -5,6 +5,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public interface Action {
 
     @JsonValue
-    public String getValue();
+    String getValue();
 
 }

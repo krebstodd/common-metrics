@@ -9,6 +9,15 @@ public class MqResourceCallMetric extends BaseResourceCallMetric<MqResourceCallE
 
     private final MqResourceCallEventData eventData;
 
+    /**
+     * Immutable MQ call metric.
+     *
+     * @param timestamp timestamp for when the call occurred.
+     * @param applicationId application name.
+     * @param group metric group.
+     * @param name metric name.
+     * @param eventData summary of mq call.
+     */
     public MqResourceCallMetric(final ZonedDateTime timestamp,
                                 final String applicationId,
                                 final MetricGroup group,

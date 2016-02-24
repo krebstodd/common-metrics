@@ -1,7 +1,7 @@
 package com.blispay.common.metrics.metric;
 
 import com.blispay.common.metrics.event.EventEmitter;
-import com.blispay.common.metrics.model.UserTrackingInfo;
+import com.blispay.common.metrics.model.TrackingInfo;
 import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.http.HttpAction;
 import com.blispay.common.metrics.model.call.http.HttpResource;
@@ -18,6 +18,14 @@ public class HttpCallTimer extends ResourceCallTimer<HttpCallTimer.Context> {
         this.factory = metricFactory;
     }
 
+    /**
+     * Start a new stopwatch.
+     *
+     * @param direction Direction of the call.
+     * @param resource The resource being called.
+     * @param action The action being performed.
+     * @return A running stopwatch instance.
+     */
     public StopWatch start(final Direction direction,
                            final HttpResource resource,
                            final HttpAction action) {
@@ -26,10 +34,19 @@ public class HttpCallTimer extends ResourceCallTimer<HttpCallTimer.Context> {
 
     }
 
+    /**
+     * Start a new stopwatch.
+     *
+     * @param direction Direction of the call.
+     * @param resource The resource being called.
+     * @param action The action being performed.
+     * @param trackingInfo Tracking info for context.
+     * @return A running stopwatch instance.
+     */
     public StopWatch start(final Direction direction,
                            final HttpResource resource,
                            final HttpAction action,
-                           final UserTrackingInfo trackingInfo) {
+                           final TrackingInfo trackingInfo) {
 
         return start(new Context(direction, action, resource, trackingInfo));
 
@@ -53,8 +70,8 @@ public class HttpCallTimer extends ResourceCallTimer<HttpCallTimer.Context> {
         private final HttpAction action;
         private final HttpResource resource;
 
-        public Context(final Direction direction, final HttpAction action,
-                       final HttpResource resource, final UserTrackingInfo trackingInfo) {
+        private Context(final Direction direction, final HttpAction action,
+                       final HttpResource resource, final TrackingInfo trackingInfo) {
 
             super(direction, trackingInfo);
             this.action = action;

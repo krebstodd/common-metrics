@@ -7,7 +7,7 @@ import com.blispay.common.metrics.matchers.BusinessEventMatcher;
 import com.blispay.common.metrics.matchers.ResourceCallDataMatcher;
 import com.blispay.common.metrics.matchers.ResourceCallMetricMatcher;
 import com.blispay.common.metrics.matchers.ResourceUtilizationMetricMatcher;
-import com.blispay.common.metrics.metric.BusinessEventRepository;
+import com.blispay.common.metrics.metric.EventRepository;
 import com.blispay.common.metrics.metric.DatasourceCallTimer;
 import com.blispay.common.metrics.metric.HttpCallTimer;
 import com.blispay.common.metrics.metric.InternalResourceCallTimer;
@@ -17,7 +17,7 @@ import com.blispay.common.metrics.metric.ResourceCounter;
 import com.blispay.common.metrics.model.BaseMetricModel;
 import com.blispay.common.metrics.model.MetricGroup;
 import com.blispay.common.metrics.model.MetricType;
-import com.blispay.common.metrics.model.UserTrackingInfo;
+import com.blispay.common.metrics.model.TrackingInfo;
 import com.blispay.common.metrics.model.business.EventMetric;
 import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.Status;
@@ -139,7 +139,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
         metricService.addEventSubscriber(evtSub);
         metricService.start();
 
-        final BusinessEventRepository<PiiBusinessEventData> repo = metricService.createBusinessEventRepository(MetricGroup.ACCOUNT_DOMAIN, "created");
+        final EventRepository<PiiBusinessEventData> repo = metricService.createEventRepository(MetricGroup.ACCOUNT_DOMAIN, "created");
 
         repo.save(defaultPiiBusinessEventData("user1"));
         repo.save(defaultPiiBusinessEventData("user2"));
@@ -156,7 +156,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
 
     @Test
     public void testCreateHttpResourceCallTimer() throws InterruptedException {
-        final UserTrackingInfo trackingInfo = trackingInfo();
+        final TrackingInfo trackingInfo = trackingInfo();
 
         final TestEventSubscriber evtSub = new TestEventSubscriber();
 
@@ -183,7 +183,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
 
     @Test
     public void testCreateDatasourceCallTimer() throws InterruptedException {
-        final UserTrackingInfo trackingInfo = trackingInfo();
+        final TrackingInfo trackingInfo = trackingInfo();
 
         final TestEventSubscriber evtSub = new TestEventSubscriber();
 
@@ -210,7 +210,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
 
     @Test
     public void testInternalResourceCallTimer() throws InterruptedException {
-        final UserTrackingInfo trackingInfo = trackingInfo();
+        final TrackingInfo trackingInfo = trackingInfo();
         final TestEventSubscriber evtSub = new TestEventSubscriber();
 
         final MetricService metricService = new MetricService(application);
@@ -230,12 +230,13 @@ public class MetricServiceTest extends AbstractMetricsTest {
         assertFalse(sw.isRunning());
         assertEquals(1, evtSub.count());
         assertThat(evtSub.poll(), new ResourceCallMetricMatcher(MetricGroup.CLIENT, "runTest", MetricType.RESOURCE_CALL,
-                new ResourceCallDataMatcher(InternalResource.fromClass(getClass()), InternalAction.fromMethodName("testInternalResourceCallTimer"), Direction.OUTBOUND, Status.success(), 1000L, trackingInfo)));
+                new ResourceCallDataMatcher(InternalResource.fromClass(getClass()), InternalAction.fromMethodName("testInternalResourceCallTimer"),
+                        Direction.INTERNAL, Status.success(), 1000L, trackingInfo)));
     }
 
     @Test
     public void testMqResourceCallTimer() throws InterruptedException {
-        final UserTrackingInfo trackingInfo = trackingInfo();
+        final TrackingInfo trackingInfo = trackingInfo();
 
         final TestEventSubscriber evtSub = new TestEventSubscriber();
 
@@ -277,6 +278,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
     public void testCustomEventDispatcher() {
         final AtomicBoolean usesCustom = new AtomicBoolean(false);
 
+        // CHECK_OFF: AnonInnerLength
         final MetricService serv = new MetricService(application, new EventDispatcher() {
             @Override
             public void dispatch(final BaseMetricModel evt) {
@@ -299,15 +301,17 @@ public class MetricServiceTest extends AbstractMetricsTest {
             }
 
             @Override
-            public void start() {
+            public void stop() {
 
             }
 
             @Override
-            public void stop() {
+            public void start() {
 
             }
+
         });
+        // CHECK_ON: AnonInnerLength
 
         serv.start();
 

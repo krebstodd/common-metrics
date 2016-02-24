@@ -16,25 +16,32 @@ public class ResourceCallMetricMatcher<T> extends TypeSafeMatcher<BaseResourceCa
     private final Matcher<String> typeMatcher;
     private final Matcher<T> dataMatcher;
 
+    /**
+     * Resource call matcher.
+     * @param group group
+     * @param name name
+     * @param metricType type
+     * @param eventDataMatcher data matcher
+     */
     public ResourceCallMetricMatcher(final MetricGroup group, final String name,
-                                     final MetricType mType, final Matcher<T> eventDataMatcher) {
+                                     final MetricType metricType, final Matcher<T> eventDataMatcher) {
 
         this.timestampMatcher = Matchers.endsWith("Z");
         this.groupMatcher = Matchers.equalTo(group.getValue());
         this.nameMatcher = Matchers.equalTo(name);
-        this.typeMatcher = Matchers.equalTo(mType.getValue());
+        this.typeMatcher = Matchers.equalTo(metricType.getValue());
 
         this.dataMatcher = eventDataMatcher;
 
     }
 
     @Override
-    public boolean matchesSafely(final BaseResourceCallMetric<T> tBaseResourceCallMetric) {
-        return timestampMatcher.matches(tBaseResourceCallMetric.getTimestamp())
-                && groupMatcher.matches(tBaseResourceCallMetric.getGroup().getValue())
-                && nameMatcher.matches(tBaseResourceCallMetric.getName())
-                && typeMatcher.matches(tBaseResourceCallMetric.getType().getValue())
-                && dataMatcher.matches(tBaseResourceCallMetric.eventData());
+    public boolean matchesSafely(final BaseResourceCallMetric<T> metric) {
+        return timestampMatcher.matches(metric.getTimestamp())
+                && groupMatcher.matches(metric.getGroup().getValue())
+                && nameMatcher.matches(metric.getName())
+                && typeMatcher.matches(metric.getType().getValue())
+                && dataMatcher.matches(metric.eventData());
     }
 
     @Override

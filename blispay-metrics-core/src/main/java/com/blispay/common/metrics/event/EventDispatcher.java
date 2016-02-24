@@ -8,13 +8,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class EventDispatcher implements SmartLifecycle {
 
-    protected final AtomicBoolean isRunning = new AtomicBoolean(Boolean.FALSE);
+    private final AtomicBoolean isRunning = new AtomicBoolean(Boolean.FALSE);
 
     public abstract void dispatch(final BaseMetricModel evt);
 
     public abstract EventEmitter newEventEmitter();
 
     public abstract void subscribe(final EventSubscriber listener);
+
+    protected AtomicBoolean isRunningAtomic() {
+        return isRunning;
+    }
 
     @Override
     public boolean isAutoStartup() {

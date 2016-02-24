@@ -22,47 +22,18 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
-public class JvmProbeTest {
+public class MemoryPoolMetricsTest {
 
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                { "metaspace-pool-utilization" },
-                { "total-utilization" },
-                { "compressed-class-space-pool-utilization" },
-                { "heap-utilization" },
-                { "ps-eden-space-pool-utilization" },
-                { "non-heap-utilization" },
-                { "ps-old-gen-pool-utilization" },
-                { "code-cache-pool-utilization" },
-                { "ps-survivor-space-pool-utilization" }
-        });
-    }
-    
-    private static SnapshotReporter jvmReporter;
-
-    @BeforeClass
-    public static void setup() {
-
-        final MetricService serv = new MetricService(MetricTestUtil.randomAppId());
-        serv.start();
-
-        jvmReporter = new BasicSnapshotReporter();
-        serv.addSnapshotReporter(jvmReporter);
-
-        final JvmProbe probe = new JvmProbe(serv);
-        serv.addProbe(probe);
-
-    }
+    private static SnapshotReporter REPORTER;
 
     private final String metricName;
 
-    public JvmProbeTest(final String metricName) {
+    public MemoryPoolMetricsTest(final String metricName) {
         this.metricName = metricName;
     }
 
     @Test
-    public void test() {
+    public void testJvmProbe() {
 
         final ResourceUtilizationMetric metric = parseUtilizationMetrics(this.metricName);
 
@@ -88,12 +59,47 @@ public class JvmProbeTest {
 
     private ResourceUtilizationMetric parseUtilizationMetrics(final String metricName) {
 
-        return jvmReporter.report().getMetrics()
+        return REPORTER.report().getMetrics()
                 .stream()
                 .filter(metric -> metric.getName().equals(metricName))
                 .findFirst()
                 .map(metric -> (ResourceUtilizationMetric) metric)
                 .get();
+
+    }
+
+    /**
+     * Set up test data.
+     * @return test data.
+     */
+    @Parameterized.Parameters
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {{"metaspace-pool-utilization"},
+            {"total-utilization"},
+            {"compressed-class-space-pool-utilization"},
+            {"heap-utilization"},
+            {"ps-eden-space-pool-utilization"},
+            {"non-heap-utilization"},
+            {"ps-old-gen-pool-utilization"},
+            {"code-cache-pool-utilization"},
+            {"ps-survivor-space-pool-utilization"}
+        });
+    }
+
+    /**
+     * Setup the metric service.
+     */
+    @BeforeClass
+    public static void setup() {
+
+        final MetricService serv = new MetricService(MetricTestUtil.randomAppId());
+        serv.start();
+
+        REPORTER = new BasicSnapshotReporter();
+        serv.addSnapshotReporter(REPORTER);
+
+        final JvmProbe probe = new JvmProbe(serv);
+        serv.addProbe(probe);
 
     }
 

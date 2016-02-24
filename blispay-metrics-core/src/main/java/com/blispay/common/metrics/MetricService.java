@@ -4,7 +4,7 @@ import com.blispay.common.metrics.event.DefaultEventDispatcher;
 import com.blispay.common.metrics.event.EventDispatcher;
 import com.blispay.common.metrics.event.EventEmitter;
 import com.blispay.common.metrics.event.EventSubscriber;
-import com.blispay.common.metrics.metric.BusinessEventRepository;
+import com.blispay.common.metrics.metric.EventRepository;
 import com.blispay.common.metrics.metric.DatasourceCallTimer;
 import com.blispay.common.metrics.metric.HttpCallTimer;
 import com.blispay.common.metrics.metric.InternalResourceCallTimer;
@@ -62,18 +62,27 @@ public class MetricService implements SmartLifecycle {
     }
 
     public ResourceUtilizationGauge createResourceUtilizationGauge(final MetricGroup group, final String name,
-                                                                   final Supplier<ResourceUtilizationData> rGauge) {
+                                                                   final Supplier<ResourceUtilizationData> resourceGauge) {
 
-        return createResourceUtilizationGauge(group, name, rGauge, Boolean.TRUE);
+        return createResourceUtilizationGauge(group, name, resourceGauge, Boolean.TRUE);
     }
 
+    /**
+     * Create a new resource utilization gauge with a custom utilization data provider.
+     *
+     * @param group The gauge's metric group.
+     * @param name The gauge's metric name.
+     * @param resourceGauge A supplier for utilization data.
+     * @param allowSnapshots Allow snapshot reporters registered to this service instance to report on this guage.
+     * @return a resource utilization gauge configured as requested.
+     */
     public ResourceUtilizationGauge createResourceUtilizationGauge(final MetricGroup group, final String name,
-                                                                   final Supplier<ResourceUtilizationData> rGauge,
+                                                                   final Supplier<ResourceUtilizationData> resourceGauge,
                                                                    final Boolean allowSnapshots) {
 
         final EventEmitter emitter = eventDispatcher.newEventEmitter();
         final ResourceUtilizationMetricFactory factory = new ResourceUtilizationMetricFactory(applicationId, group, name);
-        final ResourceUtilizationGauge gauge = new ResourceUtilizationGauge(emitter, factory, rGauge);
+        final ResourceUtilizationGauge gauge = new ResourceUtilizationGauge(emitter, factory, resourceGauge);
 
         if (allowSnapshots) {
             snapshotProviders.add(gauge);
@@ -83,8 +92,8 @@ public class MetricService implements SmartLifecycle {
 
     }
 
-    public <T> BusinessEventRepository<T> createBusinessEventRepository(final MetricGroup group, final String name) {
-        return new BusinessEventRepository<>(eventDispatcher.newEventEmitter(), new EventFactory(applicationId, group, name));
+    public <T> EventRepository<T> createEventRepository(final MetricGroup group, final String name) {
+        return new EventRepository<>(eventDispatcher.newEventEmitter(), new EventFactory<T>(applicationId, group, name));
     }
 
     public HttpCallTimer createHttpResourceCallTimer(final MetricGroup group, final String name) {
@@ -107,6 +116,11 @@ public class MetricService implements SmartLifecycle {
         this.eventDispatcher.subscribe(eventListener);
     }
 
+    /**
+     * Add a new snapshot reporting implementation interested in reporting on events in this service. Starts the reporter.
+     *
+     * @param snReporter Snapshot reporter instance.
+     */
     public void addSnapshotReporter(final SnapshotReporter snReporter) {
         LOG.info("Adding new snapshot reporter [{}].", snReporter.getClass().getName());
 
@@ -115,6 +129,12 @@ public class MetricService implements SmartLifecycle {
         snapshotReporters.add(snReporter);
     }
 
+    /**
+     * Add a new metric probe. Probe life cycles are managed by the metric service. It is not mandatory that a probe be added
+     * to the service, it is for the convenience of the app developer.
+     *
+     * @param probe Metric probe to manage
+     */
     public void addProbe(final MetricProbe probe) {
         LOG.info("Adding metric probe [{}].", probe.getClass().getName());
 
@@ -133,6 +153,12 @@ public class MetricService implements SmartLifecycle {
         this.applicationId = appId;
     }
 
+    /**
+     * Retrieve the global instance of the metric service. Allows clients to access the service being used by an application
+     * to register their own metrics.
+     *
+     * @return The global metrics service instance.
+     */
     public static MetricService globalInstance() {
         if (GLOBAL.getApplicationId() == null) {
             throw new IllegalStateException("Must set global app id before accessing global instance");
@@ -170,6 +196,11 @@ public class MetricService implements SmartLifecycle {
     }
 
     @Override
+    public void stop() {
+        stop(() -> { });
+    }
+
+    @Override
     public void start() {
         if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
             LOG.info("Starting metric service...");
@@ -182,22 +213,6 @@ public class MetricService implements SmartLifecycle {
 
         LOG.info("Metric service started.");
 
-    }
-
-    @Override
-    public void stop() {
-        if (isRunning.compareAndSet(Boolean.TRUE, Boolean.FALSE)) {
-            LOG.info("Stopping metric service...");
-
-            eventDispatcher.stop();
-            snapshotReporters.forEach(SnapshotReporter::stop);
-            probes.forEach(MetricProbe::stop);
-
-        } else {
-            LOG.warn("Metric service is already stopped.");
-        }
-
-        LOG.info("Metric service stopped.");
     }
 
     @Override

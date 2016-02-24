@@ -2,7 +2,7 @@ package com.blispay.common.metrics.model.call.internal;
 
 import com.blispay.common.metrics.model.call.Action;
 
-public class InternalAction implements Action {
+public final class InternalAction implements Action {
 
     private final String action;
 

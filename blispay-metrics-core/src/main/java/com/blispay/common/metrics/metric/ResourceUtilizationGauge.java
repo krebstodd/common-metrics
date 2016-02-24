@@ -14,6 +14,13 @@ public class ResourceUtilizationGauge extends MetricRepository implements Snapsh
 
     private final Supplier<ResourceUtilizationData> stateSupplier;
 
+    /**
+     * Gauge for reporting resource utilization.
+     *
+     * @param eventEmitter Event emitter instance for emitting event metrics.
+     * @param factory Factory for producing immutable resource metrics.
+     * @param stateSupplier Supplies current resource utilization stats on demand.
+     */
     public ResourceUtilizationGauge(final EventEmitter eventEmitter,
                                     final ResourceUtilizationMetricFactory factory,
                                     final Supplier<ResourceUtilizationData> stateSupplier) {

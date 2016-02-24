@@ -24,6 +24,11 @@ public class Status {
         return new Status(2);
     }
 
+    /**
+     * Warning status with specific level.
+     * @param level level
+     * @return status instance
+     */
     public static Status warning(final Integer level) {
         if (level < 2) {
             return warning();

@@ -9,6 +9,13 @@ public abstract class BaseMetricFactory<R extends BaseMetricModel<D>, D> {
     private final MetricGroup group;
     private final String name;
 
+    /**
+     * Base metric factory, contains mandatory fields.
+     *
+     * @param application application name.
+     * @param group group.
+     * @param name metric name;
+     */
     public BaseMetricFactory(final String application, final MetricGroup group, final String name) {
         this.application = application;
         this.group = group;

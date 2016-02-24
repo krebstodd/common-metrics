@@ -2,7 +2,7 @@ package com.blispay.common.metrics.model.call.mq;
 
 import com.blispay.common.metrics.model.call.Resource;
 
-public class MqResource extends Resource {
+public final class MqResource extends Resource {
 
     private final String resourceName;
 

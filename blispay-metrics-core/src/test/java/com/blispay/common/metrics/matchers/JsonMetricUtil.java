@@ -38,7 +38,7 @@ public final class JsonMetricUtil {
         return parseValue(obj, "eventData", JSONObject.class);
     }
 
-    public static <T> T parseValue(final JSONObject obj, final String key, final Class<T> type) {
+    private static <T> T parseValue(final JSONObject obj, final String key, final Class<T> type) {
 
         if (key.contains(".")) {
 

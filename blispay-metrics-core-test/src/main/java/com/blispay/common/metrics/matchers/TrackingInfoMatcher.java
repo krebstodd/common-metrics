@@ -1,19 +1,23 @@
 package com.blispay.common.metrics.matchers;
 
-import com.blispay.common.metrics.model.UserTrackingInfo;
+import com.blispay.common.metrics.model.TrackingInfo;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 
-public class TrackingInfoMatcher extends TypeSafeMatcher<UserTrackingInfo> {
+public class TrackingInfoMatcher extends TypeSafeMatcher<TrackingInfo> {
 
     private final Matcher<String> userIdMatcher;
     private final Matcher<String> sessionIdMatcher;
     private final Matcher<String> agentIdMatcher;
     private final Matcher<String> apiIdMatcher;
 
-    public TrackingInfoMatcher(final UserTrackingInfo info) {
+    /**
+     * Match tracking info on an event.
+     * @param info tracking info to match.
+     */
+    public TrackingInfoMatcher(final TrackingInfo info) {
         this.userIdMatcher = Matchers.equalTo(info.getUserTrackingId());
         this.agentIdMatcher = Matchers.equalTo(info.getAgentTrackingId());
         this.apiIdMatcher = Matchers.equalTo(info.getApiTrackingId());
@@ -21,7 +25,7 @@ public class TrackingInfoMatcher extends TypeSafeMatcher<UserTrackingInfo> {
     }
 
     @Override
-    public boolean matchesSafely(final UserTrackingInfo trackingInfo) {
+    public boolean matchesSafely(final TrackingInfo trackingInfo) {
         return userIdMatcher.matches(trackingInfo.getUserTrackingId())
                 && sessionIdMatcher.matches(trackingInfo.getSessionTrackingId())
                 && agentIdMatcher.matches(trackingInfo.getAgentTrackingId())

@@ -4,8 +4,17 @@ import com.blispay.common.metrics.model.call.Action;
 
 public enum MqAction implements Action {
 
+    /**
+     * Put action.
+     */
     PUT("PUT"),
+    /**
+     * Get action.
+     */
     GET("GET"),
+    /**
+     * Peek action.
+     */
     PEEK("PEEK");
 
     private final String action;

@@ -20,17 +20,18 @@ public class Slf4jSnapshotReporter extends ScheduledSnapshotReporter {
     private final Logger logger;
     private Supplier<Set<SnapshotProvider>> snapshotProviderSupplier;
 
+    public Slf4jSnapshotReporter(final Logger logger, final Integer period, final TimeUnit timeUnit) {
+        this(new JsonMetricSerializer(), logger, period, timeUnit);
+    }
+
     /**
      * Create a new scheduled reporter. Subclass must implement a report method that will be called periodically.
      *
+     * @param serializer metric serializer to user.
      * @param logger the logger to use.
      * @param period The period between calls to report method.
-     * @param unit   The time unit of the period argument.
+     * @param timeUnit The time unit of the period argument.
      */
-    public Slf4jSnapshotReporter(final Logger logger, final Integer period, final TimeUnit unit) {
-        this(new JsonMetricSerializer(), logger, period, unit);
-    }
-
     public Slf4jSnapshotReporter(final MetricSerializer serializer, final Logger logger, final Integer period, final TimeUnit timeUnit) {
         super(period, timeUnit);
 

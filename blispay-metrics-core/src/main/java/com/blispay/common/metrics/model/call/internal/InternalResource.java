@@ -2,7 +2,7 @@ package com.blispay.common.metrics.model.call.internal;
 
 import com.blispay.common.metrics.model.call.Resource;
 
-public class InternalResource extends Resource {
+public final class InternalResource extends Resource {
 
     private final String resource;
 

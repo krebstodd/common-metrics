@@ -2,7 +2,13 @@ package com.blispay.common.metrics.util;
 
 public enum StartupPhase {
 
+    /**
+     * Dispatcher spring startup phase.
+     */
     DISPATCHER(0),
+    /**
+     * Service spring startup phase. 
+     */
     SERVICE(1);
 
     private final Integer phase;

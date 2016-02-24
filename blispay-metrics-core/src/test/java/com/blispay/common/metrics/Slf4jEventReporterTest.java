@@ -2,7 +2,7 @@ package com.blispay.common.metrics;
 
 import com.blispay.common.metrics.matchers.JsonEventDataMatcher;
 import com.blispay.common.metrics.matchers.JsonMetricMatcher;
-import com.blispay.common.metrics.metric.BusinessEventRepository;
+import com.blispay.common.metrics.metric.EventRepository;
 import com.blispay.common.metrics.model.MetricGroup;
 import com.blispay.common.metrics.model.MetricType;
 import com.blispay.common.metrics.report.Slf4jEventReporter;
@@ -29,8 +29,8 @@ public class Slf4jEventReporterTest extends AbstractMetricsTest {
         metricService.addEventSubscriber(new Slf4jEventReporter(log));
         metricService.start();
 
-        final BusinessEventRepository<PiiBusinessEventData> repo
-                = metricService.createBusinessEventRepository(MetricGroup.MERCHANT_DOMAIN, "create");
+        final EventRepository<PiiBusinessEventData> repo
+                = metricService.createEventRepository(MetricGroup.MERCHANT_DOMAIN, "create");
 
         repo.save(defaultPiiBusinessEventData());
 
@@ -39,7 +39,7 @@ public class Slf4jEventReporterTest extends AbstractMetricsTest {
         expectedData.put("notes", "Some notes");
         expectedData.put("count", 1);
 
-        ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+        final ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
         verify(log).info(argument.capture());
 
         // Parse the log line into a json object and test that it's the expected format for the event we just created.

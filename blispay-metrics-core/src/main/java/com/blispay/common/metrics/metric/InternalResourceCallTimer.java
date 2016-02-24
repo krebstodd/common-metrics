@@ -1,7 +1,7 @@
 package com.blispay.common.metrics.metric;
 
 import com.blispay.common.metrics.event.EventEmitter;
-import com.blispay.common.metrics.model.UserTrackingInfo;
+import com.blispay.common.metrics.model.TrackingInfo;
 import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.internal.InternalAction;
 import com.blispay.common.metrics.model.call.internal.InternalResource;
@@ -22,8 +22,8 @@ public class InternalResourceCallTimer extends ResourceCallTimer<InternalResourc
         return start(resource, action, null);
     }
 
-    public StopWatch start(final InternalResource resource, final InternalAction action, final UserTrackingInfo trackingInfo) {
-        return start(new Context(Direction.INBOUND, action, resource, trackingInfo));
+    public StopWatch start(final InternalResource resource, final InternalAction action, final TrackingInfo trackingInfo) {
+        return start(new Context(Direction.INTERNAL, action, resource, trackingInfo));
     }
 
     @Override
@@ -39,13 +39,13 @@ public class InternalResourceCallTimer extends ResourceCallTimer<InternalResourc
         return factory.newMetric(eventData);
     }
 
-    public static final class Context extends ResourceCallTimer.Context {
+    protected static final class Context extends ResourceCallTimer.Context {
 
         private final InternalAction action;
         private final InternalResource resource;
 
-        public Context(final Direction direction, final InternalAction action,
-                       final InternalResource resource, final UserTrackingInfo trackingInfo) {
+        private Context(final Direction direction, final InternalAction action,
+                       final InternalResource resource, final TrackingInfo trackingInfo) {
 
             super(direction, trackingInfo);
             this.action = action;

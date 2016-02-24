@@ -9,13 +9,37 @@ import java.util.Map;
 
 public enum HttpAction implements Action {
 
+    /**
+     * Put.
+     */
     PUT("PUT"),
+    /**
+     * Post.
+     */
     POST("POST"),
+    /**
+     * Get.
+     */
     GET("GET"),
+    /**
+     * Delete.
+     */
     DELETE("DELETE"),
+    /**
+     * Options.
+     */
     OPTIONS("OPTIONS"),
+    /**
+     * Head.
+     */
     HEAD("HEAD"),
+    /**
+     * Trace.
+     */
     TRACE("TRACE"),
+    /**
+     * Connect.
+     */
     CONNECT("CONNECT");
 
     private static final Map<String, HttpAction> lookup;

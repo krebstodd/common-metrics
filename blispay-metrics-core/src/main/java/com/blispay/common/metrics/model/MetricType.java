@@ -4,9 +4,21 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum MetricType {
 
+    /**
+     * A resource call, execution time.
+     */
     RESOURCE_CALL("CAL"),
+    /**
+     * Resource utilization level.
+     */
     RESOURCE_UTILIZATION("UTL"),
+    /**
+     * Resource counter.
+     */
     RESOURCE_COUNTER("CNT"),
+    /**
+     * Event occurrence.
+     */
     EVENT("EVENT");
 
     private final String type;

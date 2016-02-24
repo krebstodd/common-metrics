@@ -5,15 +5,15 @@ import java.util.function.Supplier;
 
 public interface SnapshotReporter {
 
-    public abstract Snapshot report();
+    Snapshot report();
 
-    public abstract void setSnapshotProviders(final Supplier<Set<SnapshotProvider>> providers);
+    void setSnapshotProviders(final Supplier<Set<SnapshotProvider>> providers);
 
-    public default void start() {
+    default void start() {
 
     }
 
-    public default void stop() {
+    default void stop() {
 
     }
 

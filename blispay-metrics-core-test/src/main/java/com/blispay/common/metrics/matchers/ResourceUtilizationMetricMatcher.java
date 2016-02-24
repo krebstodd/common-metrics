@@ -19,12 +19,32 @@ public class ResourceUtilizationMetricMatcher extends TypeSafeMatcher<ResourceUt
     private final Matcher<Long> curr;
     private final Matcher<Double> currPct;
 
+    /**
+     * Resource utilization metric matcher.
+     * @param group group
+     * @param name name
+     * @param type type
+     * @param min min utilization
+     * @param max max utilization
+     * @param curr current utilization
+     * @param currPct current percent of max utilized.
+     */
     public ResourceUtilizationMetricMatcher(final MetricGroup group, final String name, final MetricType type,
                                             final Long min, final Long max, final Long curr, final Double currPct) {
 
         this(group, name, type, Matchers.equalTo(min), Matchers.equalTo(max), Matchers.equalTo(curr), Matchers.equalTo(currPct));
     }
 
+    /**
+     * Resource utilization metric matcher.
+     * @param group group
+     * @param name name
+     * @param type type
+     * @param min min utilization
+     * @param max max utilization
+     * @param curr current utilization
+     * @param currPct current percent of max utilized.
+     */
     public ResourceUtilizationMetricMatcher(final MetricGroup group, final String name, final MetricType type,
                                             final Matcher<Long> min, final Matcher<Long> max, final Matcher<Long> curr,
                                             final Matcher<Double> currPct) {

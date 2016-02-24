@@ -2,7 +2,7 @@ package com.blispay.common.metrics.model.call.http;
 
 import com.blispay.common.metrics.model.call.Resource;
 
-public class HttpResource extends Resource {
+public final class HttpResource extends Resource {
 
     private final String url;
 

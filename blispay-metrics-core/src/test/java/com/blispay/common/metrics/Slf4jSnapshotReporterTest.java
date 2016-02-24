@@ -46,7 +46,7 @@ public class Slf4jSnapshotReporterTest extends AbstractMetricsTest {
 
         Thread.sleep(1000);
 
-        ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+        final ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
         verify(log).info(argument.capture());
 
         // Parse the log line into a json object and test that it's the expected format for the event we just created.

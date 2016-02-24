@@ -1,15 +1,16 @@
 package com.blispay.common.metrics;
 
-import java.math.BigInteger;
-import java.util.Random;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public final class MetricTestUtil {
+
+    private static final Integer randomAppIdSize = 20;
 
     private MetricTestUtil() {
 
     }
 
     public static String randomAppId() {
-        return new BigInteger(130, new Random()).toString(32);
+        return RandomStringUtils.randomAlphabetic(randomAppIdSize);
     }
 }

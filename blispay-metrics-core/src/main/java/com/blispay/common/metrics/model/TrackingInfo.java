@@ -2,7 +2,7 @@ package com.blispay.common.metrics.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class UserTrackingInfo {
+public class TrackingInfo {
 
     @JsonProperty("agentTrackingId")
     private final String agentTrackingId;
@@ -16,8 +16,16 @@ public class UserTrackingInfo {
     @JsonProperty("sessionTrackingId")
     private final String sessionTrackingId;
 
-    public UserTrackingInfo(final String userTrackingId, final String agentTrackingId,
-                            final String sessionTrackingId, final String apiTrackingId) {
+    /**
+     * Tracking info for a request.
+     *
+     * @param userTrackingId user tracking id.
+     * @param agentTrackingId agent tracking id.
+     * @param sessionTrackingId session tracking id.
+     * @param apiTrackingId api tracking id.
+     */
+    public TrackingInfo(final String userTrackingId, final String agentTrackingId,
+                        final String sessionTrackingId, final String apiTrackingId) {
 
         this.agentTrackingId = agentTrackingId;
         this.userTrackingId = userTrackingId;

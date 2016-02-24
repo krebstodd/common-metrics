@@ -8,7 +8,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-@JsonIgnoreProperties(ignoreUnknown=true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class BaseMetricModel<D> {
 
@@ -29,6 +29,15 @@ public abstract class BaseMetricModel<D> {
     @JsonProperty("type")
     private final MetricType type;
 
+    /**
+     * Immutable metric model.
+     *
+     * @param timestamp timestamp for when the metric occurred.
+     * @param application application name.
+     * @param group hierarchical metric group, helps with searching. .
+     * @param name metric name.
+     * @param type metric type, dictates the structure of the metric eventData payload.
+     */
     public BaseMetricModel(final ZonedDateTime timestamp,
                            final String application,
                            final MetricGroup group,
@@ -56,6 +65,10 @@ public abstract class BaseMetricModel<D> {
 
     public MetricType getType() {
         return type;
+    }
+
+    public String getApplication() {
+        return application;
     }
 
     @JsonProperty("eventData")

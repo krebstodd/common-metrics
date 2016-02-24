@@ -16,6 +16,14 @@ public class ResourceUtilizationData {
     @JsonProperty("util")
     private final Double currentPercentage;
 
+    /**
+     * Generic summary of resource utilization.
+     *
+     * @param minValue Minimum utilization level of resource.
+     * @param maxValue Maximum utilization level of resource.
+     * @param currentValue The current utilization level.
+     * @param currentPercentage Percentage of maximum currently under use.
+     */
     public ResourceUtilizationData(final Long minValue,
                                    final Long maxValue,
                                    final Long currentValue,

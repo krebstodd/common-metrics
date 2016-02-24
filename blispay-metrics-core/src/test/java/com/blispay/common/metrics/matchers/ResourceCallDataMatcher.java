@@ -1,6 +1,6 @@
 package com.blispay.common.metrics.matchers;
 
-import com.blispay.common.metrics.model.UserTrackingInfo;
+import com.blispay.common.metrics.model.TrackingInfo;
 import com.blispay.common.metrics.model.call.Action;
 import com.blispay.common.metrics.model.call.BaseResourceCallEventData;
 import com.blispay.common.metrics.model.call.Direction;
@@ -19,11 +19,20 @@ public class ResourceCallDataMatcher<R extends Resource, A extends Action> exten
     private final Matcher<String> actionMatcher;
     private final Matcher<Integer> statusMatcher;
     private final Matcher<Direction> directionMatcher;
-    private final Matcher<UserTrackingInfo> trackingInfoMatcher;
+    private final Matcher<TrackingInfo> trackingInfoMatcher;
     private final Long approxRuntime;
 
+    /**
+     * Match a resource call metric.
+     * @param resource resource
+     * @param action action
+     * @param direction direction
+     * @param status status
+     * @param approxMillis approxMillis
+     * @param trackingInfo trackinginfo
+     */
     public ResourceCallDataMatcher(final R resource, final A action, final Direction direction,
-                                   final Status status, final Long approxMillis, final UserTrackingInfo trackingInfo) {
+                                   final Status status, final Long approxMillis, final TrackingInfo trackingInfo) {
 
         this.resourceMatcher = Matchers.equalTo(resource.getValue());
         this.actionMatcher = Matchers.equalTo(action.getValue());

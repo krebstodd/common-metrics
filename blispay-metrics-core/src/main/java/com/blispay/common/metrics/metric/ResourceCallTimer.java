@@ -2,13 +2,12 @@ package com.blispay.common.metrics.metric;
 
 import com.blispay.common.metrics.event.EventEmitter;
 import com.blispay.common.metrics.model.BaseMetricModel;
-import com.blispay.common.metrics.model.UserTrackingInfo;
+import com.blispay.common.metrics.model.TrackingInfo;
 import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.Status;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
 
 public abstract class ResourceCallTimer<C extends ResourceCallTimer.Context> extends MetricRepository {
 
@@ -29,12 +28,11 @@ public abstract class ResourceCallTimer<C extends ResourceCallTimer.Context> ext
     protected static class Context {
 
         private final Direction direction;
-        private final UserTrackingInfo trackingInfo;
+        private final TrackingInfo trackingInfo;
         private Status status;
         private Duration duration;
 
-        public Context(final Direction direction, final UserTrackingInfo trackingInfo) {
-
+        protected Context(final Direction direction, final TrackingInfo trackingInfo) {
             this.direction = direction;
             this.trackingInfo = trackingInfo;
         }
@@ -51,7 +49,7 @@ public abstract class ResourceCallTimer<C extends ResourceCallTimer.Context> ext
             return direction;
         }
 
-        public UserTrackingInfo getTrackingInfo() {
+        public TrackingInfo getTrackingInfo() {
             return trackingInfo;
         }
 
@@ -66,7 +64,6 @@ public abstract class ResourceCallTimer<C extends ResourceCallTimer.Context> ext
 
     public class StopWatch implements AutoCloseable {
 
-        private BiConsumer<C, Duration> completionNotifier;
         private Long startMillis;
         private AtomicBoolean isRunning = new AtomicBoolean(false);
 
@@ -78,6 +75,8 @@ public abstract class ResourceCallTimer<C extends ResourceCallTimer.Context> ext
 
         /**
          * Start the stopwatch.
+         *
+         * @return Running stopwatch instance.
          */
         public StopWatch start() {
             if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
@@ -88,6 +87,12 @@ public abstract class ResourceCallTimer<C extends ResourceCallTimer.Context> ext
             }
         }
 
+        /**
+         * Stop the currently running snapshot. Forces the timer to emit a resource call event.
+         *
+         * @param callStatus The status of the call response.
+         * @return The duration of the call execution.
+         */
         public Duration stop(final Status callStatus) {
             assertRunning(Boolean.TRUE);
 

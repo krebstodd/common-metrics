@@ -12,6 +12,15 @@ public class ResourceUtilizationMetric extends BaseMetricModel<ResourceUtilizati
 
     private final ResourceUtilizationData utilizationEventData;
 
+    /**
+     * Immutable resource utilization metric.
+     *
+     * @param timestamp timestamp for when the metric occurred.
+     * @param applicationId application name.
+     * @param group metric group.
+     * @param name metric name.
+     * @param utilizationSummary summary of utilization data.
+     */
     public ResourceUtilizationMetric(final ZonedDateTime timestamp,
                                      final String applicationId,
                                      final MetricGroup group,

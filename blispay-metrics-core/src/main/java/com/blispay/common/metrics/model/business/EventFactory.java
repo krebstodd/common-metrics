@@ -5,12 +5,18 @@ import com.blispay.common.metrics.model.MetricGroup;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-public class EventFactory {
+public class EventFactory<T> {
 
     private final String application;
     private final MetricGroup group;
     private final String name;
 
+    /**
+     * Event factory.
+     * @param application The application name.
+     * @param group Group for the particular event we're building.
+     * @param name Name of the event.
+     */
     public EventFactory(final String application, final MetricGroup group, final String name) {
         this.application = application;
         this.group = group;
@@ -33,7 +39,7 @@ public class EventFactory {
         return ZonedDateTime.now(ZoneId.of("UTC"));
     }
 
-    public <T> EventMetric<T> newMetric(final T eventData) {
+    public EventMetric<T> newMetric(final T eventData) {
         return new EventMetric<>(timestamp(), getApplication(), getGroup(), getName(), eventData);
     }
 

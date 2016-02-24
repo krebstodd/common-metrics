@@ -17,6 +17,14 @@ public class JsonMetricMatcher extends TypeSafeMatcher<JSONObject> {
     private final Matcher<String> typeMatcher;
     private final Matcher eventDataMatcher;
 
+    /**
+     * Match a json metric.
+     * @param group group
+     * @param applicationName app name
+     * @param name name
+     * @param type type
+     * @param eventDataMatcher data
+     */
     public JsonMetricMatcher(final MetricGroup group, final String applicationName, final String name, final MetricType type,
                              final Matcher eventDataMatcher) {
 

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum MetricGroup {
 
+    // CHECK_OFF: JavadocVariable
+
     ACCOUNT_DOMAIN("metrics.business.account-domain"),
     ACTIVITY_DOMAIN("metrics.business.activity-domain"),
     API_DOMAIN("metrics.business.api-domain"),
@@ -45,6 +47,8 @@ public enum MetricGroup {
     RESOURCE_UTILIZATION_CACHE("metrics.resource.cache"),
 
     INTERNAL_METHOD_CALL("metrics.internal.method");
+
+    // CHECK_ON: JavadocVariable
 
     private final String groupName;
 

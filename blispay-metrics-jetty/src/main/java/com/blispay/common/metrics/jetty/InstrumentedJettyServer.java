@@ -22,8 +22,6 @@ public class InstrumentedJettyServer extends Server {
 
     private static final Logger LOG = LoggerFactory.getLogger(InstrumentedJettyServer.class);
 
-    private final MetricService metricService;
-
     private final Consumer<HttpChannel<?>> handler;
 
     private final HttpCallTimer timer;
@@ -40,7 +38,6 @@ public class InstrumentedJettyServer extends Server {
                                    final Consumer<HttpChannel<?>> channelHandler) {
 
         super(threadPool);
-        this.metricService = metricService;
         this.timer = metricService.createHttpResourceCallTimer(MetricGroup.SERVER_HTTP, "http-response");
         this.handler = channelHandler;
     }
@@ -65,11 +62,6 @@ public class InstrumentedJettyServer extends Server {
     @Override
     public void handleAsync(final HttpChannel<?> channel) throws IOException, ServletException {
         handler.accept(channel);
-    }
-
-    @Override
-    public void doStart() throws Exception {
-        super.doStart();
     }
 
 }

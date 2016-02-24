@@ -12,6 +12,15 @@ public class ResourceCounterMetric extends BaseMetricModel<ResourceCounterEventD
 
     private ResourceCounterEventData eventData;
 
+    /**
+     * Immutable resource counter metric.
+     *
+     * @param timestamp timestamp for when the metric occurred.
+     * @param applicationId application name.
+     * @param group metric group.
+     * @param name metric name.
+     * @param eventData summary of count data.
+     */
     public ResourceCounterMetric(final ZonedDateTime timestamp,
                                  final String applicationId,
                                  final MetricGroup group,
