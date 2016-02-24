@@ -32,4 +32,8 @@ public class Status {
         }
     }
 
+    public static Status fromValue(final Integer val) {
+        return new Status(val);
+    }
+
 }

@@ -4,6 +4,7 @@ import com.blispay.common.metrics.data.JsonMetricSerializer;
 import com.blispay.common.metrics.data.MetricSerializer;
 import com.blispay.common.metrics.model.BaseMetricModel;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,6 +13,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class Slf4jSnapshotReporter extends ScheduledSnapshotReporter {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Slf4jSnapshotReporter.class);
 
     private final MetricSerializer serializer;
     private final Logger logger;
@@ -37,14 +40,25 @@ public class Slf4jSnapshotReporter extends ScheduledSnapshotReporter {
     }
 
     @Override
-    public Set<BaseMetricModel> report() {
+    public Snapshot report() {
+
+        LOG.info("Starting snapshot report...");
+
         final Set<BaseMetricModel> snapshot = snapshotProviderSupplier.get().stream().map(SnapshotProvider::snapshot).collect(Collectors.toSet());
         snapshot.forEach(ss -> logger.info(serializer.serialize(ss)));
-        return snapshot;
+
+        LOG.info("Snapshot report complete.");
+
+        return new Snapshot(snapshot);
     }
 
     @Override
     public void setSnapshotProviders(final Supplier<Set<SnapshotProvider>> providers) {
         this.snapshotProviderSupplier = providers;
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOG;
     }
 }

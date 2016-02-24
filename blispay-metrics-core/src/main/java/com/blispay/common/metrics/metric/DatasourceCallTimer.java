@@ -33,7 +33,8 @@ public class DatasourceCallTimer extends ResourceCallTimer<DatasourceCallTimer.C
                 context.getDuration().toMillis(),
                 context.getResource(),
                 context.getAction(),
-                context.getStatus());
+                context.getStatus(),
+                context.getTrackingInfo());
 
         return factory.newMetric(eventData);
     }

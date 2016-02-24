@@ -16,8 +16,6 @@ import java.util.UUID;
 
 public abstract class AbstractMetricsTest {
 
-    protected static final MetricService glboalMetricService = MetricService.globalInstance();
-
     // CHECK_OFF: JavadocVariable
     // CHECK_OFF: VisibilityModifier
     @Rule
@@ -53,9 +51,9 @@ public abstract class AbstractMetricsTest {
 
         return new EventMetric<>(
                 ZonedDateTime.now(),
-                MetricGroup.GENERIC,
+                "someApp",
+                MetricGroup.CLIENT,
                 "created",
-                trackingInfo(),
                 defaultPiiBusinessEventData());
 
     }
@@ -103,7 +101,7 @@ public abstract class AbstractMetricsTest {
         }
 
         @Override
-        protected boolean matchesSafely(final PiiBusinessEventData piiBusinessEventData) {
+        public boolean matchesSafely(final PiiBusinessEventData piiBusinessEventData) {
             return usernameMatcher.matches(piiBusinessEventData.getUserName())
                     && notesMatcher.matches(piiBusinessEventData.getNotes())
                     && countMatcher.matches(piiBusinessEventData.getCount());

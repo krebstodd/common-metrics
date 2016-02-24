@@ -29,7 +29,8 @@ public class MqCallTimer extends ResourceCallTimer<MqCallTimer.Context> {
                 context.getDuration().toMillis(),
                 context.getResource(),
                 context.getAction(),
-                context.getStatus());
+                context.getStatus(),
+                context.getTrackingInfo());
 
         return factory.newMetric(eventData);
     }

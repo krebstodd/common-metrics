@@ -58,7 +58,7 @@ public class SingleThreadedEventDispatcherTest extends AbstractMetricsTest {
 
         final TestEventSubscriber subscriber1 = new TestEventSubscriber();
         final TestEventSubscriber subscriber2 = new TestEventSubscriber();
-        subscriber2.addFilter(event -> event.getGroup() != MetricGroup.GENERIC);
+        subscriber2.addFilter(event -> event.getGroup() != MetricGroup.CLIENT);
 
         ed.subscribe(subscriber1);
         ed.subscribe(subscriber2);

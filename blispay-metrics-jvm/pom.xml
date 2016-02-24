@@ -5,7 +5,7 @@
     <parent>
         <artifactId>blispay-metrics-parent</artifactId>
         <groupId>com.blispay.common</groupId>
-        <version>1.0.52</version>
+        <version>0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -20,9 +20,29 @@
         </dependency>
 
         <dependency>
-            <groupId>io.dropwizard.metrics</groupId>
-            <artifactId>metrics-jvm</artifactId>
-            <version>${dropwizard-stack-version}</version>
+            <groupId>com.blispay.common</groupId>
+            <artifactId>blispay-metrics-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-all</artifactId>
+            <version>1.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.blispay.common</groupId>
+            <artifactId>blispay-metrics-core-test</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 </project>

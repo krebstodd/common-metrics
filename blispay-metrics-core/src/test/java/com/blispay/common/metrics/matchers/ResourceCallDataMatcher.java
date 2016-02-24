@@ -1,5 +1,6 @@
 package com.blispay.common.metrics.matchers;
 
+import com.blispay.common.metrics.model.UserTrackingInfo;
 import com.blispay.common.metrics.model.call.Action;
 import com.blispay.common.metrics.model.call.BaseResourceCallEventData;
 import com.blispay.common.metrics.model.call.Direction;
@@ -18,24 +19,27 @@ public class ResourceCallDataMatcher<R extends Resource, A extends Action> exten
     private final Matcher<String> actionMatcher;
     private final Matcher<Integer> statusMatcher;
     private final Matcher<Direction> directionMatcher;
+    private final Matcher<UserTrackingInfo> trackingInfoMatcher;
     private final Long approxRuntime;
 
     public ResourceCallDataMatcher(final R resource, final A action, final Direction direction,
-                                   final Status status, final Long approxMillis) {
+                                   final Status status, final Long approxMillis, final UserTrackingInfo trackingInfo) {
 
         this.resourceMatcher = Matchers.equalTo(resource.getValue());
         this.actionMatcher = Matchers.equalTo(action.getValue());
         this.directionMatcher = Matchers.equalTo(direction);
         this.statusMatcher = Matchers.equalTo(status.getValue());
+        this.trackingInfoMatcher = new TrackingInfoMatcher(trackingInfo);
         this.approxRuntime = approxMillis;
     }
 
     @Override
-    protected boolean matchesSafely(final BaseResourceCallEventData<R, A> raBaseResourceCallEventData) {
+    public boolean matchesSafely(final BaseResourceCallEventData<R, A> raBaseResourceCallEventData) {
         return resourceMatcher.matches(raBaseResourceCallEventData.getResource().getValue())
                 && actionMatcher.matches(raBaseResourceCallEventData.getAction().getValue())
                 && statusMatcher.matches(raBaseResourceCallEventData.getStatus())
                 && directionMatcher.matches(raBaseResourceCallEventData.getDirection())
+                && trackingInfoMatcher.matches(raBaseResourceCallEventData.getTrackingInfo())
                 && approximatelyEqual(approxRuntime, raBaseResourceCallEventData.getDurationMillis(), ACCEPTABLE_RT_DELTA);
     }
 

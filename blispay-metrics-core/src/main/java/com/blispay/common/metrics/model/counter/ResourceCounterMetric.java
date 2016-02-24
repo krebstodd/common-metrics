@@ -1,7 +1,6 @@
 package com.blispay.common.metrics.model.counter;
 
 import com.blispay.common.metrics.model.BaseMetricModel;
-import com.blispay.common.metrics.model.InfraMetricName;
 import com.blispay.common.metrics.model.MetricGroup;
 import com.blispay.common.metrics.model.MetricType;
 
@@ -14,11 +13,12 @@ public class ResourceCounterMetric extends BaseMetricModel<ResourceCounterEventD
     private ResourceCounterEventData eventData;
 
     public ResourceCounterMetric(final ZonedDateTime timestamp,
+                                 final String applicationId,
                                  final MetricGroup group,
                                  final String name,
                                  final ResourceCounterEventData eventData) {
 
-        super(timestamp, group, name, type);
+        super(timestamp, applicationId, group, name, type);
         this.eventData = eventData;
     }
 

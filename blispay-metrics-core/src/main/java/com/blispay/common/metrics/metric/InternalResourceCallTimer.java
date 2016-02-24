@@ -18,8 +18,12 @@ public class InternalResourceCallTimer extends ResourceCallTimer<InternalResourc
         this.factory = metricFactory;
     }
 
+    public StopWatch start(final InternalResource resource, final InternalAction action) {
+        return start(resource, action, null);
+    }
+
     public StopWatch start(final InternalResource resource, final InternalAction action, final UserTrackingInfo trackingInfo) {
-        return start(new Context(Direction.OUTBOUND, action, resource, trackingInfo));
+        return start(new Context(Direction.INBOUND, action, resource, trackingInfo));
     }
 
     @Override
@@ -29,7 +33,8 @@ public class InternalResourceCallTimer extends ResourceCallTimer<InternalResourc
                 context.getDuration().toMillis(),
                 context.getResource(),
                 context.getAction(),
-                context.getStatus());
+                context.getStatus(),
+                context.getTrackingInfo());
 
         return factory.newMetric(eventData);
     }

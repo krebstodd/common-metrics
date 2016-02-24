@@ -4,6 +4,6 @@ import com.blispay.common.metrics.model.BaseMetricModel;
 
 public interface MetricSerializer {
 
-    public String serialize(BaseMetricModel metric);
+    String serialize(BaseMetricModel metric);
 
 }

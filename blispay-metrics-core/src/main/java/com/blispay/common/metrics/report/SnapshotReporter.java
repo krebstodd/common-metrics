@@ -1,14 +1,20 @@
 package com.blispay.common.metrics.report;
 
-import com.blispay.common.metrics.model.BaseMetricModel;
-
 import java.util.Set;
 import java.util.function.Supplier;
 
 public interface SnapshotReporter {
 
-    public abstract Set<BaseMetricModel> report();
+    public abstract Snapshot report();
 
     public abstract void setSnapshotProviders(final Supplier<Set<SnapshotProvider>> providers);
+
+    public default void start() {
+
+    }
+
+    public default void stop() {
+
+    }
 
 }

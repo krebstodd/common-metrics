@@ -7,6 +7,11 @@ import org.slf4j.LoggerFactory;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Note - This is essentially a toy dispatcher that really should only ever be used when all subscribers do something REALLY
+ *        simple (logging). If any subscribers execute long running or error prone processes (http), using the events they
+ *        receive, a multi threaded dispatcher should be implemented w/ thread pooling, retries, persistence for failed events, etc.
+ */
 public class SingleThreadedEventDispatcher extends EventDispatcher {
 
     private static final Logger LOG = LoggerFactory.getLogger(SingleThreadedEventDispatcher.class);
@@ -20,6 +25,8 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
     @Override
     public void dispatch(final BaseMetricModel evt) {
 
+        LOG.info("Dispatching new new event name=[{}]", evt.getName());
+
         if (!isRunning()) {
             throw new IllegalStateException("Dispatcher not yet started");
         }
@@ -32,7 +39,7 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
                     try {
                         reporter.acceptEvent(evt);
                     } catch (Exception ex) {
-                        LOG.error("Received error attempting to accept event [{}]", evt.getName().toString());
+                        LOG.error("Received error attempting to accept event [{}]", evt.getName());
                     }
 
                 });
@@ -68,11 +75,11 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
     @Override
     public void stop(final Runnable runnable) {
 
+        LOG.info("Stopping event dispatcher...");
+
         if (isRunning.compareAndSet(Boolean.TRUE, Boolean.FALSE)) {
 
             // TODO - Flush the collections of failed events awaiting retry
-            LOG.info("Dispatcher stopped.");
-
             runnable.run();
 
         } else {
@@ -80,30 +87,39 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
             runnable.run();
         }
 
+        LOG.info("Dispatcher stopped.");
+
     }
 
     @Override
     public void start() {
+
+        LOG.info("Starting event dispatcher...");
+
         if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
 
-            LOG.info("Dispatcher started.");
 
         } else {
             LOG.warn("Dispatcher is already running.");
         }
+
+        LOG.info("Dispatcher started.");
+
     }
 
     @Override
     public void stop() {
-        if (isRunning.compareAndSet(Boolean.TRUE, Boolean.FALSE)) {
+        LOG.info("Stopping event dispatcher...");
 
-            LOG.info("Dispatcher stopped.");
+        if (isRunning.compareAndSet(Boolean.TRUE, Boolean.FALSE)) {
 
             // TODO - Flush the collections of failed events awaiting retry
 
         } else {
             LOG.warn("Dispatcher is already stopped.");
         }
+
+        LOG.info("Dispatcher stopped.");
     }
 
 }

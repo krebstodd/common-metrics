@@ -15,4 +15,8 @@ public class DsResource extends Resource {
         return resourceName;
     }
 
+    public static DsResource fromSchemaTable(final String schema, final String table) {
+        return new DsResource(schema, table);
+    }
+
 }

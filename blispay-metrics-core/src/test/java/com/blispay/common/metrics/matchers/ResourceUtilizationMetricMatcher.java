@@ -35,18 +35,7 @@ public class ResourceUtilizationMetricMatcher extends TypeSafeMatcher<ResourceUt
     }
 
     @Override
-    protected boolean matchesSafely(final ResourceUtilizationMetric resourceUtilizationMetric) {
-
-//        System.out.println(groupMatcher + " :: " + resourceUtilizationMetric.getGroup().getValue());
-//        System.out.println(timestampMatcher.matches(resourceUtilizationMetric.getTimestamp()));
-//                System.out.println(groupMatcher.matches(resourceUtilizationMetric.getGroup().getValue()));
-//                System.out.println(nameMatcher.matches(resourceUtilizationMetric.getName()));
-//                System.out.println(typeMatcher.matches(resourceUtilizationMetric.getType().getValue()));
-//                System.out.println(min.matches(resourceUtilizationMetric.eventData().getMinValue()));
-//                System.out.println(max.matches(resourceUtilizationMetric.eventData().getMaxValue()));
-//                System.out.println(curr.matches(resourceUtilizationMetric.eventData().getCurrentValue()));
-//                System.out.println(currPct.matches(resourceUtilizationMetric.eventData().getCurrentPercentage()));;
-        
+    public boolean matchesSafely(final ResourceUtilizationMetric resourceUtilizationMetric) {
         return timestampMatcher.matches(resourceUtilizationMetric.getTimestamp())
                 && groupMatcher.matches(resourceUtilizationMetric.getGroup().getValue())
                 && nameMatcher.matches(resourceUtilizationMetric.getName())

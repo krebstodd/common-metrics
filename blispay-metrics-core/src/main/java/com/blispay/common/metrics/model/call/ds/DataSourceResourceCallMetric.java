@@ -10,11 +10,12 @@ public class DataSourceResourceCallMetric extends BaseResourceCallMetric<DataSou
     private final DataSourceResourceCallEventData eventData;
 
     public DataSourceResourceCallMetric(final ZonedDateTime timestamp,
+                                        final String applicationId,
                                         final MetricGroup group,
                                         final String name,
                                         final DataSourceResourceCallEventData eventData) {
 
-        super(timestamp, group, name);
+        super(timestamp, applicationId, group, name);
 
         this.eventData = eventData;
     }

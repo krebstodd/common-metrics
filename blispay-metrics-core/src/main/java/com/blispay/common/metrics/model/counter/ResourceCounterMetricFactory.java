@@ -1,13 +1,12 @@
 package com.blispay.common.metrics.model.counter;
 
 import com.blispay.common.metrics.model.BaseMetricFactory;
-import com.blispay.common.metrics.model.InfraMetricName;
 import com.blispay.common.metrics.model.MetricGroup;
 
 public class ResourceCounterMetricFactory extends BaseMetricFactory<ResourceCounterMetric, ResourceCounterEventData> {
 
-    public ResourceCounterMetricFactory(final MetricGroup group, final String name) {
-        super(group, name);
+    public ResourceCounterMetricFactory(final String application, final MetricGroup group, final String name) {
+        super(application, group, name);
     }
 
     public ResourceCounterMetric newMetric(final Double count) {
@@ -23,6 +22,6 @@ public class ResourceCounterMetricFactory extends BaseMetricFactory<ResourceCoun
     }
 
     public ResourceCounterMetric newMetric(final ResourceCounterEventData count) {
-        return new ResourceCounterMetric(timestamp(), getGroup(), getName(), count);
+        return new ResourceCounterMetric(timestamp(), getApplication(), getGroup(), getName(), count);
     }
 }

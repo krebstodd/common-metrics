@@ -1,6 +1,5 @@
 package com.blispay.common.metrics.model.call.internal;
 
-import com.blispay.common.metrics.model.InfraMetricName;
 import com.blispay.common.metrics.model.MetricGroup;
 import com.blispay.common.metrics.model.call.BaseResourceCallMetric;
 
@@ -11,11 +10,12 @@ public class InternalResourceCallMetric extends BaseResourceCallMetric<InternalR
     private final InternalResourceCallEventData eventData;
 
     public InternalResourceCallMetric(final ZonedDateTime timestamp,
+                                      final String applicationId,
                                       final MetricGroup group,
                                       final String name,
                                       final InternalResourceCallEventData eventData) {
 
-        super(timestamp, group, name);
+        super(timestamp, applicationId, group, name);
 
         this.eventData = eventData;
     }

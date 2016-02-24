@@ -1,19 +1,24 @@
 package com.blispay.common.metrics.model.business;
 
 import com.blispay.common.metrics.model.MetricGroup;
-import com.blispay.common.metrics.model.UserTrackingInfo;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 public class EventFactory {
 
+    private final String application;
     private final MetricGroup group;
     private final String name;
 
-    public EventFactory(final MetricGroup group, final String name) {
+    public EventFactory(final String application, final MetricGroup group, final String name) {
+        this.application = application;
         this.group = group;
         this.name = name;
+    }
+
+    public String getApplication() {
+        return application;
     }
 
     public String getName() {
@@ -28,8 +33,8 @@ public class EventFactory {
         return ZonedDateTime.now(ZoneId.of("UTC"));
     }
 
-    public <T> EventMetric<T> newMetric(final UserTrackingInfo trackingInfo, final T eventData) {
-        return new EventMetric<>(timestamp(), getGroup(), getName(), trackingInfo, eventData);
+    public <T> EventMetric<T> newMetric(final T eventData) {
+        return new EventMetric<>(timestamp(), getApplication(), getGroup(), getName(), eventData);
     }
 
 }

@@ -5,12 +5,18 @@ import java.time.ZonedDateTime;
 
 public abstract class BaseMetricFactory<R extends BaseMetricModel<D>, D> {
 
+    private final String application;
     private final MetricGroup group;
     private final String name;
 
-    public BaseMetricFactory(final MetricGroup group, final String name) {
+    public BaseMetricFactory(final String application, final MetricGroup group, final String name) {
+        this.application = application;
         this.group = group;
         this.name = name;
+    }
+
+    public String getApplication() {
+        return application;
     }
 
     public String getName() {

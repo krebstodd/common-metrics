@@ -17,6 +17,9 @@ public abstract class BaseMetricModel<D> {
     @JsonProperty("timestamp")
     private final String timestamp;
 
+    @JsonProperty("application")
+    private final String application;
+
     @JsonProperty("group")
     private final MetricGroup group;
 
@@ -27,11 +30,13 @@ public abstract class BaseMetricModel<D> {
     private final MetricType type;
 
     public BaseMetricModel(final ZonedDateTime timestamp,
+                           final String application,
                            final MetricGroup group,
                            final String name,
                            final MetricType type) {
 
         this.timestamp = dtFormatter.format(timestamp.withZoneSameInstant(ZoneId.of("UTC")));
+        this.application = application;
         this.group = group;
         this.name = name;
         this.type = type;

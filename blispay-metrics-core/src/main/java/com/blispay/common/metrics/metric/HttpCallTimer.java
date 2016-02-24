@@ -20,6 +20,14 @@ public class HttpCallTimer extends ResourceCallTimer<HttpCallTimer.Context> {
 
     public StopWatch start(final Direction direction,
                            final HttpResource resource,
+                           final HttpAction action) {
+
+        return start(direction, resource, action, null);
+
+    }
+
+    public StopWatch start(final Direction direction,
+                           final HttpResource resource,
                            final HttpAction action,
                            final UserTrackingInfo trackingInfo) {
 
@@ -34,7 +42,8 @@ public class HttpCallTimer extends ResourceCallTimer<HttpCallTimer.Context> {
                 context.getDuration().toMillis(),
                 context.getResource(),
                 context.getAction(),
-                context.getStatus());
+                context.getStatus(),
+                context.getTrackingInfo());
 
         return factory.newMetric(eventData);
     }
