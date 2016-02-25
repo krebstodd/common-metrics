@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class JvmThreadMetricsTest {
 
@@ -54,7 +55,7 @@ public class JvmThreadMetricsTest {
         new Thread(() -> {
 
                 final ResourceUtilizationMetric activeThreads = getActiveThreadMetric(threadReporter.report().getMetrics());
-                assertEquals(currActive + 1, activeThreads.eventData().getCurrentValue().intValue());
+                assertTrue(currActive < activeThreads.eventData().getCurrentValue().intValue());
 
                 latch.countDown();
 
