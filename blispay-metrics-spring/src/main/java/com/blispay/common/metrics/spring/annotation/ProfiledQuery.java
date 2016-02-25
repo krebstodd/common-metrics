@@ -13,12 +13,24 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface ProfiledQuery {
 
+    /**
+     * Name of the metric associated with the profiled query.
+     */
     String name();
 
+    /**
+     * Name of the schema the query will execute in.
+     */
     String schema();
 
+    /**
+     * Name of the table the query will execute in.
+     */
     String table();
 
+    /**
+     * General action the query takes (INSERT,UPDATE,CREATE,DELETE).
+     */
     DsAction action();
 
 }

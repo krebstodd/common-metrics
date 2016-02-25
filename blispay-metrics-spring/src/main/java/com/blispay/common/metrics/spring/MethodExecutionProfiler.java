@@ -14,6 +14,11 @@ import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
+
+// CHECK_OFF: IllegalCatch
+// CHECK_OFF: IllegalThrows
+
 @Aspect
 public class MethodExecutionProfiler {
 
@@ -27,32 +32,70 @@ public class MethodExecutionProfiler {
         this.metricService = metricService;
     }
 
+    /**
+     * Join point for aspectj integration for method execution metrics. Any methods annotated with the Profiled annotation will
+     * automatically have performance metrics published.
+     *
+     * @param joinPoint Information about the join point.
+     * @return The response from the method. Defaults to success for non-exception returns and error for exceptions.
+     * @throws Throwable Any exceptions the method execution might throw.
+     */
     @Around("execution(* *(..)) && @annotation(com.blispay.common.metrics.spring.annotation.Profiled)")
-    public Object around (final ProceedingJoinPoint jPoint) throws Throwable {
+    public Object around(final ProceedingJoinPoint joinPoint) throws Throwable {
 
-        final Class<?> declaringClass = JoinPointUtil.getDeclaringClass(jPoint);
-        final String methodName = JoinPointUtil.getMethodName(jPoint);
+        final Optional<ResourceCallTimer.StopWatch> sw = safeStart(joinPoint);
 
-        LOG.debug("Starting method execution profile for class [{}] with method [{}]", declaringClass, methodName);
-
-        final ResourceCallTimer.StopWatch sw = startTimer(
-                JoinPointUtil.getAnnotation(jPoint, Profiled.class).map(Profiled::value).orElse(defaultName),
-                declaringClass,
-                methodName);
+        final Object result;
 
         try {
 
-            final Object result = jPoint.proceed();
-            sw.stop(Status.success());
-
-            LOG.debug("Method execution profile complete for class [{}] with method [{}]", declaringClass, methodName);
-            return result;
+            result = joinPoint.proceed();
 
         } catch (Throwable throwable) {
 
-            sw.stop(Status.error());
+            safeStop(sw, Status.error());
             throw throwable;
 
+        }
+
+        safeStop(sw, Status.success());
+        return result;
+
+    }
+
+    private Optional<ResourceCallTimer.StopWatch> safeStart(final ProceedingJoinPoint joinPoint) {
+
+        try {
+
+            LOG.debug("Attempting to safe-start stopwatch for method execution");
+
+            final Class<?> declaringClass = JoinPointUtil.getDeclaringClass(joinPoint);
+            final String methodName = JoinPointUtil.getMethodName(joinPoint);
+
+            final ResourceCallTimer.StopWatch sw = startTimer(
+                    JoinPointUtil.getAnnotation(joinPoint, Profiled.class).map(Profiled::value).orElse(defaultName),
+                    declaringClass,
+                    methodName);
+
+            LOG.debug("Started timer for method execution for class [{}] with method [{}].", declaringClass, methodName);
+            return Optional.of(sw);
+
+        } catch (Throwable throwable) {
+            LOG.error("Caught throwable attempting to start timer for profiled method.", throwable);
+            return Optional.empty();
+        }
+
+    }
+
+    private void safeStop(final Optional<ResourceCallTimer.StopWatch> sw, final Status status) {
+
+        try {
+
+            LOG.debug("Method execution profile complete, safely stopping timer.");
+            sw.ifPresent(watch -> watch.stop(status));
+
+        } catch (Throwable throwable) {
+            LOG.error("Caught throwable attempting to stop timer for profiled method.", throwable);
         }
 
     }
@@ -63,3 +106,6 @@ public class MethodExecutionProfiler {
     }
 
 }
+
+// CHECK_ON: IllegalCatch
+// CHECK_ON: IllegalThrows

@@ -47,4 +47,8 @@ public class GcNotificationListener implements NotificationListener {
         }
     }
 
+    public EventRepository<GcEventData> getGcEventRepo() {
+        return gcEventRepo;
+    }
+
 }

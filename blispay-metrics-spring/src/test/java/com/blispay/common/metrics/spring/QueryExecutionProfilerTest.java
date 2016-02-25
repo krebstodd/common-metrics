@@ -90,15 +90,27 @@ public class QueryExecutionProfilerTest {
 
     public interface ProfiledRepository extends CrudRepository<Object, Integer>, com.blispay.common.metrics.spring.ProfiledRepository {
 
-        static final String queryName = "doQuery";
-        static final String schema = "test-schema";
-        static final String table = "test-table";
-        static final DsAction dsAction = DsAction.INSERT;
+        /**
+         * Query name.
+         */
+        String queryName = "doQuery";
+        /**
+         * Schema name.
+         */
+        String schema = "test-schema";
+        /**
+         * Table name.
+         */
+        String table = "test-table";
+        /**
+         * Query action.
+         */
+        DsAction dsAction = DsAction.INSERT;
 
         @ProfiledQuery(name = queryName, schema = schema, table = table, action = DsAction.INSERT)
-        public Optional<Integer> profiledQuery();
+        Optional<Integer> profiledQuery();
 
-        public Optional<Integer> nonProfiledQuery();
+        Optional<Integer> nonProfiledQuery();
 
     }
 
@@ -127,8 +139,8 @@ public class QueryExecutionProfilerTest {
 
             executed.set(Boolean.TRUE);
             ex.ifPresent(exception -> {
-                throw exception;
-            });
+                    throw exception;
+                });
 
             return Optional.of(1);
 
@@ -145,20 +157,11 @@ public class QueryExecutionProfilerTest {
 
             executed.set(Boolean.TRUE);
             ex.ifPresent(exception -> {
-                throw exception;
-            });
+                    throw exception;
+                });
 
             return Optional.of(1);
 
-        }
-
-        public Boolean wasExecuted() {
-            return executed.get();
-        }
-
-        @Override
-        public <S extends Object> S save(final S s) {
-            return null;
         }
 
         @Override
@@ -187,6 +190,11 @@ public class QueryExecutionProfilerTest {
         }
 
         @Override
+        public <S extends Object> S save(final S obj) {
+            return null;
+        }
+
+        @Override
         public long count() {
             return 0;
         }
@@ -197,7 +205,7 @@ public class QueryExecutionProfilerTest {
         }
 
         @Override
-        public void delete(final Object o) {
+        public void delete(final Object obj) {
 
         }
 

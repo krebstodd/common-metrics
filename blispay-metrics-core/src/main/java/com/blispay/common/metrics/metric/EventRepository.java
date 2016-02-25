@@ -20,6 +20,8 @@ public class EventRepository<T> extends MetricRepository {
         this.eventFactory = eventFactory;
     }
 
+
+
     public void save(final T eventData) {
         super.save(eventFactory.newMetric(eventData));
     }

@@ -24,6 +24,11 @@ public class TestSpringConfig {
         return new MetricService("test-service");
     }
 
+    /**
+     * Build a test profiled bean that is configured to throw exceptions dictated by the environment.
+     * @param environment Spring environment.
+     * @return Profiled repository implementation.
+     */
     @Bean
     public MethodExecutionProfilerTest.ProfiledClass profiledClass(final Environment environment) {
         if (Boolean.valueOf(environment.getProperty(THROW_EXCEPTIONS_PROP))) {
@@ -33,8 +38,13 @@ public class TestSpringConfig {
         }
     }
 
+    /**
+     * Build a test repository that is configured to throw exceptions dictated by the environment.
+     * @param environment Spring environment.
+     * @return Profiled repository implementation.
+     */
     @Bean
-    public QueryExecutionProfilerTest.ProfiledRepositoryImpl testRepository(final Environment environment) {
+    public QueryExecutionProfilerTest.ProfiledRepository testRepository(final Environment environment) {
         if (Boolean.valueOf(environment.getProperty(THROW_EXCEPTIONS_PROP))) {
             return new QueryExecutionProfilerTest.ProfiledRepositoryImpl(Optional.of(new RuntimeException("Some exception.")));
         } else {
@@ -56,6 +66,11 @@ public class TestSpringConfig {
         return buildContext(Boolean.FALSE);
     }
 
+    /**
+     * Build a new test context w/ this class as it's primary configuration.
+     * @param throwExceptions Throw exceptions from the profiled beans.
+     * @return A spring context containing all beans defined in this class.
+     */
     public static AnnotationConfigApplicationContext buildContext(final Boolean throwExceptions) {
 
         final AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();

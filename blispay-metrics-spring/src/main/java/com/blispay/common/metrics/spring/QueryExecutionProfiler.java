@@ -16,6 +16,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
+// CHECK_OFF: IllegalCatch
+// CHECK_OFF: IllegalThrows
+
 @Aspect
 public class QueryExecutionProfiler {
 
@@ -27,39 +30,76 @@ public class QueryExecutionProfiler {
         this.metricService = metricService;
     }
 
+    /**
+     * Join point for aspectj integration for query execution metrics. Any class that implements the profiled repository class
+     * will automatically be scanned. If any methods on the class contain a profiled query annotation, that query will
+     * automatically have performance metrics published.
+     *
+     * @param joinPoint Information about the join point.
+     * @return The response from the query.
+     * @throws Throwable Any exceptions the method execution might throw.
+     */
     @Around("target(com.blispay.common.metrics.spring.ProfiledRepository)")
-    public Object around (final ProceedingJoinPoint jPoint) throws Throwable {
+    public Object around(final ProceedingJoinPoint joinPoint) throws Throwable {
 
-        final Class<?> declaringClass = JoinPointUtil.getDeclaringClass(jPoint);
-        final String methodName = JoinPointUtil.getMethodName(jPoint);
-
-        LOG.debug("Starting query execution profile for class [{}] with method [{}]", declaringClass, methodName);
-
-        final Optional<ProfiledQuery> optQueryInfo = JoinPointUtil.getAnnotation(jPoint, ProfiledQuery.class);
-
-        if (!optQueryInfo.isPresent()) {
-            LOG.error("Unable to locate ProfiledQuery annotation for class [{}] with method [{}]", declaringClass, methodName);
-            return jPoint.proceed();
-        }
-
-        final ProfiledQuery annotation = optQueryInfo.get();
-        final ResourceCallTimer.StopWatch sw = startTimer(annotation.name(), annotation.schema(), annotation.table(), annotation.action());
+        final Optional<ResourceCallTimer.StopWatch> sw = safeStart(joinPoint);
+        final Object result;
 
         try {
 
-            final Object result = jPoint.proceed();
-            sw.stop(Status.success());
-
-            LOG.debug("Query execution profile complete for class [{}] with method [{}]", declaringClass, methodName);
-            return result;
+            result = joinPoint.proceed();
 
         } catch (Throwable throwable) {
 
-            sw.stop(Status.error());
-            throw throwable;
+            if (sw != null) {
+                safeStop(sw, Status.error());
+            }
 
+            throw throwable;
         }
 
+        safeStop(sw, Status.success());
+
+        return result;
+
+    }
+
+    private Optional<ResourceCallTimer.StopWatch> safeStart(final ProceedingJoinPoint joinPoint) {
+
+        try {
+
+            LOG.debug("Attempting to safe-start query timer.");
+
+            final Class<?> declaringClass = JoinPointUtil.getDeclaringClass(joinPoint);
+            final String methodName = JoinPointUtil.getMethodName(joinPoint);
+
+            LOG.debug("Starting query execution profile for class [{}] with method [{}]", declaringClass, methodName);
+
+            final Optional<ProfiledQuery> optQueryInfo = JoinPointUtil.getAnnotation(joinPoint, ProfiledQuery.class);
+
+            if (!optQueryInfo.isPresent()) {
+                LOG.error("Unable to locate ProfiledQuery annotation for class [{}] with method [{}]", declaringClass, methodName);
+                return Optional.empty();
+            }
+
+            final ProfiledQuery annotation = optQueryInfo.get();
+            return Optional.of(startTimer(annotation.name(), annotation.schema(), annotation.table(), annotation.action()));
+
+        } catch (Throwable throwable) {
+            LOG.error("Caught throwable attempting to start timer for profiled query.", throwable);
+            return Optional.empty();
+        }
+
+    }
+
+    private void safeStop(final Optional<ResourceCallTimer.StopWatch> sw, final Status status) {
+        try {
+
+            sw.ifPresent(watch -> watch.stop(status));
+
+        } catch (Throwable throwable) {
+            LOG.error("Caught throwable attempting stop timer for profiled query", throwable);
+        }
     }
 
     private ResourceCallTimer.StopWatch startTimer(final String metricName, final String schema, final String table, final DsAction action) {
@@ -69,3 +109,6 @@ public class QueryExecutionProfiler {
 
 
 }
+
+// CHECK_ON: IllegalCatch
+// CHECK_ON: IllegalThrows

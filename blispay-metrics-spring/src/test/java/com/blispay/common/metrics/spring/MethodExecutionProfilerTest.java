@@ -91,6 +91,9 @@ public class MethodExecutionProfilerTest {
             this.ex = exceptionOptional;
         }
 
+        /**
+         * Profiled method.
+         */
         @Profiled(metricName)
         public void testProfile() {
             try {

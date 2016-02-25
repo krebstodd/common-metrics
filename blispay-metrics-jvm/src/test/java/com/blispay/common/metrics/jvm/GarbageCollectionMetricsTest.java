@@ -36,11 +36,6 @@ public class GarbageCollectionMetricsTest {
                 new GcEventMatcher(MetricGroup.RESOURCE_UTILIZATION_GC, "gc", MetricType.EVENT));
     }
 
-    @Test
-    public void testStopUnregistersGcListeners() {
-
-    }
-
     private static class GcEventMatcher extends EventMatcher<GcEventData> {
 
         public GcEventMatcher(final MetricGroup group, final String name, final MetricType type) {

@@ -13,16 +13,16 @@ public final class JoinPointUtil {
 
     }
 
-    public static Class<?> getDeclaringClass(final JoinPoint jPoint) {
-        return ((MethodSignature) jPoint.getSignature()).getMethod().getDeclaringClass();
+    public static Class<?> getDeclaringClass(final JoinPoint joinPoint) {
+        return ((MethodSignature) joinPoint.getSignature()).getMethod().getDeclaringClass();
     }
 
-    public static String getMethodName(final JoinPoint jPoint) {
-        return getMethod(jPoint).getName();
+    public static String getMethodName(final JoinPoint joinPoint) {
+        return getMethod(joinPoint).getName();
     }
 
-    public static Method getMethod(final JoinPoint jPoint) {
-        return ((MethodSignature) jPoint.getSignature()).getMethod();
+    public static Method getMethod(final JoinPoint joinPoint) {
+        return ((MethodSignature) joinPoint.getSignature()).getMethod();
     }
 
     /**
@@ -30,13 +30,13 @@ public final class JoinPointUtil {
      *
      * <p>http://stackoverflow.com/questions/6604428/get-annotated-parameters-inside-a-pointcut</p>
      *
-     * @param jPoint The join point to parse.
+     * @param joinPoint The join point to parse.
      * @param type Annotation type class
      * @param <T> Annotation instance type
      * @return Annotation instance
      */
-    public static <T> Optional<T> getAnnotation(final JoinPoint jPoint, final Class<T> type) {
-        final MethodSignature signature = (MethodSignature) jPoint.getSignature();
+    public static <T> Optional<T> getAnnotation(final JoinPoint joinPoint, final Class<T> type) {
+        final MethodSignature signature = (MethodSignature) joinPoint.getSignature();
 
         return Arrays.asList(signature.getMethod().getAnnotations())
                 .stream()

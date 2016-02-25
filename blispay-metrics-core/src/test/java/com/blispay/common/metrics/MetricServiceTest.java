@@ -14,6 +14,7 @@ import com.blispay.common.metrics.metric.InternalResourceCallTimer;
 import com.blispay.common.metrics.metric.MqCallTimer;
 import com.blispay.common.metrics.metric.ResourceCallTimer;
 import com.blispay.common.metrics.metric.ResourceCounter;
+import com.blispay.common.metrics.metric.ResourceUtilizationGauge;
 import com.blispay.common.metrics.model.BaseMetricModel;
 import com.blispay.common.metrics.model.MetricGroup;
 import com.blispay.common.metrics.model.MetricType;
@@ -261,20 +262,6 @@ public class MetricServiceTest extends AbstractMetricsTest {
     }
 
     @Test
-    public void testShutsDownDispatcher() {
-        final MetricService serv = new MetricService(application);
-        serv.start();
-
-        final ResourceCounter rCounter = serv.createResourceCounter(MetricGroup.CLIENT, "someResource");
-        rCounter.increment(1L);
-
-        serv.stop();
-
-        thrown.expect(IllegalStateException.class);
-        rCounter.increment(1L);
-    }
-
-    @Test
     public void testCustomEventDispatcher() {
         final AtomicBoolean usesCustom = new AtomicBoolean(false);
 
@@ -319,4 +306,45 @@ public class MetricServiceTest extends AbstractMetricsTest {
         serv.createResourceCounter(MetricGroup.CLIENT, "someResource").increment(1L);
         assertTrue(usesCustom.get());
     }
+
+    @Test
+    public void testRemoveMetric() {
+
+        final MetricService serv = new MetricService("someApp");
+
+        final TestEventSubscriber evtSub = new TestEventSubscriber();
+        serv.addEventSubscriber(evtSub);
+
+        final SnapshotReporter reporter = new BasicSnapshotReporter();
+        serv.addSnapshotReporter(reporter);
+
+        serv.start();
+
+        // Create a new gauge to test removed metrics no longer report snapshot data.
+        final ResourceUtilizationGauge gauge = serv.createResourceUtilizationGauge(MetricGroup.RESOURCE_UTILIZATION_THREADS, "test-gauge",
+                () -> new ResourceUtilizationData(1L, 1L, 1L, 1D));
+
+        // Create a new counter to test that removed metrics no longer emit events.
+        final ResourceCounter rCounter = serv.createResourceCounter(MetricGroup.CLIENT, "test-counter");
+
+        // Test that this gauge is currently active and reporting snapshots.
+        assertEquals(1, reporter.report().getMetrics().size());
+        assertEquals("test-gauge", reporter.report().getMetrics().iterator().next().getName());
+
+        // Test that this counter is currently active and emitting events.
+        rCounter.increment(1L);
+        assertEquals(1, evtSub.count());
+        assertEquals("test-counter", evtSub.poll().getName());
+
+        // Remove the metrics, the return value should be present (the service was able to remove the metric.)
+        assertTrue(serv.removeMetricRepository(gauge).isPresent());
+        assertTrue(serv.removeMetricRepository(rCounter).isPresent());
+
+        // Test that the counter does not emit events and that the gauge does not report.
+        assertEquals(0, reporter.report().getMetrics().size());
+        rCounter.increment(1L);
+        assertEquals(0, evtSub.count());
+
+    }
+
 }

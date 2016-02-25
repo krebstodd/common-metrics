@@ -4,11 +4,12 @@ import com.blispay.common.metrics.event.DefaultEventDispatcher;
 import com.blispay.common.metrics.event.EventDispatcher;
 import com.blispay.common.metrics.event.EventEmitter;
 import com.blispay.common.metrics.event.EventSubscriber;
-import com.blispay.common.metrics.metric.EventRepository;
 import com.blispay.common.metrics.metric.DatasourceCallTimer;
+import com.blispay.common.metrics.metric.EventRepository;
 import com.blispay.common.metrics.metric.HttpCallTimer;
 import com.blispay.common.metrics.metric.InternalResourceCallTimer;
 import com.blispay.common.metrics.metric.MetricProbe;
+import com.blispay.common.metrics.metric.MetricRepository;
 import com.blispay.common.metrics.metric.MqCallTimer;
 import com.blispay.common.metrics.metric.ResourceCounter;
 import com.blispay.common.metrics.metric.ResourceUtilizationGauge;
@@ -31,6 +32,7 @@ import org.springframework.context.SmartLifecycle;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -44,6 +46,7 @@ public class MetricService implements SmartLifecycle {
     private final Set<SnapshotProvider> snapshotProviders = new HashSet<>();
     private final Set<SnapshotReporter> snapshotReporters = new HashSet<>();
     private final List<MetricProbe> probes = new LinkedList<>();
+    private final List<MetricRepository> activeMetrics = new LinkedList<>();
     private final AtomicBoolean isRunning = new AtomicBoolean(Boolean.FALSE);
     private String applicationId;
 
@@ -58,13 +61,13 @@ public class MetricService implements SmartLifecycle {
 
     public ResourceCounter createResourceCounter(final MetricGroup group, final String name) {
         final ResourceCounterMetricFactory factory = new ResourceCounterMetricFactory(applicationId, group, name);
-        return new ResourceCounter(eventDispatcher.newEventEmitter(), factory);
+        return addMetricRepository(new ResourceCounter(eventDispatcher.newEventEmitter(), factory));
     }
 
     public ResourceUtilizationGauge createResourceUtilizationGauge(final MetricGroup group, final String name,
                                                                    final Supplier<ResourceUtilizationData> resourceGauge) {
 
-        return createResourceUtilizationGauge(group, name, resourceGauge, Boolean.TRUE);
+        return addMetricRepository(createResourceUtilizationGauge(group, name, resourceGauge, Boolean.TRUE));
     }
 
     /**
@@ -88,28 +91,59 @@ public class MetricService implements SmartLifecycle {
             snapshotProviders.add(gauge);
         }
 
-        return gauge;
+        return addMetricRepository(gauge);
 
     }
 
     public <T> EventRepository<T> createEventRepository(final MetricGroup group, final String name) {
-        return new EventRepository<>(eventDispatcher.newEventEmitter(), new EventFactory<T>(applicationId, group, name));
+        return addMetricRepository(new EventRepository<>(eventDispatcher.newEventEmitter(), new EventFactory<T>(applicationId, group, name)));
     }
 
     public HttpCallTimer createHttpResourceCallTimer(final MetricGroup group, final String name) {
-        return new HttpCallTimer(eventDispatcher.newEventEmitter(), new HttpResourceCallMetricFactory(applicationId, group, name));
+        return addMetricRepository(new HttpCallTimer(eventDispatcher.newEventEmitter(), new HttpResourceCallMetricFactory(applicationId, group, name)));
     }
 
     public DatasourceCallTimer createDataSourceCallTimer(final MetricGroup group, final String name) {
-        return new DatasourceCallTimer(eventDispatcher.newEventEmitter(), new DataSourceResourceCallMetricFactory(applicationId, group, name));
+        return addMetricRepository(new DatasourceCallTimer(eventDispatcher.newEventEmitter(), new DataSourceResourceCallMetricFactory(applicationId, group, name)));
     }
 
     public InternalResourceCallTimer createInternalResourceCallTimer(final MetricGroup group, final String name) {
-        return new InternalResourceCallTimer(eventDispatcher.newEventEmitter(), new InternalResourceCallMetricFactory(applicationId, group, name));
+        return addMetricRepository(new InternalResourceCallTimer(eventDispatcher.newEventEmitter(), new InternalResourceCallMetricFactory(applicationId, group, name)));
     }
 
     public MqCallTimer createMqResourceCallTimer(final MetricGroup group, final String name) {
-        return new MqCallTimer(eventDispatcher.newEventEmitter(), new MqResourceCallMetricFactory(applicationId, group, name));
+        return addMetricRepository(new MqCallTimer(eventDispatcher.newEventEmitter(), new MqResourceCallMetricFactory(applicationId, group, name)));
+    }
+
+    public <T extends MetricRepository> T addMetricRepository(final T repository) {
+        this.activeMetrics.add(repository);
+        return repository;
+    }
+
+    /**
+     * Remove an active metric from the service. De-registers the metric from any reporting mechanism's it's currently attached
+     * to.
+     *
+     * @param repository Repository to remove.
+     * @param <T> Type of repository.
+     * @return An optional containing the removed object if it was found, else empty.
+     */
+    public <T extends MetricRepository> Optional<T> removeMetricRepository(final T repository) {
+        if (activeMetrics.contains(repository)) {
+
+            activeMetrics.remove(repository);
+
+            if (repository instanceof SnapshotProvider) {
+                snapshotProviders.remove(repository);
+            }
+
+            repository.disableEvents();
+
+            return Optional.of(repository);
+
+        } else {
+            return Optional.empty();
+        }
     }
 
     public void addEventSubscriber(final EventSubscriber eventListener) {
@@ -183,9 +217,12 @@ public class MetricService implements SmartLifecycle {
 
             LOG.info("Stopping metric service...");
 
-            eventDispatcher.stop(runnable);
+            activeMetrics.forEach(this::removeMetricRepository);
+
             snapshotReporters.forEach(SnapshotReporter::stop);
             probes.forEach(MetricProbe::stop);
+            eventDispatcher.stop(runnable);
+
         } else {
             LOG.warn("Metric service is already stopped");
         }
@@ -203,10 +240,12 @@ public class MetricService implements SmartLifecycle {
     @Override
     public void start() {
         if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
+
             LOG.info("Starting metric service...");
 
             eventDispatcher.start();
             probes.forEach(MetricProbe::start);
+
         } else {
             LOG.warn("Metric service is already running.");
         }

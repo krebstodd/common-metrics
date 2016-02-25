@@ -11,6 +11,9 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface Profiled {
 
+    /**
+     * The name of the metric associated with the profiled code.
+     */
     String value();
 
 }
