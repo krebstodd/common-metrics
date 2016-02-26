@@ -21,6 +21,13 @@ public class ResourceCallDataMatcher<R extends Resource, A extends Action> exten
     private final Matcher<Direction> directionMatcher;
     private final Matcher trackingInfoMatcher;
     private final Long approxRuntime;
+    private final Long acceptableRtDelta;
+
+    public ResourceCallDataMatcher(final R resource, final A action, final Direction direction,
+                                   final Status status, final Long approxMillis,
+                                   final TrackingInfo trackingInfo) {
+        this(resource, action, direction, status, approxMillis, ACCEPTABLE_RT_DELTA, trackingInfo);
+    }
 
     /**
      * Match a resource call metric.
@@ -29,10 +36,12 @@ public class ResourceCallDataMatcher<R extends Resource, A extends Action> exten
      * @param direction direction
      * @param status status
      * @param approxMillis approxMillis
+     * @param acceptableRtDelta acceptable delta time in response approximation
      * @param trackingInfo trackinginfo
      */
     public ResourceCallDataMatcher(final R resource, final A action, final Direction direction,
-                                   final Status status, final Long approxMillis, final TrackingInfo trackingInfo) {
+                                   final Status status, final Long approxMillis, final Long acceptableRtDelta,
+                                   final TrackingInfo trackingInfo) {
 
         this.resourceMatcher = Matchers.equalTo(resource.getValue());
         this.actionMatcher = Matchers.equalTo(action.getValue());
@@ -46,21 +55,43 @@ public class ResourceCallDataMatcher<R extends Resource, A extends Action> exten
         }
 
         this.approxRuntime = approxMillis;
+        this.acceptableRtDelta = acceptableRtDelta;
     }
 
     @Override
     public boolean matchesSafely(final BaseResourceCallEventData<R, A> raBaseResourceCallEventData) {
+        System.out.println("START DATA ==============");
+        System.out.println(resourceMatcher.matches(raBaseResourceCallEventData.getResource().getValue()));
+                System.out.println(actionMatcher.matches(raBaseResourceCallEventData.getAction().getValue()));
+                System.out.println(statusMatcher.matches(raBaseResourceCallEventData.getStatus()));
+                System.out.println(directionMatcher.matches(raBaseResourceCallEventData.getDirection()));
+                System.out.println(trackingInfoMatcher.matches(raBaseResourceCallEventData.getTrackingInfo()));
+                System.out.println(approximatelyEqual(approxRuntime, raBaseResourceCallEventData.getDurationMillis(), acceptableRtDelta));
+        System.out.println("END DATA ==============");
+
         return resourceMatcher.matches(raBaseResourceCallEventData.getResource().getValue())
                 && actionMatcher.matches(raBaseResourceCallEventData.getAction().getValue())
                 && statusMatcher.matches(raBaseResourceCallEventData.getStatus())
                 && directionMatcher.matches(raBaseResourceCallEventData.getDirection())
                 && trackingInfoMatcher.matches(raBaseResourceCallEventData.getTrackingInfo())
-                && approximatelyEqual(approxRuntime, raBaseResourceCallEventData.getDurationMillis(), ACCEPTABLE_RT_DELTA);
+                && approximatelyEqual(approxRuntime, raBaseResourceCallEventData.getDurationMillis(), acceptableRtDelta);
     }
 
     @Override
     public void describeTo(final Description description) {
-
+        description.appendText("resource=[")
+                .appendDescriptionOf(resourceMatcher)
+                .appendText("], action=[")
+                .appendDescriptionOf(actionMatcher)
+                .appendText("], status=[")
+                .appendDescriptionOf(statusMatcher)
+                .appendText("], direction=[")
+                .appendDescriptionOf(directionMatcher)
+                .appendText("], trackingInfo=[")
+                .appendDescriptionOf(trackingInfoMatcher)
+                .appendText("], approxRuntime=[")
+                .appendValue(approxRuntime)
+                .appendText("]");
     }
 
     protected Boolean approximatelyEqual(final Long expected, final Long actual, final Long acceptableDelta) {

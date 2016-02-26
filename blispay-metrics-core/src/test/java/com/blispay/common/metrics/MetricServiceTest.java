@@ -7,8 +7,8 @@ import com.blispay.common.metrics.matchers.BusinessEventMatcher;
 import com.blispay.common.metrics.matchers.ResourceCallDataMatcher;
 import com.blispay.common.metrics.matchers.ResourceCallMetricMatcher;
 import com.blispay.common.metrics.matchers.ResourceUtilizationMetricMatcher;
-import com.blispay.common.metrics.metric.EventRepository;
 import com.blispay.common.metrics.metric.DatasourceCallTimer;
+import com.blispay.common.metrics.metric.EventRepository;
 import com.blispay.common.metrics.metric.HttpCallTimer;
 import com.blispay.common.metrics.metric.InternalResourceCallTimer;
 import com.blispay.common.metrics.metric.MqCallTimer;
@@ -30,6 +30,8 @@ import com.blispay.common.metrics.model.call.internal.InternalAction;
 import com.blispay.common.metrics.model.call.internal.InternalResource;
 import com.blispay.common.metrics.model.call.mq.MqAction;
 import com.blispay.common.metrics.model.call.mq.MqResource;
+import com.blispay.common.metrics.model.health.HealthCheckData;
+import com.blispay.common.metrics.model.health.HealthCheckMetric;
 import com.blispay.common.metrics.model.utilization.ResourceUtilizationData;
 import com.blispay.common.metrics.model.utilization.ResourceUtilizationMetric;
 import com.blispay.common.metrics.report.BasicSnapshotReporter;
@@ -133,6 +135,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
 
     @Test
     public void testCreateBusinessEventRepository() {
+        final TrackingInfo trackingInfo = trackingInfo();
 
         final TestEventSubscriber evtSub = new TestEventSubscriber();
 
@@ -140,7 +143,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
         metricService.addEventSubscriber(evtSub);
         metricService.start();
 
-        final EventRepository<PiiBusinessEventData> repo = metricService.createEventRepository(MetricGroup.ACCOUNT_DOMAIN, "created");
+        final EventRepository<PiiBusinessEventData> repo = metricService.createEventRepository(MetricGroup.ACCOUNT_DOMAIN, "created", PiiBusinessEventData.class);
 
         repo.save(defaultPiiBusinessEventData("user1"));
         repo.save(defaultPiiBusinessEventData("user2"));
@@ -148,10 +151,10 @@ public class MetricServiceTest extends AbstractMetricsTest {
         assertEquals(2, evtSub.count());
 
         assertThat((EventMetric<PiiBusinessEventData>) evtSub.poll(),
-                new BusinessEventMatcher<>(MetricGroup.ACCOUNT_DOMAIN, "created", MetricType.EVENT, defaultPiiDataMatcher("user1")));
+                new BusinessEventMatcher<>(MetricGroup.ACCOUNT_DOMAIN, "created", MetricType.EVENT, defaultPiiDataMatcher("user1", trackingInfo)));
 
         assertThat((EventMetric<PiiBusinessEventData>) evtSub.poll(),
-                new BusinessEventMatcher<>(MetricGroup.ACCOUNT_DOMAIN, "created", MetricType.EVENT, defaultPiiDataMatcher("user2")));
+                new BusinessEventMatcher<>(MetricGroup.ACCOUNT_DOMAIN, "created", MetricType.EVENT, defaultPiiDataMatcher("user2", trackingInfo)));
 
     }
 
@@ -167,7 +170,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
 
         final HttpCallTimer timer = metricService.createHttpResourceCallTimer(MetricGroup.CLIENT_HTTP, "request");
 
-        final ResourceCallTimer.StopWatch sw = timer.start(Direction.INBOUND, HttpResource.fromUrl("/test/url"), HttpAction.POST, trackingInfo);
+        final ResourceCallTimer.StopWatch sw = timer.start(Direction.INBOUND, HttpResource.fromUrl("/test/url"), HttpAction.POST);
 
         Thread.sleep(1000);
 
@@ -194,7 +197,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
 
         final DatasourceCallTimer timer = metricService.createDataSourceCallTimer(MetricGroup.CLIENT_JDBC, "query");
 
-        final ResourceCallTimer.StopWatch sw = timer.start(new DsResource("dom_account", "applications"), DsAction.INSERT, trackingInfo);
+        final ResourceCallTimer.StopWatch sw = timer.start(new DsResource("dom_account", "applications"), DsAction.INSERT);
 
         Thread.sleep(1000);
 
@@ -220,7 +223,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
 
         final InternalResourceCallTimer timer = metricService.createInternalResourceCallTimer(MetricGroup.CLIENT, "runTest");
 
-        final ResourceCallTimer.StopWatch sw = timer.start(InternalResource.fromClass(getClass()), InternalAction.fromMethodName("testInternalResourceCallTimer"), trackingInfo);
+        final ResourceCallTimer.StopWatch sw = timer.start(InternalResource.fromClass(getClass()), InternalAction.fromMethodName("testInternalResourceCallTimer"));
 
         Thread.sleep(1000);
 
@@ -247,7 +250,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
 
         final MqCallTimer timer = metricService.createMqResourceCallTimer(MetricGroup.CLIENT_MESSAGE_QUEUE, "request");
 
-        final ResourceCallTimer.StopWatch sw = timer.start(MqResource.fromQueueName("myqueue"), MqAction.GET, trackingInfo);
+        final ResourceCallTimer.StopWatch sw = timer.start(MqResource.fromQueueName("myqueue"), MqAction.GET, "reqQueue", "resQueue", "host", "rType");
 
         Thread.sleep(1000);
 
@@ -344,6 +347,180 @@ public class MetricServiceTest extends AbstractMetricsTest {
         assertEquals(0, reporter.report().getMetrics().size());
         rCounter.increment(1L);
         assertEquals(0, evtSub.count());
+
+    }
+
+    @Test
+    public void testCachesEventRepositoriesByDatTypeAndGroupAndName() {
+
+        final MetricService serv = new MetricService("someApp");
+        final TestEventSubscriber evtSub = new TestEventSubscriber();
+        serv.addEventSubscriber(evtSub);
+
+        serv.start();
+
+        // The service should notice that r1 and r2 have the same group, name, and event data type and should cache them.
+        final EventRepository r1 = serv.createEventRepository(MetricGroup.INTERNAL_METHOD_CALL, "repositoryA", PiiBusinessEventData.class);
+        final EventRepository r2 = serv.createEventRepository(MetricGroup.INTERNAL_METHOD_CALL, "repositoryA", PiiBusinessEventData.class);
+        final EventRepository r3 = serv.createEventRepository(MetricGroup.INTERNAL_METHOD_CALL, "repositoryB", PiiBusinessEventData.class);
+
+        assertTrue(r1 == r2);
+        assertFalse(r1 == r3);
+
+        // Assert that event's are not double published.
+        r1.save(defaultPiiBusinessEventData());
+        assertEquals(1, evtSub.count());
+        evtSub.poll();
+
+        // Remove r1 and assert that r2 doesn't publish events any longer.
+        serv.removeMetricRepository(r1);
+        r2.save(defaultPiiBusinessEventData());
+        assertEquals(0, evtSub.count());
+
+    }
+
+    @Test
+    public void testCachesTimersByDataGroupAndName() {
+
+        final MetricService serv = new MetricService("someApp");
+        final TestEventSubscriber evtSub = new TestEventSubscriber();
+        serv.addEventSubscriber(evtSub);
+
+        serv.start();
+
+        // R2 should get the cached version of R1
+        final ResourceCounter r1 = serv.createResourceCounter(MetricGroup.INTERNAL_METHOD_CALL, "repositoryA");
+        final ResourceCounter r2 = serv.createResourceCounter(MetricGroup.INTERNAL_METHOD_CALL, "repositoryA");
+        final ResourceCounter r3 = serv.createResourceCounter(MetricGroup.ACCOUNT_DOMAIN, "repositoryA");
+
+        assertTrue(r1 == r2);
+        assertFalse(r1 == r3);
+
+        // Assert that event's are not double published.
+        r1.increment(1L);
+        assertEquals(1, evtSub.count());
+        evtSub.poll();
+
+        // Remove r1 and assert that r2 doesn't publish events any longer.
+        serv.removeMetricRepository(r1);
+        r2.increment(1L);
+        assertEquals(0, evtSub.count());
+
+    }
+
+    @Test
+    public void testCachesCountersByDataGroupAndName() {
+
+        final MetricService serv = new MetricService("someApp");
+        final TestEventSubscriber evtSub = new TestEventSubscriber();
+        serv.addEventSubscriber(evtSub);
+
+        serv.start();
+
+        // R2 should get the cached version of R1
+        final ResourceCounter r1 = serv.createResourceCounter(MetricGroup.INTERNAL_METHOD_CALL, "repositoryA");
+        final ResourceCounter r2 = serv.createResourceCounter(MetricGroup.INTERNAL_METHOD_CALL, "repositoryA");
+        final ResourceCounter r3 = serv.createResourceCounter(MetricGroup.ACCOUNT_DOMAIN, "repositoryA");
+
+        assertTrue(r1 == r2);
+        assertFalse(r1 == r3);
+
+        // Assert that event's are not double published.
+        r1.increment(1L);
+        assertEquals(1, evtSub.count());
+        evtSub.poll();
+
+        // Remove r1 and assert that r2 doesn't publish events any longer.
+        serv.removeMetricRepository(r1);
+        r2.increment(1L);
+        assertEquals(0, evtSub.count());
+
+    }
+
+    @Test
+    public void testCachesHttpTimersByDataGroupAndName() {
+
+        final MetricService serv = new MetricService("someApp");
+        final TestEventSubscriber evtSub = new TestEventSubscriber();
+        serv.addEventSubscriber(evtSub);
+
+        serv.start();
+
+        // R2 should get the cached version of R1
+        final HttpCallTimer r1 = serv.createHttpResourceCallTimer(MetricGroup.INTERNAL_METHOD_CALL, "repositoryA");
+        final HttpCallTimer r2 = serv.createHttpResourceCallTimer(MetricGroup.INTERNAL_METHOD_CALL, "repositoryA");
+        final HttpCallTimer r3 = serv.createHttpResourceCallTimer(MetricGroup.ACCOUNT_DOMAIN, "repositoryA");
+
+        // Test that timers of different types aren't confused.
+        final ResourceCallTimer r4 = serv.createMqResourceCallTimer(MetricGroup.ACCOUNT_DOMAIN, "repositoryA");
+
+        assertTrue(r1 == r2);
+        assertFalse(r1 == r3);
+        assertFalse(r3 == r4);
+
+        // Assert that event's are not double published.
+        r1.start(Direction.INBOUND, HttpResource.fromUrl("/"), HttpAction.POST).stop(Status.success());
+        assertEquals(1, evtSub.count());
+        evtSub.poll();
+
+        // Remove r1 and assert that r2 doesn't publish events any longer.
+        serv.removeMetricRepository(r1);
+        r2.start(Direction.INBOUND, HttpResource.fromUrl("/"), HttpAction.POST).stop(Status.success());
+        assertEquals(0, evtSub.count());
+
+    }
+
+    @Test
+    public void testCachesMqTimersByDataGroupAndName() {
+
+        final MetricService serv = new MetricService("someApp");
+        final TestEventSubscriber evtSub = new TestEventSubscriber();
+        serv.addEventSubscriber(evtSub);
+
+        serv.start();
+
+        // R2 should get the cached version of R1
+        final MqCallTimer r1 = serv.createMqResourceCallTimer(MetricGroup.INTERNAL_METHOD_CALL, "repositoryA");
+        final MqCallTimer r2 = serv.createMqResourceCallTimer(MetricGroup.INTERNAL_METHOD_CALL, "repositoryA");
+        final MqCallTimer r3 = serv.createMqResourceCallTimer(MetricGroup.ACCOUNT_DOMAIN, "repositoryA");
+
+        assertTrue(r1 == r2);
+        assertFalse(r1 == r3);
+
+        // Assert that event's are not double published.
+        r1.start(MqResource.fromQueueName("queue"), MqAction.GET, "", "", "", "").stop(Status.success());
+        assertEquals(1, evtSub.count());
+        evtSub.poll();
+
+        // Remove r1 and assert that r2 doesn't publish events any longer.
+        serv.removeMetricRepository(r1);
+        r2.start(MqResource.fromQueueName("queue"), MqAction.GET, "", "", "", "").stop(Status.success());
+        assertEquals(0, evtSub.count());
+
+    }
+
+    @Test
+    public void testHealthMonitor() {
+
+        final SnapshotReporter reporter = new BasicSnapshotReporter();
+
+        final MetricService metricService = new MetricService(application);
+        metricService.addSnapshotReporter(reporter);
+
+        final AtomicBoolean isHealthy = new AtomicBoolean(Boolean.TRUE);
+        metricService.createHealthMonitor(MetricGroup.HEALTH, "my-resource", () -> new HealthCheckData(isHealthy.get(), "Some message"));
+
+        final HealthCheckMetric health = (HealthCheckMetric) reporter.report().getMetrics().iterator().next();
+        assertEquals("my-resource", health.getName());
+        assertEquals(MetricGroup.HEALTH, health.getGroup());
+        assertTrue(health.eventData().isHealthy());
+
+        isHealthy.set(Boolean.FALSE);
+
+        final HealthCheckMetric health2 = (HealthCheckMetric) reporter.report().getMetrics().iterator().next();
+        assertEquals("my-resource", health2.getName());
+        assertEquals(MetricGroup.HEALTH, health2.getGroup());
+        assertFalse(health2.eventData().isHealthy());
 
     }
 

@@ -46,7 +46,9 @@ public enum MetricGroup {
     RESOURCE_UTILIZATION_LOGGING("metrics.resource.logging"),
     RESOURCE_UTILIZATION_CACHE("metrics.resource.cache"),
 
-    INTERNAL_METHOD_CALL("metrics.internal.method");
+    INTERNAL_METHOD_CALL("metrics.internal.method"),
+
+    HEALTH("metrics.health");
 
     // CHECK_ON: JavadocVariable
 

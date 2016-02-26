@@ -2,28 +2,29 @@ package com.blispay.common.metrics.metric;
 
 import com.blispay.common.metrics.event.EventEmitter;
 import com.blispay.common.metrics.model.BaseMetricModel;
-import com.blispay.common.metrics.model.utilization.ResourceUtilizationData;
-import com.blispay.common.metrics.model.utilization.ResourceUtilizationMetricFactory;
+import com.blispay.common.metrics.model.health.HealthCheckData;
+import com.blispay.common.metrics.model.health.HealthCheckMetricFactory;
 import com.blispay.common.metrics.report.SnapshotProvider;
 
 import java.util.function.Supplier;
 
-public class ResourceUtilizationGauge extends MetricRepository implements SnapshotProvider {
+public class HealthMonitor extends MetricRepository implements SnapshotProvider {
 
-    private ResourceUtilizationMetricFactory metricFactory;
+    private HealthCheckMetricFactory metricFactory;
 
-    private final Supplier<ResourceUtilizationData> stateSupplier;
+    private final Supplier<HealthCheckData> stateSupplier;
 
     /**
-     * Gauge for reporting resource utilization.
+     * Gauge for reporting resource health.
      *
      * @param eventEmitter Event emitter instance for emitting event metrics.
      * @param factory Factory for producing immutable resource metrics.
-     * @param stateSupplier Supplies current resource utilization stats on demand.
+     * @param stateSupplier Supplies current resource health stats on demand.
      */
-    public ResourceUtilizationGauge(final EventEmitter eventEmitter,
-                                    final ResourceUtilizationMetricFactory factory,
-                                    final Supplier<ResourceUtilizationData> stateSupplier) {
+    public HealthMonitor(final EventEmitter eventEmitter,
+                         final HealthCheckMetricFactory factory,
+                         final Supplier<HealthCheckData> stateSupplier) {
+
         super(factory.getGroup(), factory.getName(), eventEmitter);
 
         this.metricFactory = factory;
@@ -44,4 +45,5 @@ public class ResourceUtilizationGauge extends MetricRepository implements Snapsh
     public int hashCode() {
         return computeHashCode(this);
     }
+
 }

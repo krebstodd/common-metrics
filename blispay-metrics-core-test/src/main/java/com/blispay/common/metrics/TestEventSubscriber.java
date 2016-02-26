@@ -6,12 +6,11 @@ import com.blispay.common.metrics.model.BaseMetricModel;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 public class TestEventSubscriber implements EventSubscriber {
 
     private final List<EventFilter> filters = new LinkedList<>();
-    private final Queue<BaseMetricModel> events = new LinkedList<>();
+    private final LinkedList<BaseMetricModel> events = new LinkedList<>();
     private Boolean exceptionsOn = Boolean.FALSE;
 
     @Override
@@ -38,6 +37,10 @@ public class TestEventSubscriber implements EventSubscriber {
 
     public int count() {
         return events.size();
+    }
+
+    public List<BaseMetricModel> peek() {
+        return this.events;
     }
 
     public void exceptionsOn(final Boolean throwException) {

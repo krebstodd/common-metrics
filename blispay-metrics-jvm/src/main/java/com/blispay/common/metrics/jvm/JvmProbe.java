@@ -168,7 +168,7 @@ public class JvmProbe implements MetricProbe {
 
     private GcNotificationListener instrumentGarbageCollector(final GarbageCollectorMXBean gc) {
         final NotificationEmitter emitter = (NotificationEmitter) gc;
-        final EventRepository<GcEventData> gcEventRepo = metricService.createEventRepository(MetricGroup.RESOURCE_UTILIZATION_GC, "gc");
+        final EventRepository<GcEventData> gcEventRepo = metricService.createEventRepository(MetricGroup.RESOURCE_UTILIZATION_GC, "gc", GcEventData.class);
         this.probeMetrics.add(gcEventRepo);
 
         final GcNotificationListener gcListener = new GcNotificationListener(gcEventRepo);

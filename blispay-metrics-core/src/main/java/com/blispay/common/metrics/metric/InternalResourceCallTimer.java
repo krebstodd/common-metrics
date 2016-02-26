@@ -1,29 +1,26 @@
 package com.blispay.common.metrics.metric;
 
 import com.blispay.common.metrics.event.EventEmitter;
-import com.blispay.common.metrics.model.TrackingInfo;
 import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.internal.InternalAction;
 import com.blispay.common.metrics.model.call.internal.InternalResource;
 import com.blispay.common.metrics.model.call.internal.InternalResourceCallEventData;
 import com.blispay.common.metrics.model.call.internal.InternalResourceCallMetric;
 import com.blispay.common.metrics.model.call.internal.InternalResourceCallMetricFactory;
+import com.blispay.common.metrics.util.LocalMetricContext;
 
 public class InternalResourceCallTimer extends ResourceCallTimer<InternalResourceCallTimer.Context> {
 
     private final InternalResourceCallMetricFactory factory;
 
-    public InternalResourceCallTimer(final EventEmitter emitter, final InternalResourceCallMetricFactory metricFactory) {
-        super(emitter);
+    public InternalResourceCallTimer(final EventEmitter emitter,
+                                     final InternalResourceCallMetricFactory metricFactory) {
+        super(metricFactory.getGroup(), metricFactory.getName(), emitter);
         this.factory = metricFactory;
     }
 
     public StopWatch start(final InternalResource resource, final InternalAction action) {
-        return start(resource, action, null);
-    }
-
-    public StopWatch start(final InternalResource resource, final InternalAction action, final TrackingInfo trackingInfo) {
-        return start(new Context(Direction.INTERNAL, action, resource, trackingInfo));
+        return start(new Context(Direction.INTERNAL, action, resource));
     }
 
     @Override
@@ -34,9 +31,19 @@ public class InternalResourceCallTimer extends ResourceCallTimer<InternalResourc
                 context.getResource(),
                 context.getAction(),
                 context.getStatus(),
-                context.getTrackingInfo());
+                LocalMetricContext.getTrackingInfo());
 
         return factory.newMetric(eventData);
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return computeEquals(this, other);
+    }
+
+    @Override
+    public int hashCode() {
+        return computeHashCode(this);
     }
 
     protected static final class Context extends ResourceCallTimer.Context {
@@ -45,9 +52,9 @@ public class InternalResourceCallTimer extends ResourceCallTimer<InternalResourc
         private final InternalResource resource;
 
         private Context(final Direction direction, final InternalAction action,
-                       final InternalResource resource, final TrackingInfo trackingInfo) {
+                       final InternalResource resource) {
 
-            super(direction, trackingInfo);
+            super(direction);
             this.action = action;
             this.resource = resource;
         }

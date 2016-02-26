@@ -37,6 +37,12 @@ public class ResourceCallMetricMatcher<T> extends TypeSafeMatcher<BaseResourceCa
 
     @Override
     public boolean matchesSafely(final BaseResourceCallMetric<T> metric) {
+        System.out.println(timestampMatcher.matches(metric.getTimestamp()));
+                System.out.println(groupMatcher.matches(metric.getGroup().getValue()));
+                System.out.println(nameMatcher.matches(metric.getName()));
+                System.out.println(typeMatcher.matches(metric.getType().getValue()));
+                System.out.println(dataMatcher.matches(metric.eventData()));
+        
         return timestampMatcher.matches(metric.getTimestamp())
                 && groupMatcher.matches(metric.getGroup().getValue())
                 && nameMatcher.matches(metric.getName())
@@ -46,6 +52,16 @@ public class ResourceCallMetricMatcher<T> extends TypeSafeMatcher<BaseResourceCa
 
     @Override
     public void describeTo(final Description description) {
-
+        description.appendText("timeStamp=[")
+                .appendDescriptionOf(timestampMatcher)
+                .appendText("], group=[")
+                .appendDescriptionOf(groupMatcher)
+                .appendText("], name=[")
+                .appendDescriptionOf(nameMatcher)
+                .appendText("], type=[")
+                .appendDescriptionOf(typeMatcher)
+                .appendText("], data=")
+                .appendDescriptionOf(dataMatcher)
+                .appendText("]");
     }
 }

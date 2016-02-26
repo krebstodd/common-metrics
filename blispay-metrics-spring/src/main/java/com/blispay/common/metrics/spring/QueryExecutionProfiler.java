@@ -104,7 +104,7 @@ public class QueryExecutionProfiler {
 
     private ResourceCallTimer.StopWatch startTimer(final String metricName, final String schema, final String table, final DsAction action) {
         return metricService.createDataSourceCallTimer(MetricGroup.CLIENT_JDBC, metricName)
-                .start(DsResource.fromSchemaTable(schema, table), action, null);
+                .start(DsResource.fromSchemaTable(schema, table), action);
     }
 
 

@@ -30,7 +30,7 @@ public class Slf4jEventReporterTest extends AbstractMetricsTest {
         metricService.start();
 
         final EventRepository<PiiBusinessEventData> repo
-                = metricService.createEventRepository(MetricGroup.MERCHANT_DOMAIN, "create");
+                = metricService.createEventRepository(MetricGroup.MERCHANT_DOMAIN, "create", PiiBusinessEventData.class);
 
         repo.save(defaultPiiBusinessEventData());
 

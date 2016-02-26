@@ -1,6 +1,8 @@
 package com.blispay.common.metrics.model.business;
 
 import com.blispay.common.metrics.model.MetricGroup;
+import com.blispay.common.metrics.util.LocalMetricContext;
+import com.blispay.common.metrics.util.TrackingInfoAware;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -40,7 +42,13 @@ public class EventFactory<T> {
     }
 
     public EventMetric<T> newMetric(final T eventData) {
+
+        if (eventData instanceof TrackingInfoAware) {
+            ((TrackingInfoAware) eventData).setTrackingInfo(LocalMetricContext.getTrackingInfo());
+        }
+
         return new EventMetric<>(timestamp(), getApplication(), getGroup(), getName(), eventData);
+
     }
 
 }

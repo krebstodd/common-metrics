@@ -9,7 +9,7 @@ public class ResourceCounter extends MetricRepository {
     private final ResourceCounterMetricFactory metricFactory;
 
     public ResourceCounter(final EventEmitter emitter, final ResourceCounterMetricFactory metricFactory) {
-        super(emitter);
+        super(metricFactory.getGroup(), metricFactory.getName(), emitter);
         this.metricFactory = metricFactory;
     }
 
@@ -26,4 +26,13 @@ public class ResourceCounter extends MetricRepository {
         return absolute * -1L;
     }
 
+    @Override
+    public boolean equals(final Object other) {
+        return computeEquals(this, other);
+    }
+
+    @Override
+    public int hashCode() {
+        return computeHashCode(this);
+    }
 }

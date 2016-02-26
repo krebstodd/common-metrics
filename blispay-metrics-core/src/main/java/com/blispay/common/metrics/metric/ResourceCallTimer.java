@@ -2,7 +2,7 @@ package com.blispay.common.metrics.metric;
 
 import com.blispay.common.metrics.event.EventEmitter;
 import com.blispay.common.metrics.model.BaseMetricModel;
-import com.blispay.common.metrics.model.TrackingInfo;
+import com.blispay.common.metrics.model.MetricGroup;
 import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.Status;
 
@@ -11,12 +11,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class ResourceCallTimer<C extends ResourceCallTimer.Context> extends MetricRepository {
 
-    public ResourceCallTimer(final EventEmitter emitter) {
-        super(emitter);
+    public ResourceCallTimer(final MetricGroup group, final String name, final EventEmitter emitter) {
+        super(group, name, emitter);
     }
 
     protected StopWatch start(final C context) {
-        return new StopWatch(context).start();
+        return new StopWatchImpl(context).start();
     }
 
     protected abstract BaseMetricModel buildEvent(final C context);
@@ -25,16 +25,33 @@ public abstract class ResourceCallTimer<C extends ResourceCallTimer.Context> ext
         save(buildEvent(context));
     }
 
+    public static StopWatch mockStopWatch() {
+        return new StopWatch() {
+            @Override
+            public Duration stop(final Status callStatus) {
+                return Duration.ofSeconds(0);
+            }
+
+            @Override
+            public Boolean isRunning() {
+                return false;
+            }
+
+            @Override
+            public Long elapsedMillis() {
+                return 0L;
+            }
+        };
+    }
+
     protected static class Context {
 
         private final Direction direction;
-        private final TrackingInfo trackingInfo;
         private Status status;
         private Duration duration;
 
-        protected Context(final Direction direction, final TrackingInfo trackingInfo) {
+        protected Context(final Direction direction) {
             this.direction = direction;
-            this.trackingInfo = trackingInfo;
         }
 
         public void setStatus(final Status status) {
@@ -49,10 +66,6 @@ public abstract class ResourceCallTimer<C extends ResourceCallTimer.Context> ext
             return direction;
         }
 
-        public TrackingInfo getTrackingInfo() {
-            return trackingInfo;
-        }
-
         public Status getStatus() {
             return status;
         }
@@ -62,14 +75,29 @@ public abstract class ResourceCallTimer<C extends ResourceCallTimer.Context> ext
         }
     }
 
-    public class StopWatch implements AutoCloseable {
+    public interface StopWatch extends AutoCloseable {
+
+        public Duration stop(final Status callStatus);
+
+        public Boolean isRunning();
+
+        public Long elapsedMillis();
+
+        @Override
+        default void close() {
+            stop(Status.success());
+        }
+
+    }
+
+    protected class StopWatchImpl implements StopWatch {
 
         private Long startMillis;
         private AtomicBoolean isRunning = new AtomicBoolean(false);
 
         private C callContext;
 
-        public StopWatch(final C callContext) {
+        public StopWatchImpl(final C callContext) {
             this.callContext = callContext;
         }
 
@@ -78,7 +106,7 @@ public abstract class ResourceCallTimer<C extends ResourceCallTimer.Context> ext
          *
          * @return Running stopwatch instance.
          */
-        public StopWatch start() {
+        public StopWatchImpl start() {
             if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
                 startMillis = currMillis();
                 return this;
@@ -93,6 +121,7 @@ public abstract class ResourceCallTimer<C extends ResourceCallTimer.Context> ext
          * @param callStatus The status of the call response.
          * @return The duration of the call execution.
          */
+        @Override
         public Duration stop(final Status callStatus) {
             assertRunning(Boolean.TRUE);
 
@@ -105,10 +134,12 @@ public abstract class ResourceCallTimer<C extends ResourceCallTimer.Context> ext
             return elapsed;
         }
 
+        @Override
         public Boolean isRunning() {
             return isRunning.get();
         }
 
+        @Override
         public Long elapsedMillis() {
             assertRunning(Boolean.TRUE);
             return currMillis() - startMillis;
@@ -122,11 +153,6 @@ public abstract class ResourceCallTimer<C extends ResourceCallTimer.Context> ext
             if (this.isRunning.get() != expected) {
                 throw new IllegalStateException("Stopwatch not in expected state.");
             }
-        }
-
-        @Override
-        public void close() {
-            stop(Status.success());
         }
 
     }

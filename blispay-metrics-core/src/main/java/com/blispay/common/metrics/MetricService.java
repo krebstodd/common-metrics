@@ -6,6 +6,7 @@ import com.blispay.common.metrics.event.EventEmitter;
 import com.blispay.common.metrics.event.EventSubscriber;
 import com.blispay.common.metrics.metric.DatasourceCallTimer;
 import com.blispay.common.metrics.metric.EventRepository;
+import com.blispay.common.metrics.metric.HealthMonitor;
 import com.blispay.common.metrics.metric.HttpCallTimer;
 import com.blispay.common.metrics.metric.InternalResourceCallTimer;
 import com.blispay.common.metrics.metric.MetricProbe;
@@ -20,6 +21,8 @@ import com.blispay.common.metrics.model.call.http.HttpResourceCallMetricFactory;
 import com.blispay.common.metrics.model.call.internal.InternalResourceCallMetricFactory;
 import com.blispay.common.metrics.model.call.mq.MqResourceCallMetricFactory;
 import com.blispay.common.metrics.model.counter.ResourceCounterMetricFactory;
+import com.blispay.common.metrics.model.health.HealthCheckData;
+import com.blispay.common.metrics.model.health.HealthCheckMetricFactory;
 import com.blispay.common.metrics.model.utilization.ResourceUtilizationData;
 import com.blispay.common.metrics.model.utilization.ResourceUtilizationMetricFactory;
 import com.blispay.common.metrics.report.SnapshotProvider;
@@ -34,6 +37,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -46,7 +50,7 @@ public class MetricService implements SmartLifecycle {
     private final Set<SnapshotProvider> snapshotProviders = new HashSet<>();
     private final Set<SnapshotReporter> snapshotReporters = new HashSet<>();
     private final List<MetricProbe> probes = new LinkedList<>();
-    private final List<MetricRepository> activeMetrics = new LinkedList<>();
+    private final ConcurrentHashMap<Integer, MetricRepository> activeMetrics = new ConcurrentHashMap<>();
     private final AtomicBoolean isRunning = new AtomicBoolean(Boolean.FALSE);
     private String applicationId;
 
@@ -95,8 +99,8 @@ public class MetricService implements SmartLifecycle {
 
     }
 
-    public <T> EventRepository<T> createEventRepository(final MetricGroup group, final String name) {
-        return addMetricRepository(new EventRepository<>(eventDispatcher.newEventEmitter(), new EventFactory<T>(applicationId, group, name)));
+    public <T> EventRepository<T> createEventRepository(final MetricGroup group, final String name, final Class<T> hint) {
+        return addMetricRepository(new EventRepository<>(eventDispatcher.newEventEmitter(), new EventFactory<>(applicationId, group, name), hint));
     }
 
     public HttpCallTimer createHttpResourceCallTimer(final MetricGroup group, final String name) {
@@ -115,9 +119,28 @@ public class MetricService implements SmartLifecycle {
         return addMetricRepository(new MqCallTimer(eventDispatcher.newEventEmitter(), new MqResourceCallMetricFactory(applicationId, group, name)));
     }
 
+    /**
+     * Create a new resource health check with a custom health data provider.
+     *
+     * @param group The gauge's metric group.
+     * @param name The gauge's metric name.
+     * @param health A supplier for health data.
+     * @return a resource health gauge configured as requested.
+     */
+    public HealthMonitor createHealthMonitor(final MetricGroup group, final String name, final Supplier<HealthCheckData> health) {
+
+        final EventEmitter emitter = eventDispatcher.newEventEmitter();
+        final HealthCheckMetricFactory factory = new HealthCheckMetricFactory(applicationId, group, name);
+        final HealthMonitor monitor = new HealthMonitor(emitter, factory, health);
+
+        snapshotProviders.add(monitor);
+
+        return addMetricRepository(monitor);
+
+    }
+
     public <T extends MetricRepository> T addMetricRepository(final T repository) {
-        this.activeMetrics.add(repository);
-        return repository;
+        return (T) activeMetrics.computeIfAbsent(repository.hashCode(), (hash) -> repository);
     }
 
     /**
@@ -131,7 +154,7 @@ public class MetricService implements SmartLifecycle {
     public <T extends MetricRepository> Optional<T> removeMetricRepository(final T repository) {
         if (activeMetrics.contains(repository)) {
 
-            activeMetrics.remove(repository);
+            activeMetrics.remove(repository.hashCode());
 
             if (repository instanceof SnapshotProvider) {
                 snapshotProviders.remove(repository);
@@ -201,6 +224,16 @@ public class MetricService implements SmartLifecycle {
         return GLOBAL;
     }
 
+    /**
+     * Set the global app id and return the global instance.
+     * @param name App id
+     * @return global instance.
+     */
+    public static MetricService globalInstance(final String name) {
+        setGlobalAppId(name);
+        return globalInstance();
+    }
+
     public static void setGlobalAppId(final String globalAppId) {
         GLOBAL.setApplicationId(globalAppId);
     }
@@ -217,7 +250,7 @@ public class MetricService implements SmartLifecycle {
 
             LOG.info("Stopping metric service...");
 
-            activeMetrics.forEach(this::removeMetricRepository);
+            activeMetrics.values().forEach(this::removeMetricRepository);
 
             snapshotReporters.forEach(SnapshotReporter::stop);
             probes.forEach(MetricProbe::stop);

@@ -19,7 +19,11 @@ public enum MetricType {
     /**
      * Event occurrence.
      */
-    EVENT("EVENT");
+    EVENT("EVENT"),
+    /**
+     * Health check.
+     */
+    HEALTH_CHECK("HLTH");
 
     private final String type;
 
