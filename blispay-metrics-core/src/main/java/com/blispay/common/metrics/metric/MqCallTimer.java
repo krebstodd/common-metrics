@@ -21,6 +21,7 @@ public class MqCallTimer extends ResourceCallTimer<MqCallTimer.Context> {
     public StopWatch start(final MqResource resource, final MqAction action,
                            final String requestQueue, final String responseQueue, final String host,
                            final String requestType) {
+
         return start(new Context(Direction.OUTBOUND, action, resource, requestQueue, responseQueue, host, requestType));
     }
 

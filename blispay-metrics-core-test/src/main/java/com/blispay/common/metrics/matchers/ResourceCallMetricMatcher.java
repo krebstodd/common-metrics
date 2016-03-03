@@ -37,12 +37,14 @@ public class ResourceCallMetricMatcher<T> extends TypeSafeMatcher<BaseResourceCa
 
     @Override
     public boolean matchesSafely(final BaseResourceCallMetric<T> metric) {
+        System.out.println("STARING METRIC MATCHER " + nameMatcher + " FOR METRIC " + metric.getName());
         System.out.println(timestampMatcher.matches(metric.getTimestamp()));
                 System.out.println(groupMatcher.matches(metric.getGroup().getValue()));
                 System.out.println(nameMatcher.matches(metric.getName()));
                 System.out.println(typeMatcher.matches(metric.getType().getValue()));
                 System.out.println(dataMatcher.matches(metric.eventData()));
-        
+        System.out.println("ENDING METRIC MATCHER " + nameMatcher + " FOR METRIC " + metric.getName());
+
         return timestampMatcher.matches(metric.getTimestamp())
                 && groupMatcher.matches(metric.getGroup().getValue())
                 && nameMatcher.matches(metric.getName())

@@ -14,9 +14,13 @@ import com.blispay.common.metrics.metric.MetricRepository;
 import com.blispay.common.metrics.metric.MqCallTimer;
 import com.blispay.common.metrics.metric.ResourceCounter;
 import com.blispay.common.metrics.metric.ResourceUtilizationGauge;
+import com.blispay.common.metrics.metric.StaticHttpCallTimer;
 import com.blispay.common.metrics.model.MetricGroup;
 import com.blispay.common.metrics.model.business.EventFactory;
+import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.ds.DataSourceResourceCallMetricFactory;
+import com.blispay.common.metrics.model.call.http.HttpAction;
+import com.blispay.common.metrics.model.call.http.HttpResource;
 import com.blispay.common.metrics.model.call.http.HttpResourceCallMetricFactory;
 import com.blispay.common.metrics.model.call.internal.InternalResourceCallMetricFactory;
 import com.blispay.common.metrics.model.call.mq.MqResourceCallMetricFactory;
@@ -107,6 +111,24 @@ public class MetricService implements SmartLifecycle {
         return addMetricRepository(new HttpCallTimer(eventDispatcher.newEventEmitter(), new HttpResourceCallMetricFactory(applicationId, group, name)));
     }
 
+    /**
+     * Static http call timers create a wrapper around a regular dynamic call timer with constant, immutable direction, resource, and
+     * action parameters. Used to time a repeated action.
+     *
+     * @param group Metric group.
+     * @param name Metric name.
+     * @param direction Direction of call.
+     * @param resource Resource called.
+     * @param action Action performed.
+     * @return Static http call timer.
+     */
+    public StaticHttpCallTimer createStaticHttpResourceCallTimer(final MetricGroup group, final String name,
+                                                                 final Direction direction, final HttpResource resource, final HttpAction action) {
+
+        final HttpCallTimer rootTimer = createHttpResourceCallTimer(group, name);
+        return new StaticHttpCallTimer(rootTimer, direction, resource, action);
+    }
+
     public DatasourceCallTimer createDataSourceCallTimer(final MetricGroup group, final String name) {
         return addMetricRepository(new DatasourceCallTimer(eventDispatcher.newEventEmitter(), new DataSourceResourceCallMetricFactory(applicationId, group, name)));
     }
@@ -173,6 +195,10 @@ public class MetricService implements SmartLifecycle {
         this.eventDispatcher.subscribe(eventListener);
     }
 
+    public void removeEventSubscriber(final EventSubscriber eventSubscriber) {
+        this.eventDispatcher.unSubscribe(eventSubscriber);
+    }
+
     /**
      * Add a new snapshot reporting implementation interested in reporting on events in this service. Starts the reporter.
      *
@@ -184,6 +210,11 @@ public class MetricService implements SmartLifecycle {
         snReporter.setSnapshotProviders(() -> snapshotProviders);
         snReporter.start();
         snapshotReporters.add(snReporter);
+    }
+
+    public void removeSnapshotReporter(final SnapshotReporter reporter) {
+        this.snapshotReporters.remove(reporter);
+        reporter.stop();
     }
 
     /**

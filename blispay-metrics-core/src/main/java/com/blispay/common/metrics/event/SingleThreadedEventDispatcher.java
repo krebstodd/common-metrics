@@ -25,7 +25,7 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
     @Override
     public void dispatch(final BaseMetricModel evt) {
 
-        LOG.info("Dispatching new new event name=[{}]", evt.getName());
+        LOG.debug("Dispatching new new event name=[{}]", evt.getName());
 
         if (!isRunning()) {
             throw new IllegalStateException("Dispatcher not yet started");
@@ -45,6 +45,12 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
     public void subscribe(final EventSubscriber listener) {
         eventListeners.add(listener);
     }
+
+    @Override
+    public void unSubscribe(final EventSubscriber listener) {
+        eventListeners.remove(listener);
+    }
+
 
     private void acceptEvent(final EventSubscriber subscriber, final BaseMetricModel evt) {
         try {

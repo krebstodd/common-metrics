@@ -64,10 +64,10 @@ public class JettyProbeTest {
         final HttpResourceCallMetric event2 = (HttpResourceCallMetric) testReporter.poll();
 
         assertThat(event1, new ResourceCallMetricMatcher(MetricGroup.SERVER_HTTP, "http-response", MetricType.RESOURCE_CALL,
-                new ResourceCallDataMatcher(HttpResource.fromUrl("/user/create/v1"), HttpAction.POST, Direction.INBOUND, Status.fromValue(200), 1000L, null)));
+                new ResourceCallDataMatcher(HttpResource.fromUrl("/user/create/v1"), HttpAction.POST, Direction.INBOUND, Status.fromValue(200), 1000L)));
 
         assertThat(event2, new ResourceCallMetricMatcher(MetricGroup.SERVER_HTTP, "http-response", MetricType.RESOURCE_CALL,
-                new ResourceCallDataMatcher(HttpResource.fromUrl("/user/v1"), HttpAction.GET, Direction.INBOUND, Status.fromValue(404), 1000L, null)));
+                new ResourceCallDataMatcher(HttpResource.fromUrl("/user/v1"), HttpAction.GET, Direction.INBOUND, Status.fromValue(404), 1000L)));
     }
 
     @Test

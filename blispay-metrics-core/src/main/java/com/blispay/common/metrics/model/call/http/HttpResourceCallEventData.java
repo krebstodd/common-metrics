@@ -7,7 +7,9 @@ import com.blispay.common.metrics.model.call.Status;
 
 public class HttpResourceCallEventData extends BaseResourceCallEventData<HttpResource, HttpAction> {
 
-    public HttpResourceCallEventData(final Direction direction, final Long durationMillis, final HttpResource resource, final HttpAction action, final Status status, final TrackingInfo trackingInfo) {
+    public HttpResourceCallEventData(final Direction direction, final Long durationMillis, final HttpResource resource,
+                                     final HttpAction action, final Status status, final TrackingInfo trackingInfo) {
+
         super(direction, durationMillis, resource, action, status, trackingInfo);
     }
 

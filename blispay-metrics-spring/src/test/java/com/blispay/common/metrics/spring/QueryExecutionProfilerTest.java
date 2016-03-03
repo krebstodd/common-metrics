@@ -51,7 +51,7 @@ public class QueryExecutionProfilerTest {
         assertEquals(1, subscriber.count());
         assertThat(subscriber.poll(), new ResourceCallMetricMatcher(MetricGroup.CLIENT_JDBC, QueryExecutionProfilerTest.ProfiledRepository.queryName, MetricType.RESOURCE_CALL,
                 new ResourceCallDataMatcher(DsResource.fromSchemaTable(ProfiledRepositoryImpl.schema, ProfiledRepositoryImpl.table),
-                        ProfiledRepositoryImpl.dsAction, Direction.OUTBOUND, Status.success(), 1000L, null)));
+                        ProfiledRepositoryImpl.dsAction, Direction.OUTBOUND, Status.success(), 1000L)));
     }
 
     @Test
@@ -70,7 +70,7 @@ public class QueryExecutionProfilerTest {
         assertEquals(1, subscriber.count());
         assertThat(subscriber.poll(), new ResourceCallMetricMatcher(MetricGroup.CLIENT_JDBC, QueryExecutionProfilerTest.ProfiledRepository.queryName, MetricType.RESOURCE_CALL,
                 new ResourceCallDataMatcher(DsResource.fromSchemaTable(ProfiledRepositoryImpl.schema, ProfiledRepositoryImpl.table),
-                        ProfiledRepositoryImpl.dsAction, Direction.OUTBOUND, Status.error(), 1000L, null)));
+                        ProfiledRepositoryImpl.dsAction, Direction.OUTBOUND, Status.error(), 1000L)));
     }
 
     @Test

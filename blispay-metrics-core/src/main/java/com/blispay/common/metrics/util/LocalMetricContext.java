@@ -20,32 +20,32 @@ public final class LocalMetricContext {
         return userTrackingId;
     }
 
-    public void setUserTrackingId(final String userTrackingId) {
-        this.userTrackingId = userTrackingId;
+    public static void setUserTrackingId(final String userTrackingId) {
+        get().userTrackingId = userTrackingId;
     }
 
     public String getAgentTrackingId() {
         return agentTrackingId;
     }
 
-    public void setAgentTrackingId(final String agentTrackingId) {
-        this.agentTrackingId = agentTrackingId;
+    public static void setAgentTrackingId(final String agentTrackingId) {
+        get().agentTrackingId = agentTrackingId;
     }
 
     public String getSessionTrackingId() {
         return sessionTrackingId;
     }
 
-    public void setSessionTrackingId(final String sessionTrackingId) {
-        this.sessionTrackingId = sessionTrackingId;
+    public static void setSessionTrackingId(final String sessionTrackingId) {
+        get().sessionTrackingId = sessionTrackingId;
     }
 
     public String getApiTrackingId() {
         return apiTrackingId;
     }
 
-    public void setApiTrackingId(final String apiTrackingId) {
-        this.apiTrackingId = apiTrackingId;
+    public static void setApiTrackingId(final String apiTrackingId) {
+        get().apiTrackingId = apiTrackingId;
     }
 
     public static TrackingInfo getTrackingInfo() {

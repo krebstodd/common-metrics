@@ -52,7 +52,7 @@ public class MethodExecutionProfilerTest {
         assertTrue(profiled.wasExecuted());
         assertEquals(1, subscriber.count());
         assertThat(subscriber.poll(), new ResourceCallMetricMatcher(MetricGroup.INTERNAL_METHOD_CALL, metricName, MetricType.RESOURCE_CALL,
-                new ResourceCallDataMatcher(InternalResource.fromClass(ProfiledClass.class), InternalAction.fromMethodName("testProfile"), Direction.INTERNAL, Status.success(), 1000L, null)));
+                new ResourceCallDataMatcher(InternalResource.fromClass(ProfiledClass.class), InternalAction.fromMethodName("testProfile"), Direction.INTERNAL, Status.success(), 1000L)));
 
     }
 
@@ -74,7 +74,7 @@ public class MethodExecutionProfilerTest {
         assertTrue(profiled.wasExecuted());
         assertEquals(1, subscriber.count());
         assertThat(subscriber.poll(), new ResourceCallMetricMatcher(MetricGroup.INTERNAL_METHOD_CALL, metricName, MetricType.RESOURCE_CALL,
-                new ResourceCallDataMatcher(InternalResource.fromClass(ProfiledClass.class), InternalAction.fromMethodName("testProfile"), Direction.INTERNAL, Status.error(), 1000L, null)));
+                new ResourceCallDataMatcher(InternalResource.fromClass(ProfiledClass.class), InternalAction.fromMethodName("testProfile"), Direction.INTERNAL, Status.error(), 1000L)));
     }
 
     public static class ProfiledClass {

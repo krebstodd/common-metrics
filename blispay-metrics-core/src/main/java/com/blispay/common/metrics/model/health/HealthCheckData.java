@@ -47,4 +47,15 @@ public class HealthCheckData {
         return new HealthCheckData(Boolean.FALSE);
     }
 
+    public static HealthCheckData unHealthy(final String msg) {
+        return new HealthCheckData(Boolean.FALSE, msg);
+    }
+
+    public static HealthCheckData unHealthy(final Exception ex) {
+        return new HealthCheckData(Boolean.FALSE, null, ex);
+    }
+
+    public static HealthCheckData unHealthy(final String message, final Exception ex) {
+        return new HealthCheckData(Boolean.FALSE, message, ex);
+    }
 }

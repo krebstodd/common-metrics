@@ -14,6 +14,7 @@ public class HttpCallTimer extends ResourceCallTimer<HttpCallTimer.Context> {
     private final HttpResourceCallMetricFactory factory;
 
     public HttpCallTimer(final EventEmitter emitter, final HttpResourceCallMetricFactory metricFactory) {
+
         super(metricFactory.getGroup(), metricFactory.getName(), emitter);
         this.factory = metricFactory;
     }
@@ -62,7 +63,7 @@ public class HttpCallTimer extends ResourceCallTimer<HttpCallTimer.Context> {
         private final HttpAction action;
         private final HttpResource resource;
 
-        private Context(final Direction direction, final HttpAction action,
+        protected Context(final Direction direction, final HttpAction action,
                        final HttpResource resource) {
 
             super(direction);

@@ -44,4 +44,5 @@ public class ResourceUtilizationGauge extends MetricRepository implements Snapsh
     public int hashCode() {
         return computeHashCode(this);
     }
+
 }

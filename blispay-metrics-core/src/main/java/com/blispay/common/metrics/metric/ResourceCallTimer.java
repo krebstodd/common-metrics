@@ -92,10 +92,10 @@ public abstract class ResourceCallTimer<C extends ResourceCallTimer.Context> ext
 
     protected class StopWatchImpl implements StopWatch {
 
+        protected C callContext;
+
         private Long startMillis;
         private AtomicBoolean isRunning = new AtomicBoolean(false);
-
-        private C callContext;
 
         public StopWatchImpl(final C callContext) {
             this.callContext = callContext;
@@ -149,7 +149,7 @@ public abstract class ResourceCallTimer<C extends ResourceCallTimer.Context> ext
             return System.currentTimeMillis();
         }
 
-        private void assertRunning(final boolean expected) {
+        protected void assertRunning(final boolean expected) {
             if (this.isRunning.get() != expected) {
                 throw new IllegalStateException("Stopwatch not in expected state.");
             }

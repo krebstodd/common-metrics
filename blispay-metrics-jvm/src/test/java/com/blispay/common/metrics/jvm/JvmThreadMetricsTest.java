@@ -36,8 +36,8 @@ public class JvmThreadMetricsTest {
 
         final Snapshot sn = threadReporter.report();
 
-        final Matcher<Long> nnLong = Matchers.notNullValue();
-        final Matcher<Double> nnDbl = Matchers.notNullValue();
+        final Matcher<Long> nnLong = Matchers.notNullValue(Long.class);
+        final Matcher<Double> nnDbl = Matchers.notNullValue(Double.class);
 
         final Matcher activeThreadsGauge
                 = new ResourceUtilizationMetricMatcher(MetricGroup.RESOURCE_UTILIZATION_THREADS, "jvm-active", MetricType.RESOURCE_UTILIZATION, nnLong, nnLong, nnLong, nnDbl);

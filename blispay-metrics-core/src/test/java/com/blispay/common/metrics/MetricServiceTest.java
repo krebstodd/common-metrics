@@ -248,7 +248,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
         metricService.addEventSubscriber(evtSub);
         metricService.start();
 
-        final MqCallTimer timer = metricService.createMqResourceCallTimer(MetricGroup.CLIENT_MESSAGE_QUEUE, "request");
+        final MqCallTimer timer = metricService.createMqResourceCallTimer(MetricGroup.CLIENT_MQ_REQ, "request");
 
         final ResourceCallTimer.StopWatch sw = timer.start(MqResource.fromQueueName("myqueue"), MqAction.GET, "reqQueue", "resQueue", "host", "rType");
 
@@ -260,7 +260,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
 
         assertFalse(sw.isRunning());
         assertEquals(1, evtSub.count());
-        assertThat(evtSub.poll(), new ResourceCallMetricMatcher(MetricGroup.CLIENT_MESSAGE_QUEUE, "request", MetricType.RESOURCE_CALL,
+        assertThat(evtSub.poll(), new ResourceCallMetricMatcher(MetricGroup.CLIENT_MQ_REQ, "request", MetricType.RESOURCE_CALL,
                 new ResourceCallDataMatcher(MqResource.fromQueueName("myqueue"), MqAction.GET, Direction.OUTBOUND, Status.success(), 1000L, trackingInfo)));
     }
 
@@ -282,6 +282,11 @@ public class MetricServiceTest extends AbstractMetricsTest {
 
             @Override
             public void subscribe(final EventSubscriber listener) {
+
+            }
+
+            @Override
+            public void unSubscribe(final EventSubscriber listener) {
 
             }
 

@@ -16,6 +16,8 @@ public abstract class EventDispatcher implements SmartLifecycle {
 
     public abstract void subscribe(final EventSubscriber listener);
 
+    public abstract void unSubscribe(final EventSubscriber listener);
+
     protected AtomicBoolean isRunningAtomic() {
         return isRunning;
     }

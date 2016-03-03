@@ -13,8 +13,6 @@ import org.hamcrest.TypeSafeMatcher;
 
 public class ResourceCallDataMatcher<R extends Resource, A extends Action> extends TypeSafeMatcher<BaseResourceCallEventData<R, A>> {
 
-    private static final Long ACCEPTABLE_RT_DELTA = 100L;
-
     private final Matcher<String> resourceMatcher;
     private final Matcher<String> actionMatcher;
     private final Matcher<Integer> statusMatcher;
@@ -24,10 +22,15 @@ public class ResourceCallDataMatcher<R extends Resource, A extends Action> exten
     private final Long acceptableRtDelta;
 
     public ResourceCallDataMatcher(final R resource, final A action, final Direction direction,
-                                   final Status status, final Long approxMillis,
-                                   final TrackingInfo trackingInfo) {
-        this(resource, action, direction, status, approxMillis, ACCEPTABLE_RT_DELTA, trackingInfo);
+                                   final Status status, final Long approxMillis) {
+        this(resource, action, direction, status, approxMillis, approxMillis, Matchers.nullValue(TrackingInfo.class));
     }
+
+    public ResourceCallDataMatcher(final R resource, final A action, final Direction direction,
+                                   final Status status, final Long approxMillis, final Matcher<TrackingInfo> trackingInfoMatcher) {
+        this(resource, action, direction, status, approxMillis, approxMillis, trackingInfoMatcher);
+    }
+
 
     /**
      * Match a resource call metric.
@@ -41,19 +44,13 @@ public class ResourceCallDataMatcher<R extends Resource, A extends Action> exten
      */
     public ResourceCallDataMatcher(final R resource, final A action, final Direction direction,
                                    final Status status, final Long approxMillis, final Long acceptableRtDelta,
-                                   final TrackingInfo trackingInfo) {
+                                   final Matcher<TrackingInfo> trackingInfo) {
 
         this.resourceMatcher = Matchers.equalTo(resource.getValue());
         this.actionMatcher = Matchers.equalTo(action.getValue());
         this.directionMatcher = Matchers.equalTo(direction);
         this.statusMatcher = Matchers.equalTo(status.getValue());
-
-        if (trackingInfo == null) {
-            trackingInfoMatcher = Matchers.nullValue();
-        } else {
-            this.trackingInfoMatcher = new TrackingInfoMatcher(trackingInfo);
-        }
-
+        this.trackingInfoMatcher = trackingInfo;
         this.approxRuntime = approxMillis;
         this.acceptableRtDelta = acceptableRtDelta;
     }
@@ -61,6 +58,12 @@ public class ResourceCallDataMatcher<R extends Resource, A extends Action> exten
     @Override
     public boolean matchesSafely(final BaseResourceCallEventData<R, A> raBaseResourceCallEventData) {
         System.out.println("START DATA ==============");
+        System.out.println(resourceMatcher + " : " + raBaseResourceCallEventData.getResource().getValue());
+        System.out.println(actionMatcher+ " : " + raBaseResourceCallEventData.getAction().getValue());
+        System.out.println(approxRuntime + " :: " + raBaseResourceCallEventData.getDurationMillis());
+        System.out.println(statusMatcher + " :: " + raBaseResourceCallEventData.getStatus());
+        System.out.println(trackingInfoMatcher + " :: " + raBaseResourceCallEventData.getTrackingInfo());
+        System.out.println(directionMatcher + " :: " + raBaseResourceCallEventData.getDirection());
         System.out.println(resourceMatcher.matches(raBaseResourceCallEventData.getResource().getValue()));
                 System.out.println(actionMatcher.matches(raBaseResourceCallEventData.getAction().getValue()));
                 System.out.println(statusMatcher.matches(raBaseResourceCallEventData.getStatus()));
