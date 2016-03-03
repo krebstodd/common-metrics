@@ -1,7 +1,7 @@
 package com.blispay.common.metrics.matchers;
 
-import com.blispay.common.metrics.model.MetricGroup;
-import com.blispay.common.metrics.model.MetricType;
+import com.blispay.common.metrics.model.EventGroup;
+import com.blispay.common.metrics.model.EventType;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -25,7 +25,7 @@ public class JsonMetricMatcher extends TypeSafeMatcher<JSONObject> {
      * @param type type
      * @param eventDataMatcher data
      */
-    public JsonMetricMatcher(final MetricGroup group, final String applicationName, final String name, final MetricType type,
+    public JsonMetricMatcher(final EventGroup group, final String applicationName, final String name, final EventType type,
                              final Matcher eventDataMatcher) {
 
         this.timestampMatcher = Matchers.endsWith("Z");

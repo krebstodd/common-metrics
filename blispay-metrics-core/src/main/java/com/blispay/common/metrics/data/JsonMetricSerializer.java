@@ -1,12 +1,12 @@
 package com.blispay.common.metrics.data;
 
-import com.blispay.common.metrics.model.BaseMetricModel;
+import com.blispay.common.metrics.model.EventModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JsonMetricSerializer implements MetricSerializer {
+public class JsonMetricSerializer implements EventSerializer {
 
     private static final Logger LOG = LoggerFactory.getLogger(JsonMetricSerializer.class);
 
@@ -21,7 +21,7 @@ public class JsonMetricSerializer implements MetricSerializer {
     }
 
     @Override
-    public String serialize(final BaseMetricModel metric) {
+    public String serialize(final EventModel metric) {
         try {
             return objectMapper.writeValueAsString(metric);
         } catch (JsonProcessingException e) {

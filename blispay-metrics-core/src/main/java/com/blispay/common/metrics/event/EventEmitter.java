@@ -1,9 +1,9 @@
 package com.blispay.common.metrics.event;
 
-import com.blispay.common.metrics.model.BaseMetricModel;
+import com.blispay.common.metrics.model.EventModel;
 
 public interface EventEmitter {
 
-    void emit(final BaseMetricModel event);
+    void emit(final EventModel event);
 
 }

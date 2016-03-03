@@ -1,6 +1,6 @@
 package com.blispay.common.metrics.event;
 
-import com.blispay.common.metrics.model.BaseMetricModel;
+import com.blispay.common.metrics.model.EventModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,11 +23,11 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
     }
 
     @Override
-    public void dispatch(final BaseMetricModel evt) {
+    public void dispatch(final EventModel evt) {
 
         LOG.debug("Dispatching new new event name=[{}]", evt.getName());
 
-        if (!isRunning()) {
+        if (!isRunningAtomic().get()) {
             throw new IllegalStateException("Dispatcher not yet started");
         }
 
@@ -52,7 +52,7 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
     }
 
 
-    private void acceptEvent(final EventSubscriber subscriber, final BaseMetricModel evt) {
+    private void acceptEvent(final EventSubscriber subscriber, final EventModel evt) {
         try {
 
             subscriber.acceptEvent(evt);
@@ -66,13 +66,13 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
         // CHECK_ON: IllegalCatch
     }
 
-    private Boolean passesFilters(final EventSubscriber reporter, final BaseMetricModel event) {
+    private Boolean passesFilters(final EventSubscriber reporter, final EventModel event) {
         return reporter.getFilters()
                 .stream()
                 .allMatch(filter -> safeFilter(filter, event));
     }
 
-    private static Boolean safeFilter(final EventFilter filter, final BaseMetricModel model) {
+    private static Boolean safeFilter(final EventFilter filter, final EventModel model) {
 
         try {
 

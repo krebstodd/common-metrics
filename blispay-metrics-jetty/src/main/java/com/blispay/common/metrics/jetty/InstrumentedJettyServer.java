@@ -1,9 +1,9 @@
 package com.blispay.common.metrics.jetty;
 
 import com.blispay.common.metrics.MetricService;
-import com.blispay.common.metrics.metric.HttpCallTimer;
-import com.blispay.common.metrics.metric.ResourceCallTimer;
-import com.blispay.common.metrics.model.MetricGroup;
+import com.blispay.common.metrics.Transaction;
+import com.blispay.common.metrics.TransactionFactory;
+import com.blispay.common.metrics.model.EventGroup;
 import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.Status;
 import com.blispay.common.metrics.model.call.http.HttpAction;
@@ -24,7 +24,7 @@ public class InstrumentedJettyServer extends Server {
 
     private final Consumer<HttpChannel<?>> handler;
 
-    private final HttpCallTimer timer;
+    private final TransactionFactory txFactory;
 
     /**
      * Create a new instrumented jetty service.
@@ -38,7 +38,12 @@ public class InstrumentedJettyServer extends Server {
                                    final Consumer<HttpChannel<?>> channelHandler) {
 
         super(threadPool);
-        this.timer = metricService.createHttpResourceCallTimer(MetricGroup.SERVER_HTTP, "http-response");
+
+        this.txFactory = metricService.transactionFactory()
+                .inGroup(EventGroup.SERVER_HTTP)
+                .withName("http-response")
+                .inDirection(Direction.INBOUND);
+
         this.handler = channelHandler;
     }
 
@@ -49,13 +54,17 @@ public class InstrumentedJettyServer extends Server {
         final String path = channel.getRequest().getRequestURI();
         final String method = channel.getRequest().getMethod();
 
-        final ResourceCallTimer.StopWatch requestStopwatch = timer.start(Direction.INBOUND, HttpResource.fromUrl(path), HttpAction.fromString(method));
+
+        final Transaction tx = txFactory.create()
+                .onResource(HttpResource.fromUrl(path))
+                .withAction(HttpAction.fromString(method))
+                .start();
 
         // Pass the channel down to our application.
         try {
             handler.accept(channel);
         } finally {
-            requestStopwatch.stop(Status.fromValue(channel.getResponse().getStatus()));
+            tx.stop(Status.fromValue(channel.getResponse().getStatus()));
         }
     }
 

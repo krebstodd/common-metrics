@@ -1,9 +1,10 @@
 package com.blispay.common.metrics;
 
 import com.blispay.common.metrics.matchers.TrackingInfoMatcher;
-import com.blispay.common.metrics.model.MetricGroup;
+import com.blispay.common.metrics.model.EventGroup;
+import com.blispay.common.metrics.model.EventModel;
+import com.blispay.common.metrics.model.EventType;
 import com.blispay.common.metrics.model.TrackingInfo;
-import com.blispay.common.metrics.model.business.EventMetric;
 import com.blispay.common.metrics.util.LocalMetricContext;
 import com.blispay.common.metrics.util.TrackingInfoAware;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,10 +15,13 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 public abstract class AbstractMetricsTest {
+
+    static {
+        MetricService.globalInstance("metrics-test").start();
+    }
 
     // CHECK_OFF: JavadocVariable
     // CHECK_OFF: VisibilityModifier
@@ -54,15 +58,14 @@ public abstract class AbstractMetricsTest {
         return ti;
     }
 
-    protected static EventMetric testEvent() {
+    protected static EventModel<PiiBusinessEventData> testEvent() {
+        final EventRepository<PiiBusinessEventData> repo = MetricService.globalInstance().eventRepository(PiiBusinessEventData.class);
 
-        return new EventMetric<>(
-                ZonedDateTime.now(),
-                "someApp",
-                MetricGroup.CLIENT,
-                "created",
-                defaultPiiBusinessEventData());
-
+        return repo
+                .ofType(EventType.BUSINESS_EVT)
+                .inGroup(EventGroup.ACCOUNT_DOMAIN)
+                .withName("some-event")
+                .save(defaultPiiBusinessEventData());
     }
 
     protected static class PiiBusinessEventData implements TrackingInfoAware {

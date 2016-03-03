@@ -2,7 +2,7 @@ package com.blispay.common.metrics;
 
 import com.blispay.common.metrics.event.EventFilter;
 import com.blispay.common.metrics.event.EventSubscriber;
-import com.blispay.common.metrics.model.BaseMetricModel;
+import com.blispay.common.metrics.model.EventModel;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -10,11 +10,11 @@ import java.util.List;
 public class TestEventSubscriber implements EventSubscriber {
 
     private final List<EventFilter> filters = new LinkedList<>();
-    private final LinkedList<BaseMetricModel> events = new LinkedList<>();
+    private final LinkedList<EventModel> events = new LinkedList<>();
     private Boolean exceptionsOn = Boolean.FALSE;
 
     @Override
-    public void acceptEvent(final BaseMetricModel event) {
+    public void acceptEvent(final EventModel event) {
         if (exceptionsOn) {
             throw new IllegalStateException("Some exception");
         }
@@ -31,7 +31,7 @@ public class TestEventSubscriber implements EventSubscriber {
         this.filters.add(filter);
     }
 
-    public BaseMetricModel poll() {
+    public EventModel poll() {
         return events.poll();
     }
 
@@ -39,7 +39,7 @@ public class TestEventSubscriber implements EventSubscriber {
         return events.size();
     }
 
-    public List<BaseMetricModel> peek() {
+    public List<EventModel> peek() {
         return this.events;
     }
 

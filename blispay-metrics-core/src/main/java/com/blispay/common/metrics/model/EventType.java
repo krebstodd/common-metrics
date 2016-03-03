@@ -2,7 +2,7 @@ package com.blispay.common.metrics.model;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum MetricType {
+public enum EventType {
 
     /**
      * A resource call, execution time.
@@ -15,11 +15,15 @@ public enum MetricType {
     /**
      * Resource counter.
      */
-    RESOURCE_COUNTER("CNT"),
+    RESOURCE_COUNT("CNT"),
     /**
      * Event occurrence.
      */
-    EVENT("EVENT"),
+    BUSINESS_EVT("EVENT"),
+    /**
+     * Infrastructure event.
+     */
+    INFRA_EVT("INFRA_EVT"),
     /**
      * Health check.
      */
@@ -27,7 +31,7 @@ public enum MetricType {
 
     private final String type;
 
-    private MetricType(final String type) {
+    private EventType(final String type) {
         this.type = type;
     }
 

@@ -2,7 +2,7 @@ package com.blispay.common.metrics.model;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum MetricGroup {
+public enum EventGroup {
 
     // CHECK_OFF: JavadocVariable
 
@@ -77,7 +77,7 @@ public enum MetricGroup {
 
     private final String groupName;
 
-    private MetricGroup(final String groupName) {
+    private EventGroup(final String groupName) {
         this.groupName = groupName;
     }
 

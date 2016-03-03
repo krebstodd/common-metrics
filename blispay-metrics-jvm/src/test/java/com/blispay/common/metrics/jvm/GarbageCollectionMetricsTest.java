@@ -4,11 +4,12 @@ import com.blispay.common.metrics.MetricService;
 import com.blispay.common.metrics.MetricTestUtil;
 import com.blispay.common.metrics.TestEventSubscriber;
 import com.blispay.common.metrics.matchers.EventMatcher;
-import com.blispay.common.metrics.model.MetricGroup;
-import com.blispay.common.metrics.model.MetricType;
-import com.blispay.common.metrics.model.business.EventMetric;
+import com.blispay.common.metrics.model.EventGroup;
+import com.blispay.common.metrics.model.EventModel;
+import com.blispay.common.metrics.model.EventType;
 import jlibs.core.lang.RuntimeUtil;
-import org.hamcrest.Matchers;
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -25,30 +26,22 @@ public class GarbageCollectionMetricsTest {
         final TestEventSubscriber subscriber = new TestEventSubscriber();
         serv.addEventSubscriber(subscriber);
 
-        final JvmProbe probe = new JvmProbe(serv);
-        serv.addProbe(probe);
+        JvmProbe.start(serv);
 
         RuntimeUtil.gc();
-        Thread.sleep(500);
+        Thread.sleep(1000);
+
         assertEquals(2, subscriber.count());
 
-        assertThat((EventMetric<GcEventData>) subscriber.poll(),
-                new GcEventMatcher(MetricGroup.RESOURCE_UTILIZATION_GC, "gc", MetricType.EVENT));
+        assertThat((EventModel<GcEventData>) subscriber.poll(),
+                new EventMatcher<>(serv.getApplicationId(), EventGroup.RESOURCE_UTILIZATION_GC, "gc", EventType.INFRA_EVT, new GcEventDataMatcher()));
     }
 
-    private static class GcEventMatcher extends EventMatcher<GcEventData> {
-
-        public GcEventMatcher(final MetricGroup group, final String name, final MetricType type) {
-
-            super(group, name, type, Matchers.notNullValue(GcEventData.class));
-        }
+    private static class GcEventDataMatcher extends TypeSafeMatcher<GcEventData> {
 
         @Override
-        public boolean matchesSafely(final EventMetric<GcEventData> metric) {
-            final GcEventData data = metric.eventData();
-            
-            return super.matchesSafely(metric)
-                    && data.getAction() != null
+        public boolean matchesSafely(final GcEventData data) {
+            return data.getAction() != null
                     && data.getName() != null
                     && data.getDuration() != null
                     && data.getStartTime() != null
@@ -62,5 +55,9 @@ public class GarbageCollectionMetricsTest {
         }
 
 
+        @Override
+        public void describeTo(final Description description) {
+
+        }
     }
 }

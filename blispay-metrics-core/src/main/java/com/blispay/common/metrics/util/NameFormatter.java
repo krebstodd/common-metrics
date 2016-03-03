@@ -8,7 +8,7 @@ public final class NameFormatter {
 
     }
 
-    public static String toMetricName(final Class<?> clazz) {
+    public static String toEventName(final Class<?> clazz) {
         return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_HYPHEN, clazz.getSimpleName());
     }
 

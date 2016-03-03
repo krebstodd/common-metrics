@@ -3,18 +3,18 @@ package com.blispay.common.metrics.jetty;
 import com.blispay.common.metrics.MetricService;
 import com.blispay.common.metrics.MetricTestUtil;
 import com.blispay.common.metrics.TestEventSubscriber;
-import com.blispay.common.metrics.matchers.ResourceCallDataMatcher;
-import com.blispay.common.metrics.matchers.ResourceCallMetricMatcher;
-import com.blispay.common.metrics.matchers.ResourceUtilizationMetricMatcher;
-import com.blispay.common.metrics.model.BaseMetricModel;
-import com.blispay.common.metrics.model.MetricGroup;
-import com.blispay.common.metrics.model.MetricType;
+import com.blispay.common.metrics.matchers.EventMatcher;
+import com.blispay.common.metrics.matchers.ResourceUtilizationDataMatcher;
+import com.blispay.common.metrics.matchers.TransactionDataMatcher;
+import com.blispay.common.metrics.model.EventGroup;
+import com.blispay.common.metrics.model.EventModel;
+import com.blispay.common.metrics.model.EventType;
 import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.Status;
+import com.blispay.common.metrics.model.call.TransactionData;
 import com.blispay.common.metrics.model.call.http.HttpAction;
 import com.blispay.common.metrics.model.call.http.HttpResource;
-import com.blispay.common.metrics.model.call.http.HttpResourceCallMetric;
-import com.blispay.common.metrics.model.utilization.ResourceUtilizationMetric;
+import com.blispay.common.metrics.model.utilization.ResourceUtilizationData;
 import com.blispay.common.metrics.report.BasicSnapshotReporter;
 import com.blispay.common.metrics.report.SnapshotReporter;
 import org.eclipse.jetty.server.HttpChannel;
@@ -60,14 +60,14 @@ public class JettyProbeTest {
         jettyServer.handle(mockChannel("POST", "/user/create/v1", 200));
         jettyServer.handle(mockChannel("GET", "/user/v1", 404));
 
-        final HttpResourceCallMetric event1 = (HttpResourceCallMetric) testReporter.poll();
-        final HttpResourceCallMetric event2 = (HttpResourceCallMetric) testReporter.poll();
+        final EventModel<TransactionData> event1 = testReporter.poll();
+        final EventModel<TransactionData> event2 = testReporter.poll();
 
-        assertThat(event1, new ResourceCallMetricMatcher(MetricGroup.SERVER_HTTP, "http-response", MetricType.RESOURCE_CALL,
-                new ResourceCallDataMatcher(HttpResource.fromUrl("/user/create/v1"), HttpAction.POST, Direction.INBOUND, Status.fromValue(200), 1000L)));
+        assertThat(event1, new EventMatcher(metricService.getApplicationId(), EventGroup.SERVER_HTTP, "http-response", EventType.RESOURCE_CALL,
+                new TransactionDataMatcher(HttpResource.fromUrl("/user/create/v1"), HttpAction.POST, Direction.INBOUND, Status.fromValue(200), 1000L)));
 
-        assertThat(event2, new ResourceCallMetricMatcher(MetricGroup.SERVER_HTTP, "http-response", MetricType.RESOURCE_CALL,
-                new ResourceCallDataMatcher(HttpResource.fromUrl("/user/v1"), HttpAction.GET, Direction.INBOUND, Status.fromValue(404), 1000L)));
+        assertThat(event2, new EventMatcher(metricService.getApplicationId(), EventGroup.SERVER_HTTP, "http-response", EventType.RESOURCE_CALL,
+                new TransactionDataMatcher(HttpResource.fromUrl("/user/v1"), HttpAction.GET, Direction.INBOUND, Status.fromValue(404), 1000L)));
     }
 
     @Test
@@ -86,11 +86,13 @@ public class JettyProbeTest {
         tp.start();
 
         tp.execute(() -> {
-                final Set<BaseMetricModel> snapshot = testReporter.report().getMetrics();
+                final Set<EventModel> snapshot = testReporter.report().getMetrics();
                 assertEquals(1, snapshot.size());
 
-                assertThat((ResourceUtilizationMetric) snapshot.iterator().next(),
-                        new ResourceUtilizationMetricMatcher(MetricGroup.RESOURCE_UTILIZATION_THREADS, "jetty-thread-pool", MetricType.RESOURCE_UTILIZATION, 0L, 8L, 1L, 0.125D));
+
+                assertThat((EventModel<ResourceUtilizationData>) snapshot.iterator().next(),
+                        new EventMatcher<>(metricService.getApplicationId(), EventGroup.RESOURCE_UTILIZATION_THREADS, "jetty-thread-pool", EventType.RESOURCE_UTILIZATION,
+                                new ResourceUtilizationDataMatcher(0L, 8L, 1L, 0.125D)));
 
                 threadDispatched.set(true);
                 countDownLatch.countDown();

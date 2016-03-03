@@ -1,6 +1,6 @@
 package com.blispay.common.metrics.event;
 
-import com.blispay.common.metrics.model.BaseMetricModel;
+import com.blispay.common.metrics.model.EventModel;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -11,6 +11,6 @@ public interface EventSubscriber {
         return new LinkedList<>();
     }
 
-    void acceptEvent(final BaseMetricModel event);
+    void acceptEvent(final EventModel event);
 
 }

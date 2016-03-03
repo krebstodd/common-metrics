@@ -2,10 +2,10 @@ package com.blispay.common.metrics.spring;
 
 import com.blispay.common.metrics.MetricService;
 import com.blispay.common.metrics.TestEventSubscriber;
-import com.blispay.common.metrics.matchers.ResourceCallDataMatcher;
-import com.blispay.common.metrics.matchers.ResourceCallMetricMatcher;
-import com.blispay.common.metrics.model.MetricGroup;
-import com.blispay.common.metrics.model.MetricType;
+import com.blispay.common.metrics.matchers.EventMatcher;
+import com.blispay.common.metrics.matchers.TransactionDataMatcher;
+import com.blispay.common.metrics.model.EventGroup;
+import com.blispay.common.metrics.model.EventType;
 import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.Status;
 import com.blispay.common.metrics.model.call.ds.DsAction;
@@ -49,9 +49,10 @@ public class QueryExecutionProfilerTest {
         profiled.profiledQuery();
 
         assertEquals(1, subscriber.count());
-        assertThat(subscriber.poll(), new ResourceCallMetricMatcher(MetricGroup.CLIENT_JDBC, QueryExecutionProfilerTest.ProfiledRepository.queryName, MetricType.RESOURCE_CALL,
-                new ResourceCallDataMatcher(DsResource.fromSchemaTable(ProfiledRepositoryImpl.schema, ProfiledRepositoryImpl.table),
-                        ProfiledRepositoryImpl.dsAction, Direction.OUTBOUND, Status.success(), 1000L)));
+        assertThat(subscriber.poll(), new EventMatcher(metricService.getApplicationId(), EventGroup.CLIENT_JDBC, QueryExecutionProfilerTest.ProfiledRepository.queryName, EventType.RESOURCE_CALL,
+                new TransactionDataMatcher(DsResource.fromSchemaTable(ProfiledRepositoryImpl.schema, ProfiledRepositoryImpl.table),  ProfiledRepositoryImpl.dsAction,
+                        Direction.OUTBOUND, Status.success(), 1000L)));
+
     }
 
     @Test
@@ -68,9 +69,9 @@ public class QueryExecutionProfilerTest {
         profiled.profiledQuery();
 
         assertEquals(1, subscriber.count());
-        assertThat(subscriber.poll(), new ResourceCallMetricMatcher(MetricGroup.CLIENT_JDBC, QueryExecutionProfilerTest.ProfiledRepository.queryName, MetricType.RESOURCE_CALL,
-                new ResourceCallDataMatcher(DsResource.fromSchemaTable(ProfiledRepositoryImpl.schema, ProfiledRepositoryImpl.table),
-                        ProfiledRepositoryImpl.dsAction, Direction.OUTBOUND, Status.error(), 1000L)));
+        assertThat(subscriber.poll(), new EventMatcher(metricService.getApplicationId(), EventGroup.CLIENT_JDBC, QueryExecutionProfilerTest.ProfiledRepository.queryName, EventType.RESOURCE_CALL,
+                new TransactionDataMatcher(DsResource.fromSchemaTable(ProfiledRepositoryImpl.schema, ProfiledRepositoryImpl.table),  ProfiledRepositoryImpl.dsAction,
+                        Direction.OUTBOUND, Status.error(), 1000L)));
     }
 
     @Test

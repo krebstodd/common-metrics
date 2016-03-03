@@ -2,10 +2,10 @@ package com.blispay.common.metrics.spring;
 
 import com.blispay.common.metrics.MetricService;
 import com.blispay.common.metrics.TestEventSubscriber;
-import com.blispay.common.metrics.matchers.ResourceCallDataMatcher;
-import com.blispay.common.metrics.matchers.ResourceCallMetricMatcher;
-import com.blispay.common.metrics.model.MetricGroup;
-import com.blispay.common.metrics.model.MetricType;
+import com.blispay.common.metrics.matchers.EventMatcher;
+import com.blispay.common.metrics.matchers.TransactionDataMatcher;
+import com.blispay.common.metrics.model.EventGroup;
+import com.blispay.common.metrics.model.EventType;
 import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.Status;
 import com.blispay.common.metrics.model.call.internal.InternalAction;
@@ -51,8 +51,8 @@ public class MethodExecutionProfilerTest {
 
         assertTrue(profiled.wasExecuted());
         assertEquals(1, subscriber.count());
-        assertThat(subscriber.poll(), new ResourceCallMetricMatcher(MetricGroup.INTERNAL_METHOD_CALL, metricName, MetricType.RESOURCE_CALL,
-                new ResourceCallDataMatcher(InternalResource.fromClass(ProfiledClass.class), InternalAction.fromMethodName("testProfile"), Direction.INTERNAL, Status.success(), 1000L)));
+        assertThat(subscriber.poll(), new EventMatcher(metricService.getApplicationId(), EventGroup.INTERNAL_METHOD_CALL, "execute", EventType.RESOURCE_CALL,
+                new TransactionDataMatcher(InternalResource.fromClass(ProfiledClass.class), InternalAction.fromMethodName("testProfile"), Direction.INTERNAL, Status.success(), 1000L)));
 
     }
 
@@ -73,8 +73,8 @@ public class MethodExecutionProfilerTest {
         // Test emits event w/ error status.
         assertTrue(profiled.wasExecuted());
         assertEquals(1, subscriber.count());
-        assertThat(subscriber.poll(), new ResourceCallMetricMatcher(MetricGroup.INTERNAL_METHOD_CALL, metricName, MetricType.RESOURCE_CALL,
-                new ResourceCallDataMatcher(InternalResource.fromClass(ProfiledClass.class), InternalAction.fromMethodName("testProfile"), Direction.INTERNAL, Status.error(), 1000L)));
+        assertThat(subscriber.poll(), new EventMatcher(metricService.getApplicationId(), EventGroup.INTERNAL_METHOD_CALL, "execute", EventType.RESOURCE_CALL,
+                new TransactionDataMatcher(InternalResource.fromClass(ProfiledClass.class), InternalAction.fromMethodName("testProfile"), Direction.INTERNAL, Status.error(), 1000L)));
     }
 
     public static class ProfiledClass {

@@ -1,6 +1,6 @@
 package com.blispay.common.metrics.jvm;
 
-import com.blispay.common.metrics.metric.EventRepository;
+import com.blispay.common.metrics.EventRepository;
 import com.sun.management.GarbageCollectionNotificationInfo;
 
 import javax.management.Notification;

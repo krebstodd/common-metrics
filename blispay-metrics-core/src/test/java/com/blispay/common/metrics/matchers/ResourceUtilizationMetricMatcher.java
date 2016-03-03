@@ -1,14 +1,15 @@
 package com.blispay.common.metrics.matchers;
 
-import com.blispay.common.metrics.model.MetricGroup;
-import com.blispay.common.metrics.model.MetricType;
-import com.blispay.common.metrics.model.utilization.ResourceUtilizationMetric;
+import com.blispay.common.metrics.model.EventGroup;
+import com.blispay.common.metrics.model.EventModel;
+import com.blispay.common.metrics.model.EventType;
+import com.blispay.common.metrics.model.utilization.ResourceUtilizationData;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 
-public class ResourceUtilizationMetricMatcher extends TypeSafeMatcher<ResourceUtilizationMetric> {
+public class ResourceUtilizationMetricMatcher extends TypeSafeMatcher<EventModel<ResourceUtilizationData>> {
 
     private final Matcher<String> timestampMatcher;
     private final Matcher<String> groupMatcher;
@@ -29,7 +30,7 @@ public class ResourceUtilizationMetricMatcher extends TypeSafeMatcher<ResourceUt
      * @param curr current utilization
      * @param currPct current percent of max utilized.
      */
-    public ResourceUtilizationMetricMatcher(final MetricGroup group, final String name, final MetricType type,
+    public ResourceUtilizationMetricMatcher(final EventGroup group, final String name, final EventType type,
                                             final Long min, final Long max, final Long curr, final Double currPct) {
 
         this.timestampMatcher = Matchers.endsWith("Z");
@@ -45,7 +46,7 @@ public class ResourceUtilizationMetricMatcher extends TypeSafeMatcher<ResourceUt
     }
 
     @Override
-    public boolean matchesSafely(final ResourceUtilizationMetric resourceUtilizationMetric) {
+    public boolean matchesSafely(final EventModel<ResourceUtilizationData> resourceUtilizationMetric) {
         return timestampMatcher.matches(resourceUtilizationMetric.getTimestamp())
                 && groupMatcher.matches(resourceUtilizationMetric.getGroup().getValue())
                 && nameMatcher.matches(resourceUtilizationMetric.getName())

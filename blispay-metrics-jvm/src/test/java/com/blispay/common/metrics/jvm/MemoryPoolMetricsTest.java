@@ -2,10 +2,12 @@ package com.blispay.common.metrics.jvm;
 
 import com.blispay.common.metrics.MetricService;
 import com.blispay.common.metrics.MetricTestUtil;
-import com.blispay.common.metrics.matchers.ResourceUtilizationMetricMatcher;
-import com.blispay.common.metrics.model.MetricGroup;
-import com.blispay.common.metrics.model.MetricType;
-import com.blispay.common.metrics.model.utilization.ResourceUtilizationMetric;
+import com.blispay.common.metrics.matchers.EventMatcher;
+import com.blispay.common.metrics.matchers.ResourceUtilizationDataMatcher;
+import com.blispay.common.metrics.model.EventGroup;
+import com.blispay.common.metrics.model.EventModel;
+import com.blispay.common.metrics.model.EventType;
+import com.blispay.common.metrics.model.utilization.ResourceUtilizationData;
 import com.blispay.common.metrics.report.BasicSnapshotReporter;
 import com.blispay.common.metrics.report.SnapshotReporter;
 import org.hamcrest.Matchers;
@@ -24,6 +26,8 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Parameterized.class)
 public class MemoryPoolMetricsTest {
 
+    private static final String application = MetricTestUtil.randomAppId();
+
     private static SnapshotReporter REPORTER;
 
     private final String metricName;
@@ -35,35 +39,33 @@ public class MemoryPoolMetricsTest {
     @Test
     public void testJvmProbe() {
 
-        final ResourceUtilizationMetric metric = parseUtilizationMetrics(this.metricName);
+        final EventModel<ResourceUtilizationData> event = parseUtilizationMetrics(this.metricName);
 
         // non-heap utilization always has a max value of -1.
-        if (metric.eventData().getMaxValue() != -1) {
-            assertTrue(metric.eventData().getMinValue() <= metric.eventData().getMaxValue());
-            assertTrue(metric.eventData().getCurrentValue() < metric.eventData().getMaxValue());
+        if (event.eventData().getMaxValue() != -1) {
+            assertTrue(event.eventData().getMinValue() <= event.eventData().getMaxValue());
+            assertTrue(event.eventData().getCurrentValue() < event.eventData().getMaxValue());
         }
 
-        assertEquals(String.valueOf(metric.eventData().getCurrentPercentage()),
-                String.valueOf((double) metric.eventData().getCurrentValue() / metric.eventData().getMaxValue()));
+        assertEquals(String.valueOf(event.eventData().getCurrentPercentage()),
+                String.valueOf((double) event.eventData().getCurrentValue() / event.eventData().getMaxValue()));
 
-        assertThat(metric, new ResourceUtilizationMetricMatcher(
-                MetricGroup.RESOURCE_UTILIZATION_MEM,
+        assertThat(event, new EventMatcher<>(
+                application,
+                EventGroup.RESOURCE_UTILIZATION_MEM,
                 metricName,
-                MetricType.RESOURCE_UTILIZATION,
-                Matchers.notNullValue(Long.class),
-                Matchers.notNullValue(Long.class),
-                Matchers.notNullValue(Long.class),
-                Matchers.notNullValue(Double.class)));
+                EventType.RESOURCE_UTILIZATION,
+                new ResourceUtilizationDataMatcher(Matchers.notNullValue(Long.class), Matchers.notNullValue(Long.class), Matchers.notNullValue(Long.class), Matchers.notNullValue(Double.class))));
 
     }
 
-    private ResourceUtilizationMetric parseUtilizationMetrics(final String metricName) {
+    private EventModel<ResourceUtilizationData> parseUtilizationMetrics(final String metricName) {
 
         return REPORTER.report().getMetrics()
                 .stream()
                 .filter(metric -> metric.getName().equals(metricName))
                 .findFirst()
-                .map(metric -> (ResourceUtilizationMetric) metric)
+                .map(metric -> (EventModel<ResourceUtilizationData>) metric)
                 .get();
 
     }
@@ -92,14 +94,13 @@ public class MemoryPoolMetricsTest {
     @BeforeClass
     public static void setup() {
 
-        final MetricService serv = new MetricService(MetricTestUtil.randomAppId());
+        final MetricService serv = new MetricService(application);
         serv.start();
 
         REPORTER = new BasicSnapshotReporter();
         serv.addSnapshotReporter(REPORTER);
 
-        final JvmProbe probe = new JvmProbe(serv);
-        serv.addProbe(probe);
+        JvmProbe.start(serv);
 
     }
 

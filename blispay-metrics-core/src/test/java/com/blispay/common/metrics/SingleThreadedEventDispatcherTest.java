@@ -3,8 +3,8 @@ package com.blispay.common.metrics;
 import com.blispay.common.metrics.event.EventDispatcher;
 import com.blispay.common.metrics.event.EventEmitter;
 import com.blispay.common.metrics.event.SingleThreadedEventDispatcher;
-import com.blispay.common.metrics.model.MetricGroup;
-import com.blispay.common.metrics.model.business.EventMetric;
+import com.blispay.common.metrics.model.EventGroup;
+import com.blispay.common.metrics.model.EventModel;
 import com.blispay.common.metrics.util.TestEventSubscriber;
 import org.junit.Test;
 
@@ -24,7 +24,7 @@ public class SingleThreadedEventDispatcherTest extends AbstractMetricsTest {
 
         ed.start();
 
-        final EventMetric evt = testEvent();
+        final EventModel<PiiBusinessEventData> evt = testEvent();
         emitter.emit(evt);
 
         assertEquals(1, subscriber.count());
@@ -58,14 +58,14 @@ public class SingleThreadedEventDispatcherTest extends AbstractMetricsTest {
 
         final TestEventSubscriber subscriber1 = new TestEventSubscriber();
         final TestEventSubscriber subscriber2 = new TestEventSubscriber();
-        subscriber2.addFilter(event -> event.getGroup() != MetricGroup.CLIENT);
+        subscriber2.addFilter(event -> event.getGroup() != EventGroup.ACCOUNT_DOMAIN);
 
         ed.subscribe(subscriber1);
         ed.subscribe(subscriber2);
 
         ed.start();
 
-        final EventMetric evt = testEvent();
+        final EventModel<PiiBusinessEventData> evt = testEvent();
         emitter.emit(evt);
 
         assertEquals(1, subscriber1.count());
@@ -93,7 +93,7 @@ public class SingleThreadedEventDispatcherTest extends AbstractMetricsTest {
 
         ed.start();
 
-        final EventMetric evt = testEvent();
+        final EventModel<PiiBusinessEventData> evt = testEvent();
         emitter.emit(evt);
 
         assertEquals(1, subscriber1.count());

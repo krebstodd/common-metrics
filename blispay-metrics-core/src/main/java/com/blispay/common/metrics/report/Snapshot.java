@@ -1,19 +1,19 @@
 package com.blispay.common.metrics.report;
 
-import com.blispay.common.metrics.model.BaseMetricModel;
+import com.blispay.common.metrics.model.EventModel;
 
 import java.util.Collections;
 import java.util.Set;
 
 public class Snapshot {
 
-    private final Set<BaseMetricModel> metrics;
+    private final Set<EventModel> metrics;
 
-    public Snapshot(final Set<BaseMetricModel> metrics) {
+    public Snapshot(final Set<EventModel> metrics) {
         this.metrics = Collections.unmodifiableSet(metrics);
     }
 
-    public Set<BaseMetricModel> getMetrics() {
+    public Set<EventModel> getMetrics() {
         return metrics;
     }
 

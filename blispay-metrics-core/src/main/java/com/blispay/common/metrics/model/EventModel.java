@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public abstract class BaseMetricModel<D> {
+public class EventModel<D> {
 
     private static final DateTimeFormatter dtFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
@@ -21,13 +21,16 @@ public abstract class BaseMetricModel<D> {
     private final String application;
 
     @JsonProperty("group")
-    private final MetricGroup group;
+    private final EventGroup group;
 
     @JsonProperty("name")
     private final String name;
 
     @JsonProperty("type")
-    private final MetricType type;
+    private final EventType type;
+
+    @JsonProperty("eventData")
+    private final D eventData;
 
     /**
      * Immutable metric model.
@@ -38,24 +41,26 @@ public abstract class BaseMetricModel<D> {
      * @param name metric name.
      * @param type metric type, dictates the structure of the metric eventData payload.
      */
-    public BaseMetricModel(final ZonedDateTime timestamp,
-                           final String application,
-                           final MetricGroup group,
-                           final String name,
-                           final MetricType type) {
+    public EventModel(final ZonedDateTime timestamp,
+                      final String application,
+                      final EventGroup group,
+                      final String name,
+                      final EventType type,
+                      final D eventData) {
 
         this.timestamp = dtFormatter.format(timestamp.withZoneSameInstant(ZoneId.of("UTC")));
         this.application = application;
         this.group = group;
         this.name = name;
         this.type = type;
+        this.eventData = eventData;
     }
 
     public String getTimestamp() {
         return timestamp;
     }
 
-    public MetricGroup getGroup() {
+    public EventGroup getGroup() {
         return group;
     }
 
@@ -63,7 +68,7 @@ public abstract class BaseMetricModel<D> {
         return name;
     }
 
-    public MetricType getType() {
+    public EventType getType() {
         return type;
     }
 
@@ -71,7 +76,9 @@ public abstract class BaseMetricModel<D> {
         return application;
     }
 
-    @JsonProperty("eventData")
-    public abstract D eventData();
+    public D eventData() {
+        return eventData;
+    }
+
 
 }

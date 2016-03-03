@@ -1,8 +1,8 @@
 package com.blispay.common.metrics.report;
 
 import com.blispay.common.metrics.data.JsonMetricSerializer;
-import com.blispay.common.metrics.data.MetricSerializer;
-import com.blispay.common.metrics.model.BaseMetricModel;
+import com.blispay.common.metrics.data.EventSerializer;
+import com.blispay.common.metrics.model.EventModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +16,7 @@ public class Slf4jSnapshotReporter extends ScheduledSnapshotReporter {
 
     private static final Logger LOG = LoggerFactory.getLogger(Slf4jSnapshotReporter.class);
 
-    private final MetricSerializer serializer;
+    private final EventSerializer serializer;
     private final Logger logger;
     private Supplier<Set<SnapshotProvider>> snapshotProviderSupplier;
 
@@ -32,7 +32,7 @@ public class Slf4jSnapshotReporter extends ScheduledSnapshotReporter {
      * @param period The period between calls to report method.
      * @param timeUnit The time unit of the period argument.
      */
-    public Slf4jSnapshotReporter(final MetricSerializer serializer, final Logger logger, final Integer period, final TimeUnit timeUnit) {
+    public Slf4jSnapshotReporter(final EventSerializer serializer, final Logger logger, final Integer period, final TimeUnit timeUnit) {
         super(period, timeUnit);
 
         this.serializer = serializer;
@@ -45,7 +45,7 @@ public class Slf4jSnapshotReporter extends ScheduledSnapshotReporter {
 
         LOG.info("Starting snapshot report...");
 
-        final Set<BaseMetricModel> snapshot = snapshotProviderSupplier.get().stream().map(SnapshotProvider::snapshot).collect(Collectors.toSet());
+        final Set<EventModel> snapshot = snapshotProviderSupplier.get().stream().map(SnapshotProvider::snapshot).collect(Collectors.toSet());
         snapshot.forEach(ss -> logger.info(serializer.serialize(ss)));
 
         LOG.info("Snapshot report complete.");

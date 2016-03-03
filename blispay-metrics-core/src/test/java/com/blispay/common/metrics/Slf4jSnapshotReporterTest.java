@@ -2,8 +2,8 @@ package com.blispay.common.metrics;
 
 import com.blispay.common.metrics.matchers.JsonEventDataMatcher;
 import com.blispay.common.metrics.matchers.JsonMetricMatcher;
-import com.blispay.common.metrics.model.MetricGroup;
-import com.blispay.common.metrics.model.MetricType;
+import com.blispay.common.metrics.model.EventGroup;
+import com.blispay.common.metrics.model.EventType;
 import com.blispay.common.metrics.model.utilization.ResourceUtilizationData;
 import com.blispay.common.metrics.report.Slf4jSnapshotReporter;
 import org.json.JSONObject;
@@ -33,8 +33,11 @@ public class Slf4jSnapshotReporterTest extends AbstractMetricsTest {
         final Long min = 0L;
         final Long max = 100L;
         final AtomicLong curVal = new AtomicLong(50L);
-        metricService.createResourceUtilizationGauge(MetricGroup.RESOURCE_UTILIZATION_THREADS, "thread-pool",
-                () -> new ResourceUtilizationData(min, max, curVal.get(), (double) curVal.get() / max));
+
+        metricService.utilizationGauge()
+                .inGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
+                .withName("thread-pool")
+                .register(() -> new ResourceUtilizationData(min, max, curVal.get(), (double) curVal.get() / max));
 
         metricService.addSnapshotReporter(new Slf4jSnapshotReporter(log, 750, TimeUnit.MILLISECONDS));
 
@@ -52,10 +55,10 @@ public class Slf4jSnapshotReporterTest extends AbstractMetricsTest {
         // Parse the log line into a json object and test that it's the expected format for the event we just created.
         final List<String> logLines = argument.getAllValues();
         assertThat(new JSONObject(logLines.get(0)), new JsonMetricMatcher(
-                MetricGroup.RESOURCE_UTILIZATION_THREADS,
+                EventGroup.RESOURCE_UTILIZATION_THREADS,
                 "appId",
                 "thread-pool",
-                MetricType.RESOURCE_UTILIZATION,
+                EventType.RESOURCE_UTILIZATION,
                 new JsonEventDataMatcher(expectedData)));
 
     }
