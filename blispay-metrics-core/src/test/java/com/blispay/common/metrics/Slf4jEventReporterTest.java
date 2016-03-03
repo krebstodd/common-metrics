@@ -28,7 +28,8 @@ public class Slf4jEventReporterTest extends AbstractMetricsTest {
                 .eventRepository(PiiBusinessEventData.class)
                 .ofType(EventType.BUSINESS_EVT)
                 .inGroup(EventGroup.MERCHANT_DOMAIN)
-                .withName("business-event");
+                .withName("business-event")
+                .build();
 
         repo.save(defaultPiiBusinessEventData());
 

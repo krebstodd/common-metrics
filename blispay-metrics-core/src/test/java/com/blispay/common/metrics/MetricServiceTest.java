@@ -78,6 +78,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
                 .ofType(EventType.BUSINESS_EVT)
                 .inGroup(EventGroup.CLIENT)
                 .withName("someResource")
+                .build()
                 .save(defaultPiiBusinessEventData());
     }
 
@@ -117,12 +118,14 @@ public class MetricServiceTest extends AbstractMetricsTest {
                 .ofType(EventType.BUSINESS_EVT)
                 .inGroup(EventGroup.ACCOUNT_DOMAIN)
                 .withName("created")
+                .build()
                 .save(defaultPiiBusinessEventData("user1"));
 
         metricService.eventRepository(PiiBusinessEventData.class)
                 .ofType(EventType.BUSINESS_EVT)
                 .inGroup(EventGroup.ACCOUNT_DOMAIN)
                 .withName("created")
+                .build()
                 .save(defaultPiiBusinessEventData("user2"));
 
         assertEquals(2, evtSub.count());
@@ -151,6 +154,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
                 .inDirection(Direction.OUTBOUND)
                 .withAction(HttpAction.POST)
                 .onResource(HttpResource.fromUrl("/test/url"))
+                .build()
                 .create();
 
         tx.start();
@@ -184,6 +188,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
                 .inDirection(Direction.OUTBOUND)
                 .withAction(DsAction.INSERT)
                 .onResource(DsResource.fromSchemaTable("dom_account", "applications"))
+                .build()
                 .create();
 
         tx.start();
@@ -218,6 +223,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
                 .inDirection(Direction.OUTBOUND)
                 .withAction(InternalAction.fromMethodName("doSomething"))
                 .onResource(InternalResource.fromClass(getClass()))
+                .build()
                 .create();
 
         tx.start();
@@ -252,6 +258,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
                 .inDirection(Direction.OUTBOUND)
                 .withAction(MqAction.GET)
                 .onResource(MqResource.fromQueueName("myqueue"))
+                .build()
                 .create();
 
         tx.start();
@@ -323,6 +330,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
                 .ofType(EventType.RESOURCE_COUNT)
                 .inGroup(EventGroup.CLIENT)
                 .withName("someResource")
+                .build()
                 .save(new ResourceCountData(1D));
 
         assertTrue(usesCustom.get());

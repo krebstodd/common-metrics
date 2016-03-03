@@ -34,12 +34,12 @@ public class MetricService implements SmartLifecycle {
         this.eventDispatcher = eventDispatcher;
     }
 
-    public <D> EventRepository<D> eventRepository(final Class<D> hint) {
-        return new EventRepository<>(hint, applicationId, eventDispatcher.newEventEmitter());
+    public <D> EventRepository.Builder<D> eventRepository(final Class<D> hint) {
+        return new EventRepository.Builder<>(applicationId, hint, eventDispatcher.newEventEmitter());
     }
 
-    public TransactionFactory transactionFactory() {
-        return new TransactionFactory(applicationId, eventDispatcher.newEventEmitter());
+    public TransactionFactory.Builder transactionFactory() {
+        return new TransactionFactory.Builder(applicationId, eventDispatcher.newEventEmitter());
     }
 
     public UtilizationGauge.Factory utilizationGauge() {

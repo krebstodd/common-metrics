@@ -59,7 +59,7 @@ public abstract class AbstractMetricsTest {
     }
 
     protected static EventModel<PiiBusinessEventData> testEvent() {
-        final EventRepository<PiiBusinessEventData> repo = MetricService.globalInstance().eventRepository(PiiBusinessEventData.class);
+        final EventRepository<PiiBusinessEventData> repo = MetricService.globalInstance().eventRepository(PiiBusinessEventData.class).build();
 
         return repo
                 .ofType(EventType.BUSINESS_EVT)

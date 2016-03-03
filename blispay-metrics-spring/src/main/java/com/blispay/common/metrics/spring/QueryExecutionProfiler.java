@@ -34,7 +34,8 @@ public class QueryExecutionProfiler {
 
         this.txFactory = metricService.transactionFactory()
                 .inDirection(Direction.OUTBOUND)
-                .inGroup(EventGroup.CLIENT_JDBC);
+                .inGroup(EventGroup.CLIENT_JDBC)
+                .build();
 
     }
 
@@ -84,10 +85,10 @@ public class QueryExecutionProfiler {
 
         final ProfiledQuery annotation = optQueryInfo.get();
 
-        return Optional.of(txFactory.withName(annotation.name())
+        return Optional.of(txFactory.create()
+                .withName(annotation.name())
                 .withAction(annotation.action())
-                .onResource(DsResource.fromSchemaTable(annotation.schema(), annotation.table()))
-                .create());
+                .onResource(DsResource.fromSchemaTable(annotation.schema(), annotation.table())));
 
     }
 

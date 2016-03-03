@@ -9,53 +9,34 @@ import com.blispay.common.metrics.model.call.Resource;
 import com.blispay.common.metrics.model.call.TransactionData;
 import com.blispay.common.metrics.util.NameFormatter;
 
-public class TransactionFactory {
+public final class TransactionFactory {
 
     private final EventType type = EventType.RESOURCE_CALL;
 
     private final String applicationId;
     private final EventEmitter emitter;
 
-    private EventGroup group;
-    private String name;
-    private Direction direction;
-    private Action action;
-    private Resource resource;
+    private final EventGroup group;
+    private final String name;
+    private final Direction direction;
+    private final Action action;
+    private final Resource resource;
 
-    public TransactionFactory(final String applicationId, final EventEmitter emitter) {
+    private TransactionFactory(final String applicationId, final EventEmitter emitter,
+                              final EventGroup group, final String name, final Direction direction, final Action action,
+                              final Resource resource) {
+
         this.applicationId = applicationId;
         this.emitter = emitter;
-    }
-
-    public TransactionFactory inGroup(final EventGroup group) {
         this.group = group;
-        return this;
-    }
-
-    public TransactionFactory withName(final String name) {
         this.name = name;
-        return this;
-    }
-
-    public TransactionFactory withNameFromType(final Class<?> type) {
-        this.name = NameFormatter.toEventName(type);
-        return this;
-    }
-
-    public TransactionFactory inDirection(final Direction direction) {
         this.direction = direction;
-        return this;
-    }
-
-    public TransactionFactory withAction(final Action action) {
         this.action = action;
-        return this;
+        this.resource = resource;
+
     }
 
-    public TransactionFactory onResource(final Resource resource) {
-        this.resource = resource;
-        return this;
-    }
+ 
 
     /**
      * Create a new transaction with the currently configured state.
@@ -63,14 +44,67 @@ public class TransactionFactory {
      * @return Transaction instance.
      */
     public Transaction create() {
-        return new Transaction(new EventRepository<>(TransactionData.class, applicationId, emitter)
+
+        return new Transaction(new EventRepository.Builder<>(applicationId, TransactionData.class, emitter)
                 .inGroup(group)
                 .ofType(type)
-                .withName(name))
+                .withName(name)
+                .build())
                 .inDirection(direction)
                 .withAction(action)
                 .onResource(resource);
 
+    }
+
+    public static class Builder {
+
+        private final String applicationId;
+        private final EventEmitter emitter;
+
+        private EventGroup group;
+        private String name;
+        private Direction direction;
+        private Action action;
+        private Resource resource;
+
+        public Builder(final String applicationId, final EventEmitter emitter) {
+            this.applicationId = applicationId;
+            this.emitter = emitter;
+        }
+
+        public Builder inGroup(final EventGroup group) {
+            this.group = group;
+            return this;
+        }
+
+        public Builder withName(final String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder withNameFromType(final Class<?> type) {
+            this.name = NameFormatter.toEventName(type);
+            return this;
+        }
+
+        public Builder inDirection(final Direction direction) {
+            this.direction = direction;
+            return this;
+        }
+
+        public Builder withAction(final Action action) {
+            this.action = action;
+            return this;
+        }
+
+        public Builder onResource(final Resource resource) {
+            this.resource = resource;
+            return this;
+        }
+
+        public TransactionFactory build() {
+            return new TransactionFactory(applicationId, emitter, group, name, direction, action, resource);
+        }
     }
 
 }

@@ -42,7 +42,8 @@ public class InstrumentedJettyServer extends Server {
         this.txFactory = metricService.transactionFactory()
                 .inGroup(EventGroup.SERVER_HTTP)
                 .withName("http-response")
-                .inDirection(Direction.INBOUND);
+                .inDirection(Direction.INBOUND)
+                .build();
 
         this.handler = channelHandler;
     }

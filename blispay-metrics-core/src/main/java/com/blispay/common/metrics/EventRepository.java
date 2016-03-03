@@ -1,7 +1,6 @@
 package com.blispay.common.metrics;
 
 import com.blispay.common.metrics.event.EventEmitter;
-import com.blispay.common.metrics.event.NoOpEventEmitter;
 import com.blispay.common.metrics.model.EventGroup;
 import com.blispay.common.metrics.model.EventModel;
 import com.blispay.common.metrics.model.EventType;
@@ -22,14 +21,6 @@ public class EventRepository<D> {
     private EventGroup group;
     private String name;
     private EventType type;
-
-    public EventRepository(final Class<D> hint) {
-        this(hint, null, new NoOpEventEmitter());
-    }
-
-    public EventRepository(final Class<D> hint, final String applicationId) {
-        this(hint, applicationId, new NoOpEventEmitter());
-    }
 
     /**
      * Create a new event repository with the providved base information.
@@ -96,6 +87,48 @@ public class EventRepository<D> {
         eventEmitter.emit(event);
         return event;
 
+    }
+
+    public static class Builder<D> {
+
+        private final EventEmitter emitter;
+        private final String applicationId;
+        private final Class<D> hint;
+
+        private EventGroup group;
+        private String name;
+        private EventType type;
+
+        /**
+         * Create an event repository builder.
+         * @param applicationId application id
+         * @param hint payload hint
+         * @param eventEmitter event emitter
+         */
+        public Builder(final String applicationId, final Class<D> hint, final EventEmitter eventEmitter) {
+            this.applicationId = applicationId;
+            this.hint = hint;
+            this.emitter = eventEmitter;
+        }
+
+        public Builder<D> inGroup(final EventGroup group) {
+            this.group = group;
+            return this;
+        }
+
+        public Builder<D> withName(final String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder<D> ofType(final EventType type) {
+            this.type = type;
+            return this;
+        }
+
+        public EventRepository<D> build() {
+            return new EventRepository<>(hint, applicationId, emitter).inGroup(group).withName(name).ofType(type);
+        }
     }
 
 }

@@ -186,7 +186,8 @@ public class JvmProbe implements Lifecycle {
         final EventRepository<GcEventData> gcEventRepo = metricService.eventRepository(GcEventData.class)
                 .ofType(EventType.INFRA_EVT)
                 .inGroup(EventGroup.RESOURCE_UTILIZATION_GC)
-                .withName("gc");
+                .withName("gc")
+                .build();
 
         final GcNotificationListener gcListener = new GcNotificationListener(gcEventRepo);
         emitter.addNotificationListener(gcListener, new GcNotificationFilter(), null);

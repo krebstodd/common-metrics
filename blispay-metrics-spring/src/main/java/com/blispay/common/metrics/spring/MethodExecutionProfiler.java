@@ -28,7 +28,8 @@ public class MethodExecutionProfiler {
 
         this.txFactory = metricService.transactionFactory()
                 .inDirection(Direction.INTERNAL)
-                .inGroup(EventGroup.INTERNAL_METHOD_CALL);
+                .inGroup(EventGroup.INTERNAL_METHOD_CALL)
+                .build();
 
     }
 
@@ -71,11 +72,10 @@ public class MethodExecutionProfiler {
         final Class<?> declaringClass = JoinPointUtil.getDeclaringClass(joinPoint);
         final String methodName = JoinPointUtil.getMethodName(joinPoint);
 
-        return txFactory.withName("execute")
+        return txFactory.create()
+                .withName("execute")
                 .withAction(InternalAction.fromMethodName(methodName))
-                .onResource(InternalResource.fromClass(declaringClass))
-                .create();
-
+                .onResource(InternalResource.fromClass(declaringClass));
     }
 
 }
