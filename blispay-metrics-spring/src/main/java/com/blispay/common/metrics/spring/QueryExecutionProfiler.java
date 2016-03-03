@@ -26,6 +26,10 @@ public class QueryExecutionProfiler {
 
     private final TransactionFactory txFactory;
 
+    /**
+     * Create a new jdbc query execution aspect profiler.
+     * @param metricService Metric service to report to.
+     */
     public QueryExecutionProfiler(final MetricService metricService) {
 
         this.txFactory = metricService.transactionFactory()

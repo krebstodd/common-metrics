@@ -48,6 +48,11 @@ public final class LocalMetricContext {
         get().apiTrackingId = apiTrackingId;
     }
 
+    /**
+     * Get the users tracking information.
+     *
+     * @return tracking info attached to current thread.
+     */
     public static TrackingInfo getTrackingInfo() {
         final LocalMetricContext lmc = get();
 
@@ -65,6 +70,10 @@ public final class LocalMetricContext {
 
     }
 
+    /**
+     * Get the users thread-local metric context.
+     * @return The users local metric context.
+     */
     public static LocalMetricContext get() {
         if (CURRENT.get() == null) {
             synchronized (CURRENT) {
@@ -78,6 +87,14 @@ public final class LocalMetricContext {
 
     }
 
+    /**
+     * Set the users tracking info on thread local.
+     *
+     * @param userTrackingId User tracking id.
+     * @param agentTrackingId Agent tracking id.
+     * @param sessionTrackingId Session tracking id.
+     * @param apiTrackingId Api tracking id.
+     */
     public static void setTrackingInfo(final String userTrackingId, final String agentTrackingId,
                                        final String sessionTrackingId, final String apiTrackingId) {
 

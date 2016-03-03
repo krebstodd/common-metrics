@@ -20,6 +20,14 @@ public class UtilizationGauge implements SnapshotProvider {
     private final String name;
     private final Supplier<ResourceUtilizationData> supplier;
 
+    /**
+     * Create a new resource utilization gauge.
+     *
+     * @param applicationId identifier of current process.
+     * @param group Group the gauge belongs in.
+     * @param name Name of the gauge.
+     * @param supplier Supplier of gauge state.
+     */
     public UtilizationGauge(final String applicationId,
                             final EventGroup group,
                             final String name,
@@ -70,6 +78,12 @@ public class UtilizationGauge implements SnapshotProvider {
             return this;
         }
 
+        /**
+         * Register the currently configured gauge with the metric service for periodic logging.
+         *
+         * @param supplier Supplier of gauge data.
+         * @return The newly registered gauge.
+         */
         public UtilizationGauge register(final Supplier<ResourceUtilizationData> supplier) {
             final UtilizationGauge gauge = new UtilizationGauge(applicationId, group, name, supplier);
             gaugeRepository.accept(gauge);

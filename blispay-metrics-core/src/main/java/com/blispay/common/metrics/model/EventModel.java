@@ -33,13 +33,14 @@ public class EventModel<D> {
     private final D eventData;
 
     /**
-     * Immutable metric model.
+     * Immutable event model.
      *
-     * @param timestamp timestamp for when the metric occurred.
+     * @param timestamp timestamp for when the event occurred.
      * @param application application name.
-     * @param group hierarchical metric group, helps with searching. .
-     * @param name metric name.
-     * @param type metric type, dictates the structure of the metric eventData payload.
+     * @param group hierarchical event group, helps with searching. 
+     * @param name event name.
+     * @param type event type, dictates the structure of the event eventData payload.
+     * @param eventData Payload of event.             
      */
     public EventModel(final ZonedDateTime timestamp,
                       final String application,

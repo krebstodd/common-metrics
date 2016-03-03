@@ -20,6 +20,10 @@ public class MethodExecutionProfiler {
 
     private final TransactionFactory txFactory;
 
+    /**
+     * Create a new method execution aspect profiler.
+     * @param metricService Metric service to report to.
+     */
     public MethodExecutionProfiler(final MetricService metricService) {
 
         this.txFactory = metricService.transactionFactory()

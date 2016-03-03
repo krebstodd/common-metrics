@@ -20,6 +20,14 @@ public class HealthMonitor implements SnapshotProvider {
     private final String name;
     private final Supplier<HealthCheckData> supplier;
 
+    /**
+     * Create a new health monitor.
+     *
+     * @param applicationId Application Id.
+     * @param group Event group.
+     * @param name Event name.
+     * @param supplier Health supplier.
+     */
     public HealthMonitor(final String applicationId,
                          final EventGroup group,
                          final String name,
@@ -78,6 +86,11 @@ public class HealthMonitor implements SnapshotProvider {
             return this;
         }
 
+        /**
+         * Register a new health monitory with the current configuration.
+         *
+         * @return The new health monitor. Used to clean up objects in the metric service if needed.
+         */
         public HealthMonitor register() {
             final HealthMonitor gauge = new HealthMonitor(applicationId, group, name, supplier);
             gaugeRepository.accept(gauge);

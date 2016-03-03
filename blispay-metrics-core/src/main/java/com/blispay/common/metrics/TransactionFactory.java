@@ -57,6 +57,11 @@ public class TransactionFactory {
         return this;
     }
 
+    /**
+     * Create a new transaction with the currently configured state.
+     *
+     * @return Transaction instance.
+     */
     public Transaction create() {
         return new Transaction(new EventRepository<>(TransactionData.class, applicationId, emitter)
                 .inGroup(group)

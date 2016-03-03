@@ -27,6 +27,13 @@ public class ResourceUtilizationDataMatcher extends TypeSafeMatcher<ResourceUtil
         this.currPct = Matchers.equalTo(currPct);
     }
 
+    /**
+     * Resource utilization metric matcher.
+     * @param min min utilization
+     * @param max max utilization
+     * @param curr current utilization
+     * @param currPct current percent of max utilized.
+     */
     public ResourceUtilizationDataMatcher(final Matcher<Long> min, final Matcher<Long> max, final Matcher<Long> curr, final Matcher<Double> currPct) {
         this.min = min;
         this.max = max;
@@ -37,7 +44,7 @@ public class ResourceUtilizationDataMatcher extends TypeSafeMatcher<ResourceUtil
 
     @Override
     public boolean matchesSafely(final ResourceUtilizationData resourceUtilizationMetric) {
-                return min.matches(resourceUtilizationMetric.getMinValue())
+        return min.matches(resourceUtilizationMetric.getMinValue())
                 && max.matches(resourceUtilizationMetric.getMaxValue())
                 && curr.matches(resourceUtilizationMetric.getCurrentValue())
                 && currPct.matches(resourceUtilizationMetric.getCurrentPercentage());

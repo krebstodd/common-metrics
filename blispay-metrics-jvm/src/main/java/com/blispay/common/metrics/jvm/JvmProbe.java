@@ -93,6 +93,19 @@ public class JvmProbe implements Lifecycle {
         }
     }
 
+    /**
+     * Start a new jvm probe reporting to the provided service.
+     * @param service Service to report jvm events to.
+     * @return Configured probe.
+     */
+    public static JvmProbe start(final MetricService service) {
+
+        final JvmProbe probe = new JvmProbe(service);
+        probe.start();
+        return probe;
+
+    }
+
     @Override
     public void stop() {
         if (isRunning.compareAndSet(Boolean.TRUE, Boolean.FALSE)) {
@@ -213,14 +226,6 @@ public class JvmProbe implements Lifecycle {
                     LOG.debug("Emitter does not own this listener, moving on.");
                 }
             }));
-    }
-
-    public static JvmProbe start(final MetricService service) {
-
-        final JvmProbe probe = new JvmProbe(service);
-        probe.start();
-        return probe;
-
     }
 
 }

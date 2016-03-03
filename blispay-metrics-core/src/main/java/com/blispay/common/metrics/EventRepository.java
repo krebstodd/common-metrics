@@ -31,6 +31,13 @@ public class EventRepository<D> {
         this(hint, applicationId, new NoOpEventEmitter());
     }
 
+    /**
+     * Create a new event repository with the providved base information.
+     *
+     * @param hint Hint at what type of payload to expect.
+     * @param applicationId The application name of the currently running process.
+     * @param emitter An event emitter instance used to save events once created.
+     */
     public EventRepository(final Class<D> hint, final String applicationId, final EventEmitter emitter) {
         this.hint = hint;
         this.eventEmitter = emitter;
@@ -66,6 +73,12 @@ public class EventRepository<D> {
         return hint;
     }
 
+    /**
+     * Save a new event with the current repository configuration.
+     *
+     * @param eventData Event data payload.
+     * @return The newly saved model.
+     */
     public EventModel<D> save(final D eventData) {
 
         Preconditions.checkNotNull(timestamp, "Timestamp required.");

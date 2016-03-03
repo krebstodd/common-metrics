@@ -80,6 +80,10 @@ public class Transaction implements AutoCloseable {
         return this;
     }
 
+    /**
+     * Start the current transaction.
+     * @return The currently running tx.
+     */
     public Transaction start() {
         if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
 
@@ -110,6 +114,11 @@ public class Transaction implements AutoCloseable {
         return stop(Status.warning(level));
     }
 
+    /**
+     * Stop the currently running transaction with a custom status code.
+     * @param callStatus The status of the completed transaction.
+     * @return The total duration of the transaction.
+     */
     public Duration stop(final Status callStatus) {
         assertRunning(Boolean.TRUE);
         final Duration elapsed = Duration.ofMillis(elapsedMillis());

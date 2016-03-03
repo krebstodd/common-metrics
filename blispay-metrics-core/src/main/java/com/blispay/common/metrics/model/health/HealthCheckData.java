@@ -16,6 +16,13 @@ public class HealthCheckData {
         this(isHealthy, message, null);
     }
 
+    /**
+     * The object under monitoring is currenlty unhealthy with a message and corresponding exception.
+     *
+     * @param isHealthy The object is healthy.
+     * @param message The message to display.
+     * @param error An exception that generated the unhealthy state.
+     */
     public HealthCheckData(final boolean isHealthy, final String message, final Throwable error) {
         this.isHealthy = isHealthy;
         this.message = message;
@@ -55,6 +62,13 @@ public class HealthCheckData {
         return new HealthCheckData(Boolean.FALSE, null, ex);
     }
 
+    /**
+     * The object under monitoring is currenlty unhealthy with a message and corresponding exception.
+     *
+     * @param message The message to display.
+     * @param ex An exception that generated the unhealthy state.
+     * @return Health check data.
+     */
     public static HealthCheckData unHealthy(final String message, final Exception ex) {
         return new HealthCheckData(Boolean.FALSE, message, ex);
     }

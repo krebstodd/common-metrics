@@ -51,6 +51,7 @@ public class TransactionData<R extends Resource, A extends Action> {
      * @param status Status of the response.
      * @param message Optional message.
      * @param trackingInfo Tracking info for context.
+     * @param custom Map of custom key value pairs to append to the object.
      */
     public TransactionData(final Direction direction, final Long durationMillis,
                            final R resource, final A action, final Status status,
