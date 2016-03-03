@@ -66,7 +66,7 @@ public class Transaction implements AutoCloseable {
         return this;
     }
 
-    public Transaction makeNote(final String noteName, final Object note) {
+    public Transaction withNote(final String noteName, final Object note) {
         this.notes.put(noteName, note);
         return this;
     }
