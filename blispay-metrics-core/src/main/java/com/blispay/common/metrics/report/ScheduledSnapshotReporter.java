@@ -39,10 +39,25 @@ public abstract class ScheduledSnapshotReporter implements SnapshotReporter {
         getLogger().info("Starting scheduled snapshot reporter with period [{}] units [{}]...", period, unit);
 
         if (isRunning.compareAndSet(false, true)) {
-            this.executorService.scheduleAtFixedRate(this::report , period, period, unit);
+            this.executorService.scheduleAtFixedRate(this::doReport , period, period, unit);
         }
 
         getLogger().info("Snapshot reporter started.");
+
+    }
+
+    private void doReport() {
+        try {
+
+            getLogger().info("Starting timed slf4j metrics report...");
+            this.report();
+            getLogger().info("Timed slf4j metrics report complete.");
+
+        // CHECK_OFF: IllegalCatch
+        } catch (Throwable throwable) {
+            getLogger().error("Caught exception attempting to run scheduled gauge report...", throwable);
+        }
+        // CHECK_ON: IllegalCatch
 
     }
 
