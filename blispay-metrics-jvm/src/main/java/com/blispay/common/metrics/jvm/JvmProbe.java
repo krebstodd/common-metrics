@@ -78,6 +78,7 @@ public class JvmProbe implements Lifecycle {
 
             // Add garbage collection listener.
             this.gcListeners = new LinkedList<>();
+            LOG.info("Instrumenting [{}] garbage collectors...", this.gcListeners.size());
             for (GarbageCollectorMXBean gc : garbageCollectors) {
                 this.gcListeners.add(instrumentGarbageCollector(gc));
             }
@@ -181,6 +182,9 @@ public class JvmProbe implements Lifecycle {
     }
 
     private GcNotificationListener instrumentGarbageCollector(final GarbageCollectorMXBean gc) {
+
+        LOG.info("Instrumenting garbage collector [{}]..." + gc.getName());
+
         final NotificationEmitter emitter = (NotificationEmitter) gc;
 
         final EventRepository<GcEventData> gcEventRepo = metricService.eventRepository(GcEventData.class)
@@ -191,6 +195,8 @@ public class JvmProbe implements Lifecycle {
 
         final GcNotificationListener gcListener = new GcNotificationListener(gcEventRepo);
         emitter.addNotificationListener(gcListener, new GcNotificationFilter(), null);
+
+        LOG.info("Done instrumenting garbage collector [{}]" + gc.getName());
 
         return gcListener;
     }

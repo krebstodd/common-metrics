@@ -2,6 +2,8 @@ package com.blispay.common.metrics.jvm;
 
 import com.blispay.common.metrics.EventRepository;
 import com.sun.management.GarbageCollectionNotificationInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.management.Notification;
 import javax.management.NotificationListener;
@@ -10,6 +12,8 @@ import java.lang.management.MemoryUsage;
 import java.util.Map;
 
 public class GcNotificationListener implements NotificationListener {
+
+    private static final Logger LOG = LoggerFactory.getLogger(GcNotificationListener.class);
 
     private static final String NEW_GEN = "PS Eden Space";
     private static final String SURVIVOR = "PS Survivor Space";
@@ -23,7 +27,12 @@ public class GcNotificationListener implements NotificationListener {
 
     @Override
     public void handleNotification(final Notification notification, final Object handback) {
+
+        LOG.debug("Received jmx notification.");
+
         if (notification.getType().equals(GarbageCollectionNotificationInfo.GARBAGE_COLLECTION_NOTIFICATION)) {
+
+            LOG.debug("Detected garbage collection notification.");
 
             final CompositeData cData = (CompositeData) notification.getUserData();
             final GarbageCollectionNotificationInfo gcInfo = GarbageCollectionNotificationInfo.from(cData);
