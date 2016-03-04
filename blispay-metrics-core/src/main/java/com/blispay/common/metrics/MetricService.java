@@ -95,10 +95,6 @@ public class MetricService implements SmartLifecycle {
      * @return The global metrics service instance.
      */
     public static MetricService globalInstance() {
-        if (GLOBAL.getApplicationId() == null) {
-            throw new IllegalStateException("Must set global app id before accessing global instance");
-        }
-
         return GLOBAL;
     }
 
