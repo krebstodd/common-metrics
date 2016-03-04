@@ -1,6 +1,7 @@
 package com.blispay.common.metrics.event;
 
 import com.blispay.common.metrics.model.EventModel;
+import com.blispay.common.metrics.util.NotYetStartedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,9 +27,8 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
     public void dispatch(final EventModel evt) {
 
         LOG.debug("Dispatching new new event name=[{}]", evt.getName());
-
         if (!isRunningAtomic().get()) {
-            throw new IllegalStateException("Dispatcher not yet started");
+            throw new NotYetStartedException("Dispatcher not yet started");
         }
 
         eventListeners.stream()

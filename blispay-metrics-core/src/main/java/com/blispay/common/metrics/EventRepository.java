@@ -6,6 +6,7 @@ import com.blispay.common.metrics.model.EventModel;
 import com.blispay.common.metrics.model.EventType;
 import com.blispay.common.metrics.util.LocalMetricContext;
 import com.blispay.common.metrics.util.NameFormatter;
+import com.blispay.common.metrics.util.NotYetStartedException;
 import com.blispay.common.metrics.util.TrackingInfoAware;
 import com.google.common.base.Preconditions;
 import org.slf4j.LoggerFactory;
@@ -93,6 +94,10 @@ public class EventRepository<D> {
         // CHECK_OFF: IllegalCatch
         } catch (Exception ex) {
             LoggerFactory.getLogger(Transaction.class).error("Caught exception saving event...");
+
+            if (ex instanceof NotYetStartedException) {
+                throw ex;
+            }
         }
         // CHECK_ON: IllegalCatch
 

@@ -8,6 +8,7 @@ import com.blispay.common.metrics.model.call.Resource;
 import com.blispay.common.metrics.model.call.Status;
 import com.blispay.common.metrics.model.call.TransactionData;
 import com.blispay.common.metrics.util.LocalMetricContext;
+import com.blispay.common.metrics.util.NotYetStartedException;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
@@ -95,7 +96,7 @@ public class Transaction implements AutoCloseable {
             return this;
 
         } else {
-            throw new IllegalStateException("Stopwatch already started.");
+            throw new IllegalStateException("Transaction already started.");
         }
     }
 
@@ -133,6 +134,10 @@ public class Transaction implements AutoCloseable {
         // CHECK_OFF: IllegalCatch
         } catch (Exception ex) {
             LoggerFactory.getLogger(Transaction.class).error("Caught exception saving transaction...");
+
+            if (ex instanceof NotYetStartedException) {
+                throw ex;
+            }
         }
         // CHECK_ON: IllegalCatch
 
