@@ -8,6 +8,7 @@ import com.blispay.common.metrics.model.call.Resource;
 import com.blispay.common.metrics.model.call.Status;
 import com.blispay.common.metrics.model.call.TransactionData;
 import com.blispay.common.metrics.util.LocalMetricContext;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
@@ -124,8 +125,16 @@ public class Transaction implements AutoCloseable {
         final Duration elapsed = Duration.ofMillis(elapsedMillis());
         isRunning.set(Boolean.FALSE);
 
-        repository.withTimestamp(timestamp)
-                .save(build(elapsed, callStatus));
+        try {
+
+            repository.withTimestamp(timestamp)
+                    .save(build(elapsed, callStatus));
+
+        // CHECK_OFF: IllegalCatch
+        } catch (Exception ex) {
+            LoggerFactory.getLogger(Transaction.class).error("Caught exception saving transaction...");
+        }
+        // CHECK_ON: IllegalCatch
 
         return elapsed;
     }

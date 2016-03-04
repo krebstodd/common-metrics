@@ -8,6 +8,7 @@ import com.blispay.common.metrics.util.LocalMetricContext;
 import com.blispay.common.metrics.util.NameFormatter;
 import com.blispay.common.metrics.util.TrackingInfoAware;
 import com.google.common.base.Preconditions;
+import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
 
@@ -84,7 +85,17 @@ public class EventRepository<D> {
         }
 
         final EventModel<D> event = new EventModel<>(timestamp, application, group, name, type, eventData);
-        eventEmitter.emit(event);
+
+        try {
+
+            eventEmitter.emit(event);
+
+        // CHECK_OFF: IllegalCatch
+        } catch (Exception ex) {
+            LoggerFactory.getLogger(Transaction.class).error("Caught exception saving event...");
+        }
+        // CHECK_ON: IllegalCatch
+
         return event;
 
     }
