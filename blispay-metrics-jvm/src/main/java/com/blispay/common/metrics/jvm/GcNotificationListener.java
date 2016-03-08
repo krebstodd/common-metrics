@@ -34,25 +34,40 @@ public class GcNotificationListener implements NotificationListener {
 
             LOG.debug("Detected garbage collection notification.");
 
-            final CompositeData cData = (CompositeData) notification.getUserData();
-            final GarbageCollectionNotificationInfo gcInfo = GarbageCollectionNotificationInfo.from(cData);
+            try {
 
-            final Map<String, MemoryUsage> preGc = gcInfo.getGcInfo().getMemoryUsageBeforeGc();
-            final Map<String, MemoryUsage> postGc = gcInfo.getGcInfo().getMemoryUsageAfterGc();
+                final CompositeData cData = (CompositeData) notification.getUserData();
+                final GarbageCollectionNotificationInfo gcInfo = GarbageCollectionNotificationInfo.from(cData);
 
-            final GcEventData data = new GcEventData.Builder()
-                    .action(gcInfo.getGcAction())
-                    .cause(gcInfo.getGcCause())
-                    .name(gcInfo.getGcName())
-                    .durationMillis(gcInfo.getGcInfo().getDuration())
-                    .startTime(gcInfo.getGcInfo().getStartTime())
-                    .endTime(gcInfo.getGcInfo().getEndTime())
-                    .newGen(preGc.get(NEW_GEN).getUsed(), postGc.get(NEW_GEN).getUsed())
-                    .survivor(preGc.get(SURVIVOR).getUsed(), postGc.get(SURVIVOR).getUsed())
-                    .oldGen(preGc.get(OLD_GEN).getUsed(), postGc.get(OLD_GEN).getUsed())
-                    .build();
+                final Map<String, MemoryUsage> preGc = gcInfo.getGcInfo().getMemoryUsageBeforeGc();
+                final Map<String, MemoryUsage> postGc = gcInfo.getGcInfo().getMemoryUsageAfterGc();
 
-            gcEventRepo.save(data);
+                for (String key : preGc.keySet()) {
+                    LOG.debug("Detected pre-gc memory usage for region [{}]", key);
+                }
+
+                final GcEventData data = new GcEventData.Builder()
+                        .action(gcInfo.getGcAction())
+                        .cause(gcInfo.getGcCause())
+                        .name(gcInfo.getGcName())
+                        .durationMillis(gcInfo.getGcInfo().getDuration())
+                        .startTime(gcInfo.getGcInfo().getStartTime())
+                        .endTime(gcInfo.getGcInfo().getEndTime())
+                        .newGen(preGc.get(NEW_GEN).getUsed(), postGc.get(NEW_GEN).getUsed())
+                        .survivor(preGc.get(SURVIVOR).getUsed(), postGc.get(SURVIVOR).getUsed())
+                        .oldGen(preGc.get(OLD_GEN).getUsed(), postGc.get(OLD_GEN).getUsed())
+                        .build();
+
+
+                LOG.debug("Saving garbage collection data.");
+                gcEventRepo.save(data);
+
+            // CHECK_OFF: IllegalCatch
+            } catch (Exception ex) {
+                LOG.error("Caught exception building garbage collection metric.", ex);
+            }
+            // CHECK_ON: IllegalCatch
+
         }
     }
 

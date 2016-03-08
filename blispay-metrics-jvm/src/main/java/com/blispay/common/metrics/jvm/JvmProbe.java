@@ -183,7 +183,7 @@ public class JvmProbe implements Lifecycle {
 
     private GcNotificationListener instrumentGarbageCollector(final GarbageCollectorMXBean gc) {
 
-        LOG.info("Instrumenting garbage collector [{}]..." + gc.getName());
+        LOG.info("Instrumenting garbage collector [{}]...", gc.getName());
 
         final NotificationEmitter emitter = (NotificationEmitter) gc;
 
@@ -196,7 +196,7 @@ public class JvmProbe implements Lifecycle {
         final GcNotificationListener gcListener = new GcNotificationListener(gcEventRepo);
         emitter.addNotificationListener(gcListener, new GcNotificationFilter(), null);
 
-        LOG.info("Done instrumenting garbage collector [{}]" + gc.getName());
+        LOG.info("Done instrumenting garbage collector [{}]", gc.getName());
 
         return gcListener;
     }
