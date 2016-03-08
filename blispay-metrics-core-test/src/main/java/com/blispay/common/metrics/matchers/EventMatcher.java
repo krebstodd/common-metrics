@@ -53,6 +53,47 @@ public class EventMatcher<T> extends TypeSafeMatcher<EventModel<T>> {
     public void describeTo(final Description description) {
 
     }
+    
+    public static Builder builder() {
+        return new Builder();
+    }
 
+    public static class Builder {
+
+        private String application;
+        private EventGroup group;
+        private String name;
+        private EventType type;
+        private Matcher<Object> dataMatcher;
+
+        public Builder setApplication(final String application) {
+            this.application = application;
+            return this;
+        }
+
+        public Builder setGroup(final EventGroup group) {
+            this.group = group;
+            return this;
+        }
+
+        public Builder setName(final String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder setType(final EventType type) {
+            this.type = type;
+            return this;
+        }
+
+        public Builder setDataMatcher(final Matcher<Object> dataMatcher) {
+            this.dataMatcher = dataMatcher;
+            return this;
+        }
+
+        public <T> EventMatcher<T> build() {
+            return new EventMatcher<>(application, group, name, type, (Matcher<T>) dataMatcher);
+        }
+    }
 }
 

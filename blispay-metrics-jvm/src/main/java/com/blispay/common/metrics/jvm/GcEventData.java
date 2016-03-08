@@ -1,5 +1,11 @@
 package com.blispay.common.metrics.jvm;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.google.common.base.CaseFormat;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class GcEventData {
 
     // This is hard coded for now, we'll have to pull it out into a property if we change our strategy.
@@ -17,14 +23,7 @@ public class GcEventData {
 
     private final Long endTime;
 
-    private final Long preGcNewGen;
-    private final Long postGcNewGen;
-
-    private final Long preGcSurvivor;
-    private final Long postGcSurvivor;
-
-    private final Long preGcOldGen;
-    private final Long postGcOldGen;
+    private final Map<String, Long> prePostFreeMemory;
 
     /**
      * Information about a garbage collection event.
@@ -35,15 +34,10 @@ public class GcEventData {
      * @param duration The time, in milliseconds, the collection took.
      * @param startTime The time, in milliseconds, since the JVM started at start of collection.
      * @param endTime The time, in milliseconds, since the JVM started at end of collection.
-     * @param preGcNewGen Size, in bytes, of the new generation pre-collection.
-     * @param postGcNewGen Size, in bytes, of the new generation post-collection.
-     * @param preGcSurvivor Size, in bytes, of the survivor space pre-collection.
-     * @param postGcSurvivor Size, in bytes, of the survivor space post-collection.
-     * @param preGcOldGen Size, in bytes, of the old generation pre-collection.
-     * @param postGcOldGen Size, in bytes, of the old generation post-collection.
+     * @param prePostFreeMem Size, in bytes, of memory pools pre and post collection.
      */
     GcEventData(final String action, final String cause, final String name, final Long duration, final Long startTime, final Long endTime,
-                final Long preGcNewGen, final Long postGcNewGen, final Long preGcSurvivor, final Long postGcSurvivor, final Long preGcOldGen, final Long postGcOldGen) {
+                final Map<String, Long> prePostFreeMem) {
 
         this.action = action;
         this.cause = cause;
@@ -51,13 +45,7 @@ public class GcEventData {
         this.duration = duration;
         this.startTime = startTime;
         this.endTime = endTime;
-
-        this.preGcNewGen = preGcNewGen;
-        this.postGcNewGen = postGcNewGen;
-        this.preGcSurvivor = preGcSurvivor;
-        this.postGcSurvivor = postGcSurvivor;
-        this.preGcOldGen = preGcOldGen;
-        this.postGcOldGen = postGcOldGen;
+        this.prePostFreeMemory = prePostFreeMem;
     }
 
     public String getCollectorStrategy() {
@@ -88,28 +76,9 @@ public class GcEventData {
         return endTime;
     }
 
-    public Long getPreGcNewGen() {
-        return preGcNewGen;
-    }
-
-    public Long getPostGcNewGen() {
-        return postGcNewGen;
-    }
-
-    public Long getPreGcSurvivor() {
-        return preGcSurvivor;
-    }
-
-    public Long getPostGcSurvivor() {
-        return postGcSurvivor;
-    }
-
-    public Long getPreGcOldGen() {
-        return preGcOldGen;
-    }
-
-    public Long getPostGcOldGen() {
-        return postGcOldGen;
+    @JsonAnyGetter
+    public Map<String, Long> prePostFreeMemory() {
+        return prePostFreeMemory;
     }
 
     public static class Builder {
@@ -120,12 +89,8 @@ public class GcEventData {
         private Long duration;
         private Long startTime;
         private Long endTime;
-        private Long preGcNewGen;
-        private Long postGcNewGen;
-        private Long preGcSurvivor;
-        private Long postGcSurvivor;
-        private Long preGcOldGen;
-        private Long postGcOldGen;
+
+        private Map<String, Long> prePostGcFreeMemory = new HashMap<>();
 
         public Builder action(final String action) {
             this.action = action;
@@ -158,38 +123,24 @@ public class GcEventData {
         }
 
         /**
-         * Size pre and post collection of new generation mem pool.
+         * Size pre collection of a particular mem pool.
+         * @param memPool Name of memory pool.
          * @param preGc Size in bytes pre collection.
-         * @param postGc Size in bytes post collection.
          * @return This builder.
          */
-        public Builder newGen(final Long preGc, final Long postGc) {
-            this.preGcNewGen = preGc;
-            this.postGcNewGen = postGc;
+        public Builder preGcFreeMem(final String memPool, final Long preGc) {
+            this.prePostGcFreeMemory.put(formatPreName(memPool), preGc);
             return this;
         }
 
         /**
-         * Size pre and post collection of survivor space mem pool.
-         * @param preGc Size in bytes pre collection.
+         * Size post collection of a particular mem pool.
+         * @param memPool Name of memory pool.
          * @param postGc Size in bytes post collection.
          * @return This builder.
          */
-        public Builder survivor(final Long preGc, final Long postGc) {
-            this.preGcSurvivor = preGc;
-            this.postGcSurvivor = postGc;
-            return this;
-        }
-
-        /**
-         * Size pre and post collection of old generation mem pool.
-         * @param preGc Size in bytes pre collection.
-         * @param postGc Size in bytes post collection.
-         * @return This builder.
-         */
-        public Builder oldGen(final Long preGc, final Long postGc) {
-            this.preGcOldGen = preGc;
-            this.postGcOldGen = postGc;
+        public Builder postGcFreeMem(final String memPool, final Long postGc) {
+            this.prePostGcFreeMemory.put(formatPostName(memPool), postGc);
             return this;
         }
 
@@ -198,9 +149,15 @@ public class GcEventData {
          * @return Immutable GcEventData.
          */
         public GcEventData build() {
-            return new GcEventData(action, cause, name, duration, startTime, endTime,
-                    preGcNewGen, postGcNewGen, preGcSurvivor, postGcSurvivor, preGcOldGen, postGcOldGen);
+            return new GcEventData(action, cause, name, duration, startTime, endTime, prePostGcFreeMemory);
         }
 
+        private static String formatPreName(final String memPool) {
+            return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, memPool.replace(" ", "_").toLowerCase()) + "PreGc";
+        }
+
+        private static String formatPostName(final String memPool) {
+            return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, memPool.replace(" ", "_").toLowerCase()) + "PostGc";
+        }
     }
 }

@@ -15,10 +15,6 @@ public class GcNotificationListener implements NotificationListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(GcNotificationListener.class);
 
-    private static final String NEW_GEN = "PS Eden Space";
-    private static final String SURVIVOR = "PS Survivor Space";
-    private static final String OLD_GEN = "PS Old Gen";
-
     private final EventRepository<GcEventData> gcEventRepo;
 
     public GcNotificationListener(final EventRepository<GcEventData> gcEventRepo) {
@@ -46,18 +42,18 @@ public class GcNotificationListener implements NotificationListener {
                     LOG.debug("Detected pre-gc memory usage for region [{}]", key);
                 }
 
-                final GcEventData data = new GcEventData.Builder()
+                final GcEventData.Builder builder = new GcEventData.Builder()
                         .action(gcInfo.getGcAction())
                         .cause(gcInfo.getGcCause())
                         .name(gcInfo.getGcName())
                         .durationMillis(gcInfo.getGcInfo().getDuration())
                         .startTime(gcInfo.getGcInfo().getStartTime())
-                        .endTime(gcInfo.getGcInfo().getEndTime())
-                        .newGen(preGc.get(NEW_GEN).getUsed(), postGc.get(NEW_GEN).getUsed())
-                        .survivor(preGc.get(SURVIVOR).getUsed(), postGc.get(SURVIVOR).getUsed())
-                        .oldGen(preGc.get(OLD_GEN).getUsed(), postGc.get(OLD_GEN).getUsed())
-                        .build();
+                        .endTime(gcInfo.getGcInfo().getEndTime());
 
+                preGc.forEach((poolName, usage) -> builder.preGcFreeMem(poolName, usage.getUsed()));
+                postGc.forEach((poolName, usage) -> builder.postGcFreeMem(poolName, usage.getUsed()));
+
+                final GcEventData data = builder.build();
 
                 LOG.debug("Saving garbage collection data.");
                 gcEventRepo.save(data);

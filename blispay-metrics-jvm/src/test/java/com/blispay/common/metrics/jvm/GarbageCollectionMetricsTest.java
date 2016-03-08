@@ -3,10 +3,12 @@ package com.blispay.common.metrics.jvm;
 import com.blispay.common.metrics.MetricService;
 import com.blispay.common.metrics.MetricTestUtil;
 import com.blispay.common.metrics.TestEventSubscriber;
+import com.blispay.common.metrics.data.SecureObjectMapper;
 import com.blispay.common.metrics.matchers.EventMatcher;
 import com.blispay.common.metrics.model.EventGroup;
 import com.blispay.common.metrics.model.EventModel;
 import com.blispay.common.metrics.model.EventType;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jlibs.core.lang.RuntimeUtil;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
@@ -41,17 +43,18 @@ public class GarbageCollectionMetricsTest {
 
         @Override
         public boolean matchesSafely(final GcEventData data) {
+
+            try {
+                System.out.println(new SecureObjectMapper().writeValueAsString(data));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
             return data.getAction() != null
                     && data.getName() != null
                     && data.getDuration() != null
                     && data.getStartTime() != null
                     && data.getEndTime() != null
-                    && data.getPreGcNewGen() != null
-                    && data.getPostGcNewGen() != null
-                    && data.getPreGcSurvivor() != null
-                    && data.getPostGcSurvivor() != null
-                    && data.getPreGcOldGen() != null
-                    && data.getPostGcOldGen() != null;
+                    && !data.prePostFreeMemory().isEmpty();
         }
 
 
