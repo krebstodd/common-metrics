@@ -66,7 +66,7 @@ public abstract class ScheduledSnapshotReporter implements SnapshotReporter {
      */
     public void stop() {
 
-        getLogger().info("Stopping scheduled snapshot repoter...");
+        getLogger().info("Stopping scheduled snapshot reporter...");
 
         this.executorService.shutdown();
 

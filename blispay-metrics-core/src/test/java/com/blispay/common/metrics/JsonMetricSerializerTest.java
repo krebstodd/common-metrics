@@ -35,10 +35,11 @@ public class JsonMetricSerializerTest extends AbstractMetricsTest {
 
         final AtomicReference<EventModel> event = new AtomicReference<>();
 
-        new EventRepository<>(PiiBusinessEventData.class, application, event::set)
+        new EventRepository.Builder<>(application, PiiBusinessEventData.class, event::set)
                 .inGroup(EventGroup.USER_DOMAIN)
                 .withName("created")
                 .ofType(EventType.BUSINESS_EVT)
+                .build()
                 .save(defaultPiiBusinessEventData());
 
         final JSONObject jsonObject = new JSONObject(jsonSerializer.serialize(event.get()));
@@ -61,10 +62,11 @@ public class JsonMetricSerializerTest extends AbstractMetricsTest {
     public void testSerializesCounterMetrics() {
         final AtomicReference<EventModel> event = new AtomicReference<>();
 
-        new EventRepository<>(ResourceCountData.class, application, event::set)
+        new EventRepository.Builder<>(application, ResourceCountData.class, event::set)
                 .inGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
                 .withName("total-threads")
                 .ofType(EventType.RESOURCE_COUNT)
+                .build()
                 .save(new ResourceCountData(10D));
 
         final JSONObject jsonObject = new JSONObject(jsonSerializer.serialize(event.get()));
@@ -84,10 +86,11 @@ public class JsonMetricSerializerTest extends AbstractMetricsTest {
     public void testSerializesCallTimeMetrics() {
         final AtomicReference<EventModel> event = new AtomicReference<>();
 
-        new EventRepository<>(TransactionData.class, application, event::set)
+        new EventRepository.Builder<>(application, TransactionData.class, event::set)
                 .inGroup(EventGroup.CLIENT_HTTP)
                 .withName("some-request")
                 .ofType(EventType.RESOURCE_CALL)
+                .build()
                 .save(TransactionData.builder()
                         .direction(Direction.INBOUND)
                         .duration(Duration.ofSeconds(1))
@@ -122,10 +125,11 @@ public class JsonMetricSerializerTest extends AbstractMetricsTest {
 
         final AtomicReference<EventModel> event = new AtomicReference<>();
 
-        new EventRepository<>(ResourceUtilizationData.class, application, event::set)
+        new EventRepository.Builder<>(application, ResourceUtilizationData.class, event::set)
                 .inGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
                 .ofType(EventType.RESOURCE_UTILIZATION)
                 .withName("thread-pool")
+                .build()
                 .save(new ResourceUtilizationData(0L, 1000L, 350L, 0.35D));
 
         final JSONObject jsonObject = new JSONObject(jsonSerializer.serialize(event.get()));

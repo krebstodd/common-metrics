@@ -36,8 +36,6 @@ public final class TransactionFactory {
 
     }
 
- 
-
     /**
      * Create a new transaction with the currently configured state.
      *

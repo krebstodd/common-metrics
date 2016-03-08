@@ -1,6 +1,5 @@
 package com.blispay.common.metrics;
 
-import com.blispay.common.metrics.model.EventGroup;
 import com.blispay.common.metrics.model.TrackingInfo;
 import com.blispay.common.metrics.model.call.Action;
 import com.blispay.common.metrics.model.call.Direction;
@@ -26,6 +25,7 @@ public class Transaction implements AutoCloseable {
 
     private final TrackingInfo trackingInfo = LocalMetricContext.getTrackingInfo();
 
+    private String name;
     private ZonedDateTime timestamp;
     private Direction direction;
     private Action action;
@@ -38,21 +38,11 @@ public class Transaction implements AutoCloseable {
         this.repository = repository;
     }
 
-    public Transaction inGroup(final EventGroup group) {
-        this.repository.inGroup(group);
-        return this;
-    }
-
     public Transaction withName(final String name) {
-        this.repository.withName(name);
+        this.name = name;
         return this;
     }
 
-    public Transaction withNameFromType(final Class<?> type) {
-        this.repository.withNameFromType(type);
-        return this;
-    }
-    
     public Transaction inDirection(final Direction direction) {
         this.direction = direction;
         return this;
@@ -128,8 +118,7 @@ public class Transaction implements AutoCloseable {
 
         try {
 
-            repository.withTimestamp(timestamp)
-                    .save(build(elapsed, callStatus));
+            repository.save(this.name, timestamp, build(elapsed, callStatus));
 
         // CHECK_OFF: IllegalCatch
         } catch (Exception ex) {

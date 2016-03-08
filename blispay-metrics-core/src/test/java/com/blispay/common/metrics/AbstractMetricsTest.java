@@ -59,13 +59,13 @@ public abstract class AbstractMetricsTest {
     }
 
     protected static EventModel<PiiBusinessEventData> testEvent() {
-        final EventRepository<PiiBusinessEventData> repo = MetricService.globalInstance().eventRepository(PiiBusinessEventData.class).build();
-
-        return repo
+        final EventRepository<PiiBusinessEventData> repo = MetricService.globalInstance().eventRepository(PiiBusinessEventData.class)
                 .ofType(EventType.BUSINESS_EVT)
                 .inGroup(EventGroup.ACCOUNT_DOMAIN)
                 .withName("some-event")
-                .save(defaultPiiBusinessEventData());
+                .build();
+
+        return repo.save(defaultPiiBusinessEventData());
     }
 
     protected static class PiiBusinessEventData implements TrackingInfoAware {

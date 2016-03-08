@@ -5,87 +5,68 @@ import com.blispay.common.metrics.model.EventGroup;
 import com.blispay.common.metrics.model.EventModel;
 import com.blispay.common.metrics.model.EventType;
 import com.blispay.common.metrics.util.LocalMetricContext;
-import com.blispay.common.metrics.util.NameFormatter;
 import com.blispay.common.metrics.util.NotYetStartedException;
 import com.blispay.common.metrics.util.TrackingInfoAware;
 import com.google.common.base.Preconditions;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
-public class EventRepository<D> {
+public final class EventRepository<D> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(EventRepository.class);
 
     private final String application;
     private final EventEmitter eventEmitter;
     private final Class<D> hint;
+    private final EventGroup group;
+    private final String name;
+    private final EventType type;
 
-    private ZonedDateTime timestamp = ZonedDateTime.now();
-    private EventGroup group;
-    private String name;
-    private EventType type;
-
-    /**
-     * Create a new event repository with the providved base information.
-     *
-     * @param hint Hint at what type of payload to expect.
-     * @param applicationId The application name of the currently running process.
-     * @param emitter An event emitter instance used to save events once created.
-     */
-    public EventRepository(final Class<D> hint, final String applicationId, final EventEmitter emitter) {
+    private EventRepository(final Class<D> hint, final String applicationId, final EventEmitter emitter,
+                           final EventGroup group, final String name, final EventType type) {
         this.hint = hint;
         this.eventEmitter = emitter;
         this.application = applicationId;
-    }
-
-    public EventRepository<D> inGroup(final EventGroup group) {
         this.group = group;
-        return this;
-    }
-
-    public EventRepository<D> withName(final String name) {
         this.name = name;
-        return this;
-    }
-
-    public EventRepository<D> withNameFromType(final Class<?> type) {
-        this.name = NameFormatter.toEventName(type);
-        return this;
-    }
-
-    public EventRepository<D> ofType(final EventType type) {
         this.type = type;
-        return this;
-    }
-
-    public EventRepository<D> withTimestamp(final ZonedDateTime timestamp) {
-        this.timestamp = timestamp;
-        return this;
     }
 
     public Class<D> getHint() {
         return hint;
     }
 
+    public EventModel<D> save(final D eventData) {
+        return save(this.name, ZonedDateTime.now(), eventData);
+    }
+
+    public EventModel<D> save(final String eventNameOverride, final D eventData) {
+        return save(eventNameOverride, ZonedDateTime.now(), eventData);
+    }
+
+    public EventModel<D> save(final ZonedDateTime timestamp, final D eventData) {
+        return save(name, timestamp, eventData);
+    }
+
     /**
      * Save a new event with the current repository configuration.
      *
+     * @param nameOverride custom event name override.
+     * @param timestamp custom time stamp for event.
      * @param eventData Event data payload.
      * @return The newly saved model.
      */
-    public EventModel<D> save(final D eventData) {
-
-        Preconditions.checkNotNull(timestamp, "Timestamp required.");
-        Preconditions.checkNotNull(application, "Application id required.");
-        Preconditions.checkNotNull(group, "Event group required.");
-        Preconditions.checkNotNull(name, "Event name required.");
-        Preconditions.checkNotNull(type, "Event type required.");
-        Preconditions.checkNotNull(eventData);
+    public EventModel<D> save(final String nameOverride, final ZonedDateTime timestamp, final D eventData) {
 
         if (eventData instanceof TrackingInfoAware) {
             ((TrackingInfoAware) eventData).setTrackingInfo(LocalMetricContext.getTrackingInfo());
         }
 
-        final EventModel<D> event = new EventModel<>(timestamp, application, group, name, type, eventData);
+        final EventModel<D> event
+                = new EventModel<>(timestamp, application, group, Optional.ofNullable(nameOverride).orElse(name), type, eventData);
 
         try {
 
@@ -93,7 +74,7 @@ public class EventRepository<D> {
 
         // CHECK_OFF: IllegalCatch
         } catch (Exception ex) {
-            LoggerFactory.getLogger(Transaction.class).error("Caught exception saving event...");
+            LOG.error("Caught exception saving event...");
 
             if (ex instanceof NotYetStartedException) {
                 throw ex;
@@ -142,8 +123,22 @@ public class EventRepository<D> {
             return this;
         }
 
+        public EventModel<D> save(final D data) {
+            return build().save(data);
+        }
+
+        /**
+         * Build a new event repository instance.
+         * @return New instance.
+         */
         public EventRepository<D> build() {
-            return new EventRepository<>(hint, applicationId, emitter).inGroup(group).withName(name).ofType(type);
+
+            Preconditions.checkNotNull(applicationId, "Application id required.");
+            Preconditions.checkNotNull(group, "Event group required.");
+            Preconditions.checkNotNull(type, "Event type required.");
+
+            return new EventRepository<>(hint, applicationId, emitter, group, name, type);
+
         }
     }
 
