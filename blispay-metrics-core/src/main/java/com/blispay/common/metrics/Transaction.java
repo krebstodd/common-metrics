@@ -7,6 +7,7 @@ import com.blispay.common.metrics.model.call.Resource;
 import com.blispay.common.metrics.model.call.Status;
 import com.blispay.common.metrics.model.call.TransactionData;
 import com.blispay.common.metrics.util.LocalMetricContext;
+import com.blispay.common.metrics.util.NameFormatter;
 import com.blispay.common.metrics.util.NotYetStartedException;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +41,11 @@ public class Transaction implements AutoCloseable {
 
     public Transaction withName(final String name) {
         this.name = name;
+        return this;
+    }
+
+    public Transaction withNameFromType(final Class<?> type) {
+        this.name = NameFormatter.toEventName(type);
         return this;
     }
 
