@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MetricService implements SmartLifecycle {
 
-    private static final MetricService GLOBAL = new MetricService(null);
+    private static final MetricService GLOBAL = new MetricService("metrics");
     private static final Logger LOG = LoggerFactory.getLogger(MetricService.class);
 
     private final EventDispatcher eventDispatcher;
