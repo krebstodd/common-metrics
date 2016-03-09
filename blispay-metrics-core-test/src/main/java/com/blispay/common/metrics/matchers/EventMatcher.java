@@ -49,7 +49,6 @@ public class EventMatcher<D, U> extends TypeSafeMatcher<EventModel<D, U>> {
 
     @Override
     public boolean matchesSafely(final EventModel<D, U> metric) {
-
         return timestampMatcher.matches(metric.getHeader().getTimestamp())
                 && applicationMatcher.matches(metric.getHeader().getApplication())
                 && groupMatcher.matches(metric.getHeader().getGroup().getValue())

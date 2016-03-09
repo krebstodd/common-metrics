@@ -27,6 +27,7 @@ import com.blispay.common.metrics.model.status.StatusData;
 import com.blispay.common.metrics.model.utilization.ResourceUtilizationData;
 import com.blispay.common.metrics.report.BasicSnapshotReporter;
 import com.blispay.common.metrics.report.SnapshotReporter;
+import com.blispay.common.metrics.transaction.Transaction;
 import com.blispay.common.metrics.util.LocalMetricContext;
 import com.blispay.common.metrics.util.TestEventSubscriber;
 import org.hamcrest.Matchers;
@@ -251,7 +252,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
 
     @Test
     public void testInternalResourceCallTimer() throws InterruptedException {
-        final TrackingInfo trackingInfo = createAndSetThreadLocalTrackingInfo();
+        createAndSetThreadLocalTrackingInfo();
         final TestEventSubscriber evtSub = new TestEventSubscriber();
 
         final MetricService metricService = new MetricService(application);

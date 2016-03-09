@@ -44,7 +44,7 @@ public class TransactionDataMatcher extends TypeSafeMatcher<TransactionData> {
      */
     public TransactionDataMatcher(final Resource resource, final Action action, final Direction direction,
                                   final Status status, final Long approxMillis, final Long acceptableDelta) {
-
+        
         this.resourceMatcher = Matchers.equalTo(resource.getValue());
         this.actionMatcher = Matchers.equalTo(action.getValue());
         this.directionMatcher = Matchers.equalTo(direction);

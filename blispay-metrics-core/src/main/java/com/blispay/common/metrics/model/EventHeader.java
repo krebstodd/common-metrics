@@ -1,5 +1,6 @@
 package com.blispay.common.metrics.model;
 
+import com.blispay.common.metrics.util.NameFormatter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 
@@ -112,6 +113,11 @@ public final class EventHeader {
 
         public Builder name(final String name) {
             this.name = name;
+            return this;
+        }
+
+        public Builder nameFromType(final Class<?> type) {
+            this.name = NameFormatter.toEventName(type);
             return this;
         }
 

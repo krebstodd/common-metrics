@@ -49,16 +49,6 @@ public class EventMatcher<D, U> extends TypeSafeMatcher<EventModel<D, U>> {
 
     @Override
     public boolean matchesSafely(final EventModel<D, U> metric) {
-
-        System.out.println(timestampMatcher.matches(metric.getHeader().getTimestamp()));
-        System.out.println(applicationMatcher.matches(metric.getHeader().getApplication()));
-        System.out.println(groupMatcher.matches(metric.getHeader().getGroup().getValue()));
-        System.out.println(nameMatcher.matches(metric.getHeader().getName()));
-        System.out.println(typeMatcher.matches(metric.getHeader().getType().getValue()));
-        System.out.println(dataMatcher.matches(metric.getData()));
-        System.out.println(userDataMatcher.matches(metric.getUserData()));
-        System.out.println(trackingInfoMatcher.matches(metric.getHeader().getTrackingInfo()));
-
         return timestampMatcher.matches(metric.getHeader().getTimestamp())
                 && applicationMatcher.matches(metric.getHeader().getApplication())
                 && groupMatcher.matches(metric.getHeader().getGroup().getValue())

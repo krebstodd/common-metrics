@@ -33,6 +33,11 @@ public final class ResourceCounter {
         updateCount(ZonedDateTime.now(ZoneId.of("UTC")), count, null, LocalMetricContext.getTrackingInfo());
     }
 
+    public void updateCount(final Double count,
+                            final Object userData) {
+        updateCount(ZonedDateTime.now(ZoneId.of("UTC")), count, userData, LocalMetricContext.getTrackingInfo());
+    }
+
     public void updateCount(final ZonedDateTime timestamp,
                             final Double count,
                             final Object userData,

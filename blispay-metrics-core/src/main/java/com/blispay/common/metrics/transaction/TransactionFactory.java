@@ -1,4 +1,4 @@
-package com.blispay.common.metrics;
+package com.blispay.common.metrics.transaction;
 
 import com.blispay.common.metrics.event.EventEmitter;
 import com.blispay.common.metrics.model.EventGroup;
@@ -7,46 +7,16 @@ import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.Resource;
 import com.blispay.common.metrics.util.NameFormatter;
 
-public final class TransactionFactory {
-
-    private final String applicationId;
-    private final EventEmitter emitter;
-
-    private final EventGroup group;
-    private final String name;
-    private final Direction direction;
-    private final Action action;
-    private final Resource resource;
-
-    private TransactionFactory(final String applicationId, final EventEmitter emitter,
-                              final EventGroup group, final String name, final Direction direction, final Action action,
-                              final Resource resource) {
-
-        this.applicationId = applicationId;
-        this.emitter = emitter;
-        this.group = group;
-        this.name = name;
-        this.direction = direction;
-        this.action = action;
-        this.resource = resource;
-
-    }
+public interface TransactionFactory {
 
     /**
      * Create a new transaction with the currently configured state.
      *
      * @return Transaction instance.
      */
-    public Transaction create() {
+    Transaction create();
 
-        return new Transaction(emitter, applicationId, group, name)
-                .inDirection(direction)
-                .withAction(action)
-                .onResource(resource);
-
-    }
-
-    public static class Builder {
+    class Builder {
 
         private final String applicationId;
         private final EventEmitter emitter;
@@ -93,8 +63,7 @@ public final class TransactionFactory {
         }
 
         public TransactionFactory build() {
-            return new TransactionFactory(applicationId, emitter, group, name, direction, action, resource);
+            return new TransactionFactoryImpl(applicationId, emitter, group, name, direction, action, resource);
         }
     }
-
 }

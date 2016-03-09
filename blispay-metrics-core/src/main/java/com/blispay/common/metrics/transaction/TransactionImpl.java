@@ -1,4 +1,4 @@
-package com.blispay.common.metrics;
+package com.blispay.common.metrics.transaction;
 
 import com.blispay.common.metrics.event.EventEmitter;
 import com.blispay.common.metrics.model.EventGroup;
@@ -18,7 +18,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Transaction implements AutoCloseable {
+public class TransactionImpl implements Transaction {
 
     private Long startMillis;
     private AtomicBoolean isRunning = new AtomicBoolean(false);
@@ -35,10 +35,10 @@ public class Transaction implements AutoCloseable {
     private String name;
     private Object userData;
 
-    Transaction(final EventEmitter emitter,
-                final String appId,
-                final EventGroup group,
-                final String name) {
+    protected TransactionImpl(final EventEmitter emitter,
+                              final String appId,
+                              final EventGroup group,
+                              final String name) {
 
         this.emitter = emitter;
         this.appId = appId;
@@ -71,13 +71,13 @@ public class Transaction implements AutoCloseable {
         return this;
     }
 
-    private TransactionData build(final Duration duration, final Status status) {
-        return new TransactionData<>(direction, duration.toMillis(), resource, action, status);
-    }
-
     public Transaction userData(final Object userData) {
         this.userData = userData;
         return this;
+    }
+
+    private TransactionData build(final Duration duration, final Status status) {
+        return new TransactionData<>(direction, duration.toMillis(), resource, action, status);
     }
 
     /**
