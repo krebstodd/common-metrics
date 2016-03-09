@@ -37,6 +37,7 @@ public enum EventGroup {
     USER_DOMAIN_HEALTH("metrics.health.user-domain"),
 
     SERVER("metrics.server"),
+
     SERVER_HTTP("metrics.server.http"),
     SERVER_MESSAGE_QUEUE("metrics.server.mq"),
 

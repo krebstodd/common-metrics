@@ -5,9 +5,11 @@ import com.blispay.common.metrics.TestEventSubscriber;
 import com.blispay.common.metrics.matchers.EventMatcher;
 import com.blispay.common.metrics.matchers.TransactionDataMatcher;
 import com.blispay.common.metrics.model.EventGroup;
+import com.blispay.common.metrics.model.EventModel;
 import com.blispay.common.metrics.model.EventType;
 import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.Status;
+import com.blispay.common.metrics.model.call.TransactionData;
 import com.blispay.common.metrics.model.call.internal.InternalAction;
 import com.blispay.common.metrics.model.call.internal.InternalResource;
 import com.blispay.common.metrics.spring.annotation.Profiled;
@@ -51,9 +53,16 @@ public class MethodExecutionProfilerTest {
 
         assertTrue(profiled.wasExecuted());
         assertEquals(1, subscriber.count());
-        assertThat(subscriber.poll(), new EventMatcher(metricService.getApplicationId(), EventGroup.INTERNAL_METHOD_CALL, "execute", EventType.RESOURCE_CALL,
-                new TransactionDataMatcher(InternalResource.fromClass(ProfiledClass.class), InternalAction.fromMethodName("testProfile"), Direction.INTERNAL, Status.success(), 1000L)));
 
+        final EventMatcher<TransactionData, Void> matcher = EventMatcher.<TransactionData, Void>builder()
+                .setApplication(metricService.getApplicationId())
+                .setGroup(EventGroup.INTERNAL_METHOD_CALL)
+                .setName("execute")
+                .setType(EventType.TRANSACTION)
+                .setDataMatcher(new TransactionDataMatcher(InternalResource.fromClass(ProfiledClass.class), InternalAction.fromMethodName("testProfile"), Direction.INTERNAL, Status.success(), 1000L))
+                .build();
+
+        assertThat((EventModel<TransactionData, Void>) subscriber.poll(), matcher);
     }
 
     @Test
@@ -73,8 +82,16 @@ public class MethodExecutionProfilerTest {
         // Test emits event w/ error status.
         assertTrue(profiled.wasExecuted());
         assertEquals(1, subscriber.count());
-        assertThat(subscriber.poll(), new EventMatcher(metricService.getApplicationId(), EventGroup.INTERNAL_METHOD_CALL, "execute", EventType.RESOURCE_CALL,
-                new TransactionDataMatcher(InternalResource.fromClass(ProfiledClass.class), InternalAction.fromMethodName("testProfile"), Direction.INTERNAL, Status.error(), 1000L)));
+
+        final EventMatcher<TransactionData, Void> matcher = EventMatcher.<TransactionData, Void>builder()
+                .setApplication(metricService.getApplicationId())
+                .setGroup(EventGroup.INTERNAL_METHOD_CALL)
+                .setName("execute")
+                .setType(EventType.TRANSACTION)
+                .setDataMatcher(new TransactionDataMatcher(InternalResource.fromClass(ProfiledClass.class), InternalAction.fromMethodName("testProfile"), Direction.INTERNAL, Status.error(), 1000L))
+                .build();
+
+        assertThat((EventModel<TransactionData, Void>) subscriber.poll(), matcher);
     }
 
     public static class ProfiledClass {

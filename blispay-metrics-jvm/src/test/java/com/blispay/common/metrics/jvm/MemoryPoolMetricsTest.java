@@ -39,33 +39,37 @@ public class MemoryPoolMetricsTest {
     @Test
     public void testJvmProbe() {
 
-        final EventModel<ResourceUtilizationData> event = parseUtilizationMetrics(this.metricName);
+        final EventModel<ResourceUtilizationData, Void> event = parseUtilizationMetrics(this.metricName);
 
         // non-heap utilization always has a max value of -1.
-        if (event.eventData().getMaxValue() != -1) {
-            assertTrue(event.eventData().getMinValue() <= event.eventData().getMaxValue());
-            assertTrue(event.eventData().getCurrentValue() < event.eventData().getMaxValue());
+        if (event.getData().getMaxValue() != -1) {
+            assertTrue(event.getData().getMinValue() <= event.getData().getMaxValue());
+            assertTrue(event.getData().getCurrentValue() < event.getData().getMaxValue());
         }
 
-        assertEquals(String.valueOf(event.eventData().getCurrentPercentage()),
-                String.valueOf((double) event.eventData().getCurrentValue() / event.eventData().getMaxValue()));
+        assertEquals(String.valueOf(event.getData().getCurrentPercentage()),
+                String.valueOf((double) event.getData().getCurrentValue() / event.getData().getMaxValue()));
 
-        assertThat(event, new EventMatcher<>(
-                application,
-                EventGroup.RESOURCE_UTILIZATION_MEM,
-                metricName,
-                EventType.RESOURCE_UTILIZATION,
-                new ResourceUtilizationDataMatcher(Matchers.notNullValue(Long.class), Matchers.notNullValue(Long.class), Matchers.notNullValue(Long.class), Matchers.notNullValue(Double.class))));
+        final EventMatcher<ResourceUtilizationData, Void> m1 = EventMatcher.<ResourceUtilizationData, Void>builder()
+                .setApplication(application)
+                .setGroup(EventGroup.RESOURCE_UTILIZATION_MEM)
+                .setName(metricName)
+                .setType(EventType.RESOURCE_UTILIZATION)
+                .setDataMatcher(new ResourceUtilizationDataMatcher(Matchers.notNullValue(Long.class), Matchers.notNullValue(Long.class),
+                        Matchers.notNullValue(Long.class), Matchers.notNullValue(Double.class)))
+                .build();
+
+        assertThat(event, m1);
 
     }
 
-    private EventModel<ResourceUtilizationData> parseUtilizationMetrics(final String metricName) {
+    private EventModel<ResourceUtilizationData, Void> parseUtilizationMetrics(final String metricName) {
 
         return REPORTER.report().getMetrics()
                 .stream()
-                .filter(metric -> metric.getName().equals(metricName))
+                .filter(metric -> metric.getHeader().getName().equals(metricName))
                 .findFirst()
-                .map(metric -> (EventModel<ResourceUtilizationData>) metric)
+                .map(metric -> (EventModel<ResourceUtilizationData, Void>) metric)
                 .get();
 
     }

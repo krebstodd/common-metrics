@@ -3,83 +3,53 @@ package com.blispay.common.metrics.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class EventModel<D> {
+public final class EventModel<D, U> {
 
-    private static final DateTimeFormatter dtFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+    @JsonUnwrapped
+    private final EventHeader header;
 
-    @JsonProperty("timestamp")
-    private final String timestamp;
+    @JsonProperty("data")
+    private final D data;
 
-    @JsonProperty("application")
-    private final String application;
+    @JsonProperty("userData")
+    private final U userData;
 
-    @JsonProperty("group")
-    private final EventGroup group;
+    public EventModel(final EventHeader header,
+                      final D data) {
 
-    @JsonProperty("name")
-    private final String name;
-
-    @JsonProperty("type")
-    private final EventType type;
-
-    @JsonProperty("eventData")
-    private final D eventData;
+        this(header, data, null);
+    }
 
     /**
      * Immutable event model.
      *
-     * @param timestamp timestamp for when the event occurred.
-     * @param application application name.
-     * @param group hierarchical event group, helps with searching. 
-     * @param name event name.
-     * @param type event type, dictates the structure of the event eventData payload.
-     * @param eventData Payload of event.             
+     * @param header Event header.
+     * @param data Payload of event.
+     * @param userData Custom user data.
      */
-    public EventModel(final ZonedDateTime timestamp,
-                      final String application,
-                      final EventGroup group,
-                      final String name,
-                      final EventType type,
-                      final D eventData) {
+    public EventModel(final EventHeader header,
+                      final D data,
+                      final U userData) {
 
-        this.timestamp = dtFormatter.format(timestamp.withZoneSameInstant(ZoneId.of("UTC")));
-        this.application = application;
-        this.group = group;
-        this.name = name;
-        this.type = type;
-        this.eventData = eventData;
+        this.header = header;
+        this.data = data;
+        this.userData = userData;
     }
 
-    public String getTimestamp() {
-        return timestamp;
+    public D getData() {
+        return data;
     }
 
-    public EventGroup getGroup() {
-        return group;
+    public U getUserData() {
+        return userData;
     }
 
-    public String getName() {
-        return name;
+    public EventHeader getHeader() {
+        return this.header;
     }
-
-    public EventType getType() {
-        return type;
-    }
-
-    public String getApplication() {
-        return application;
-    }
-
-    public D eventData() {
-        return eventData;
-    }
-
 
 }

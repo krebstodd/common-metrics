@@ -1,5 +1,6 @@
 package com.blispay.common.metrics.matchers;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Arrays;
@@ -31,11 +32,34 @@ public final class JsonMetricUtil {
     }
 
     public static JSONObject parseTrackingInfo(final JSONObject obj) {
-        return parseValue(obj, "trackingInfo", JSONObject.class);
+        return parseValue(obj, "createAndSetThreadLocalTrackingInfo", JSONObject.class);
     }
 
-    public static JSONObject parseEventData(final JSONObject obj) {
-        return parseValue(obj, "eventData", JSONObject.class);
+    /**
+     * Parse data element.
+     * @param obj json object
+     * @return data element object.
+     */
+    public static JSONObject parseData(final JSONObject obj) {
+
+        try {
+            return parseValue(obj, "data", JSONObject.class);
+        } catch (JSONException ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Parse user data element.
+     * @param obj json object
+     * @return user data element object.
+     */
+    public static JSONObject parseUserData(final JSONObject obj) {
+        try {
+            return parseValue(obj, "userData", JSONObject.class);
+        } catch (JSONException ex) {
+            return null;
+        }
     }
 
     private static <T> T parseValue(final JSONObject obj, final String key, final Class<T> type) {

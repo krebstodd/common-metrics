@@ -42,7 +42,7 @@ public class JettyProbe {
 
         metricService.utilizationGauge()
                 .inGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
-                .withName("jett-thread-pool")
+                .withName("jetty-thread-pool")
                 .register(JettyProbe.threadPoolMonitor(pool));
 
     }

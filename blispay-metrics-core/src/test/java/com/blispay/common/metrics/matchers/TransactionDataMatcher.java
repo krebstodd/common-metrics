@@ -1,11 +1,10 @@
 package com.blispay.common.metrics.matchers;
 
-import com.blispay.common.metrics.model.TrackingInfo;
 import com.blispay.common.metrics.model.call.Action;
-import com.blispay.common.metrics.model.call.TransactionData;
 import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.Resource;
 import com.blispay.common.metrics.model.call.Status;
+import com.blispay.common.metrics.model.call.TransactionData;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -19,7 +18,6 @@ public class TransactionDataMatcher extends TypeSafeMatcher<TransactionData> {
     private final Matcher<String> actionMatcher;
     private final Matcher<Integer> statusMatcher;
     private final Matcher<Direction> directionMatcher;
-    private final Matcher<TrackingInfo> trackingInfoMatcher;
     private final Long approxRuntime;
 
     /**
@@ -29,16 +27,14 @@ public class TransactionDataMatcher extends TypeSafeMatcher<TransactionData> {
      * @param direction direction
      * @param status status
      * @param approxMillis approxMillis
-     * @param trackingInfo trackinginfo
      */
     public TransactionDataMatcher(final Resource resource, final Action action, final Direction direction,
-                                  final Status status, final Long approxMillis, final Matcher<TrackingInfo> trackingInfo) {
+                                  final Status status, final Long approxMillis) {
 
         this.resourceMatcher = Matchers.equalTo(resource.getValue());
         this.actionMatcher = Matchers.equalTo(action.getValue());
         this.directionMatcher = Matchers.equalTo(direction);
         this.statusMatcher = Matchers.equalTo(status.getValue());
-        this.trackingInfoMatcher = trackingInfo;
         this.approxRuntime = approxMillis;
     }
 
@@ -48,7 +44,6 @@ public class TransactionDataMatcher extends TypeSafeMatcher<TransactionData> {
                 && actionMatcher.matches(raBaseResourceCallEventData.getAction().getValue())
                 && statusMatcher.matches(raBaseResourceCallEventData.getStatus())
                 && directionMatcher.matches(raBaseResourceCallEventData.getDirection())
-                && trackingInfoMatcher.matches(raBaseResourceCallEventData.getTrackingInfo())
                 && approximatelyEqual(approxRuntime, raBaseResourceCallEventData.getDurationMillis(), ACCEPTABLE_RT_DELTA);
     }
 

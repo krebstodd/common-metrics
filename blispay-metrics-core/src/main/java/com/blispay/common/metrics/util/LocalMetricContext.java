@@ -75,6 +75,7 @@ public final class LocalMetricContext {
      * @return The users local metric context.
      */
     public static LocalMetricContext get() {
+
         if (CURRENT.get() == null) {
             synchronized (CURRENT) {
                 if (CURRENT.get() == null) {
@@ -85,6 +86,10 @@ public final class LocalMetricContext {
 
         return CURRENT.get();
 
+    }
+
+    public static void clear() {
+        LocalMetricContext.get().setTrackingInfo(null, null, null, null);
     }
 
     /**

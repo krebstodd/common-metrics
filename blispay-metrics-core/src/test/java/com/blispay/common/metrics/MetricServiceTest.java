@@ -4,6 +4,7 @@ import com.blispay.common.metrics.event.EventDispatcher;
 import com.blispay.common.metrics.event.EventEmitter;
 import com.blispay.common.metrics.event.EventSubscriber;
 import com.blispay.common.metrics.matchers.EventMatcher;
+import com.blispay.common.metrics.matchers.ResourceUtilizationDataMatcher;
 import com.blispay.common.metrics.matchers.TrackingInfoMatcher;
 import com.blispay.common.metrics.matchers.TransactionDataMatcher;
 import com.blispay.common.metrics.model.EventGroup;
@@ -22,12 +23,14 @@ import com.blispay.common.metrics.model.call.internal.InternalResource;
 import com.blispay.common.metrics.model.call.mq.MqAction;
 import com.blispay.common.metrics.model.call.mq.MqResource;
 import com.blispay.common.metrics.model.counter.ResourceCountData;
-import com.blispay.common.metrics.model.health.HealthCheckData;
+import com.blispay.common.metrics.model.status.StatusData;
 import com.blispay.common.metrics.model.utilization.ResourceUtilizationData;
 import com.blispay.common.metrics.report.BasicSnapshotReporter;
 import com.blispay.common.metrics.report.SnapshotReporter;
+import com.blispay.common.metrics.util.LocalMetricContext;
 import com.blispay.common.metrics.util.TestEventSubscriber;
 import org.hamcrest.Matchers;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -41,6 +44,11 @@ import static org.junit.Assert.assertTrue;
 public class MetricServiceTest extends AbstractMetricsTest {
 
     private static final String application = "testapp";
+
+    @Before
+    public void clearTrackingInfo() {
+        LocalMetricContext.clear();
+    }
 
     @Test
     public void testGlobalIsSingleton() {
@@ -74,8 +82,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
 
         thrown.expect(IllegalStateException.class);
 
-        metricService.eventRepository(PiiBusinessEventData.class)
-                .ofType(EventType.BUSINESS_EVT)
+        metricService.eventFactory(PiiBusinessEventData.class)
                 .inGroup(EventGroup.CLIENT)
                 .withName("someResource")
                 .build()
@@ -88,6 +95,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
         final SnapshotReporter reporter = new BasicSnapshotReporter();
 
         final MetricService metricService = new MetricService(application);
+        metricService.start();
         metricService.addSnapshotReporter(reporter);
 
         final Long min = 0L;
@@ -99,14 +107,21 @@ public class MetricServiceTest extends AbstractMetricsTest {
                 .withName("test-gauge")
                 .register(() -> new ResourceUtilizationData(min, max, curVal.get(), (double) curVal.get() / max));
 
-        metricService.start();
+        final EventMatcher<ResourceUtilizationData, Void> m1 = EventMatcher.<ResourceUtilizationData, Void>builder()
+                .setApplication(application)
+                .setGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
+                .setName("test-gauge")
+                .setType(EventType.RESOURCE_UTILIZATION)
+                .setDataMatcher(new ResourceUtilizationDataMatcher(Matchers.equalTo(min), Matchers.equalTo(max), Matchers.equalTo(curVal.get()), Matchers.equalTo((double) curVal.get() / max)))
+                .build();
 
-        curVal.set(75L);
+        assertThat((EventModel<ResourceUtilizationData, Void>) reporter.report().getMetrics().iterator().next(), m1);
     }
 
     @Test
     public void testCreateBusinessEventRepository() {
-        final TrackingInfo trackingInfo = trackingInfo();
+
+        final TrackingInfo trackingInfo = createAndSetThreadLocalTrackingInfo();
 
         final TestEventSubscriber evtSub = new TestEventSubscriber();
 
@@ -114,15 +129,13 @@ public class MetricServiceTest extends AbstractMetricsTest {
         metricService.addEventSubscriber(evtSub);
         metricService.start();
 
-        metricService.eventRepository(PiiBusinessEventData.class)
-                .ofType(EventType.BUSINESS_EVT)
+        metricService.eventFactory(PiiBusinessEventData.class)
                 .inGroup(EventGroup.ACCOUNT_DOMAIN)
                 .withName("created")
                 .build()
                 .save(defaultPiiBusinessEventData("user1"));
 
-        metricService.eventRepository(PiiBusinessEventData.class)
-                .ofType(EventType.BUSINESS_EVT)
+        metricService.eventFactory(PiiBusinessEventData.class)
                 .inGroup(EventGroup.ACCOUNT_DOMAIN)
                 .withName("created")
                 .build()
@@ -130,17 +143,33 @@ public class MetricServiceTest extends AbstractMetricsTest {
 
         assertEquals(2, evtSub.count());
 
-        assertThat((EventModel<PiiBusinessEventData>) evtSub.poll(),
-                new EventMatcher<>(application, EventGroup.ACCOUNT_DOMAIN, "created", EventType.BUSINESS_EVT, defaultPiiDataMatcher("user1", trackingInfo)));
+        final EventMatcher<Void, PiiBusinessEventData> m1 = EventMatcher.<Void, PiiBusinessEventData>builder()
+                .setApplication(application)
+                .setGroup(EventGroup.ACCOUNT_DOMAIN)
+                .setName("created")
+                .setType(EventType.EVENT)
+                .setUserDataMatcher(defaultPiiDataMatcher("user1"))
+                .setTrackingInfoMatcher(new TrackingInfoMatcher(trackingInfo))
+                .build();
 
-        assertThat((EventModel<PiiBusinessEventData>) evtSub.poll(),
-                new EventMatcher<>(application, EventGroup.ACCOUNT_DOMAIN, "created", EventType.BUSINESS_EVT, defaultPiiDataMatcher("user2", trackingInfo)));
+        final EventMatcher<Void, PiiBusinessEventData> m2 = EventMatcher.<Void, PiiBusinessEventData>builder()
+                .setApplication(application)
+                .setGroup(EventGroup.ACCOUNT_DOMAIN)
+                .setName("created")
+                .setType(EventType.EVENT)
+                .setUserDataMatcher(defaultPiiDataMatcher("user2"))
+                .setTrackingInfoMatcher(new TrackingInfoMatcher(trackingInfo))
+                .build();
+
+        assertThat((EventModel<Void, PiiBusinessEventData>) evtSub.poll(), m1);
+        assertThat((EventModel<Void, PiiBusinessEventData>) evtSub.poll(), m2);
 
     }
 
     @Test
     public void testCreateHttpResourceCallTimer() throws InterruptedException {
-        final TrackingInfo trackingInfo = trackingInfo();
+
+        final TrackingInfo trackingInfo = createAndSetThreadLocalTrackingInfo();
 
         final TestEventSubscriber evtSub = new TestEventSubscriber();
 
@@ -166,16 +195,22 @@ public class MetricServiceTest extends AbstractMetricsTest {
 
         assertFalse(tx.isRunning());
         assertEquals(1, evtSub.count());
-        assertThat((EventModel<TransactionData>) evtSub.poll(),
-                new EventMatcher<>(application, EventGroup.CLIENT_HTTP, "request", EventType.RESOURCE_CALL,
-                        new TransactionDataMatcher(HttpResource.fromUrl("/test/url"), HttpAction.POST, Direction.OUTBOUND, Status.success(), 1000L, new TrackingInfoMatcher(trackingInfo))));
+
+        final EventMatcher<TransactionData, Void> matcher = EventMatcher.<TransactionData, Void>builder()
+                .setApplication(application)
+                .setGroup(EventGroup.CLIENT_HTTP)
+                .setName("request")
+                .setType(EventType.TRANSACTION)
+                .setDataMatcher(new TransactionDataMatcher(HttpResource.fromUrl("/test/url"), HttpAction.POST, Direction.OUTBOUND, Status.success(), 1000L))
+                .setTrackingInfoMatcher(new TrackingInfoMatcher(trackingInfo))
+                .build();
+
+        assertThat((EventModel<TransactionData, Void>) evtSub.poll(), matcher);
 
     }
 
     @Test
     public void testCreateDatasourceCallTimer() throws InterruptedException {
-        final TrackingInfo trackingInfo = trackingInfo();
-
         final TestEventSubscriber evtSub = new TestEventSubscriber();
 
         final MetricService metricService = new MetricService(application);
@@ -202,15 +237,21 @@ public class MetricServiceTest extends AbstractMetricsTest {
         assertFalse(tx.isRunning());
         assertEquals(1, evtSub.count());
 
-        assertThat((EventModel<TransactionData>) evtSub.poll(),
-                new EventMatcher<>(application, EventGroup.CLIENT_JDBC, "query", EventType.RESOURCE_CALL,
-                        new TransactionDataMatcher(new DsResource("dom_account", "applications"), DsAction.INSERT, Direction.OUTBOUND, Status.success(), 1000L, Matchers.notNullValue())));
+        final EventMatcher<TransactionData, Void> matcher = EventMatcher.<TransactionData, Void>builder()
+                .setApplication(application)
+                .setGroup(EventGroup.CLIENT_JDBC)
+                .setName("query")
+                .setType(EventType.TRANSACTION)
+                .setDataMatcher(new TransactionDataMatcher(new DsResource("dom_account", "applications"), DsAction.INSERT, Direction.OUTBOUND, Status.success(), 1000L))
+                .build();
+
+        assertThat((EventModel<TransactionData, Void>) evtSub.poll(), matcher);
 
     }
 
     @Test
     public void testInternalResourceCallTimer() throws InterruptedException {
-        final TrackingInfo trackingInfo = trackingInfo();
+        final TrackingInfo trackingInfo = createAndSetThreadLocalTrackingInfo();
         final TestEventSubscriber evtSub = new TestEventSubscriber();
 
         final MetricService metricService = new MetricService(application);
@@ -236,16 +277,23 @@ public class MetricServiceTest extends AbstractMetricsTest {
         assertFalse(tx.isRunning());
         assertEquals(1, evtSub.count());
 
-        assertThat((EventModel<TransactionData>) evtSub.poll(),
-                new EventMatcher<>(application, EventGroup.CLIENT_JDBC, "query", EventType.RESOURCE_CALL,
-                        new TransactionDataMatcher(InternalResource.fromClass(getClass()),  InternalAction.fromMethodName("doSomething"),
-                                Direction.OUTBOUND, Status.success(), 1000L, new TrackingInfoMatcher(trackingInfo))));
+        final EventMatcher<TransactionData, Void> matcher = EventMatcher.<TransactionData, Void>builder()
+                .setApplication(application)
+                .setGroup(EventGroup.CLIENT_JDBC)
+                .setName("query")
+                .setType(EventType.TRANSACTION)
+                .setDataMatcher(new TransactionDataMatcher(InternalResource.fromClass(getClass()), InternalAction.fromMethodName("doSomething"),
+                        Direction.OUTBOUND, Status.success(), 1000L))
+                .setTrackingInfoMatcher(Matchers.notNullValue())
+                .build();
+
+        assertThat((EventModel<TransactionData, Void>) evtSub.poll(), matcher);
+
     }
 
     @Test
     public void testMqResourceCallTimer() throws InterruptedException {
-        final TrackingInfo trackingInfo = trackingInfo();
-
+        createAndSetThreadLocalTrackingInfo();
         final TestEventSubscriber evtSub = new TestEventSubscriber();
 
         final MetricService metricService = new MetricService(application);
@@ -271,10 +319,17 @@ public class MetricServiceTest extends AbstractMetricsTest {
         assertFalse(tx.isRunning());
         assertEquals(1, evtSub.count());
 
-        assertThat((EventModel<TransactionData>) evtSub.poll(),
-                new EventMatcher<>(application, EventGroup.CLIENT_MQ_REQ, "request", EventType.RESOURCE_CALL,
-                        new TransactionDataMatcher(MqResource.fromQueueName("myqueue"), MqAction.GET,
-                                Direction.OUTBOUND, Status.success(), 1000L, new TrackingInfoMatcher(trackingInfo))));
+        final EventMatcher<TransactionData, Void> matcher = EventMatcher.<TransactionData, Void>builder()
+                .setApplication(application)
+                .setGroup(EventGroup.CLIENT_MQ_REQ)
+                .setName("request")
+                .setType(EventType.TRANSACTION)
+                .setDataMatcher(new TransactionDataMatcher(MqResource.fromQueueName("myqueue"), MqAction.GET,
+                        Direction.OUTBOUND, Status.success(), 1000L))
+                .setTrackingInfoMatcher(Matchers.notNullValue())
+                .build();
+
+        assertThat((EventModel<TransactionData, Void>) evtSub.poll(), matcher);
 
     }
 
@@ -326,8 +381,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
 
         assertFalse(usesCustom.get());
 
-        serv.eventRepository(ResourceCountData.class)
-                .ofType(EventType.RESOURCE_COUNT)
+        serv.eventFactory(ResourceCountData.class)
                 .inGroup(EventGroup.CLIENT)
                 .withName("someResource")
                 .build()
@@ -345,25 +399,25 @@ public class MetricServiceTest extends AbstractMetricsTest {
         metricService.addSnapshotReporter(reporter);
 
         final AtomicBoolean isHealthy = new AtomicBoolean(Boolean.TRUE);
-        metricService.healthMonitor()
+        metricService.stateMonitor()
                 .inGroup(EventGroup.HEALTH)
                 .withName("my-resource")
-                .withSupplier(() -> new HealthCheckData(isHealthy.get(), "Some message"))
+                .withSupplier(() -> new StatusData(isHealthy.get(), "Some message"))
                 .register();
 
         final EventModel health = reporter.report().getMetrics().iterator().next();
-        assertEquals("my-resource", health.getName());
-        assertEquals(EventGroup.HEALTH, health.getGroup());
-        assertTrue(health.eventData() instanceof HealthCheckData);
-        assertTrue(((HealthCheckData) health.eventData()).isHealthy());
+        assertEquals("my-resource", health.getHeader().getName());
+        assertEquals(EventGroup.HEALTH, health.getHeader().getGroup());
+        assertTrue(health.getData() instanceof StatusData);
+        assertTrue(((StatusData) health.getData()).getStatusValue());
 
         isHealthy.set(Boolean.FALSE);
 
         final EventModel health2 = reporter.report().getMetrics().iterator().next();
-        assertEquals("my-resource", health2.getName());
-        assertEquals(EventGroup.HEALTH, health2.getGroup());
-        assertTrue(health.eventData() instanceof HealthCheckData);
-        assertFalse(((HealthCheckData) health2.eventData()).isHealthy());
+        assertEquals("my-resource", health.getHeader().getName());
+        assertEquals(EventGroup.HEALTH, health.getHeader().getGroup());
+        assertTrue(health.getData() instanceof StatusData);
+        assertFalse(((StatusData) health2.getData()).getStatusValue());
 
     }
 

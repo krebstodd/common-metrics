@@ -2,16 +2,12 @@ package com.blispay.common.metrics;
 
 import com.blispay.common.metrics.event.EventEmitter;
 import com.blispay.common.metrics.model.EventGroup;
-import com.blispay.common.metrics.model.EventType;
 import com.blispay.common.metrics.model.call.Action;
 import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.Resource;
-import com.blispay.common.metrics.model.call.TransactionData;
 import com.blispay.common.metrics.util.NameFormatter;
 
 public final class TransactionFactory {
-
-    private final EventType type = EventType.RESOURCE_CALL;
 
     private final String applicationId;
     private final EventEmitter emitter;
@@ -43,11 +39,7 @@ public final class TransactionFactory {
      */
     public Transaction create() {
 
-        return new Transaction(new EventRepository.Builder<>(applicationId, TransactionData.class, emitter)
-                .inGroup(group)
-                .ofType(type)
-                .withName(name)
-                .build())
+        return new Transaction(emitter, applicationId, group, name)
                 .inDirection(direction)
                 .withAction(action)
                 .onResource(resource);

@@ -5,9 +5,11 @@ import com.blispay.common.metrics.TestEventSubscriber;
 import com.blispay.common.metrics.matchers.EventMatcher;
 import com.blispay.common.metrics.matchers.TransactionDataMatcher;
 import com.blispay.common.metrics.model.EventGroup;
+import com.blispay.common.metrics.model.EventModel;
 import com.blispay.common.metrics.model.EventType;
 import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.Status;
+import com.blispay.common.metrics.model.call.TransactionData;
 import com.blispay.common.metrics.model.call.ds.DsAction;
 import com.blispay.common.metrics.model.call.ds.DsResource;
 import com.blispay.common.metrics.spring.annotation.ProfiledQuery;
@@ -49,10 +51,17 @@ public class QueryExecutionProfilerTest {
         profiled.profiledQuery();
 
         assertEquals(1, subscriber.count());
-        assertThat(subscriber.poll(), new EventMatcher(metricService.getApplicationId(), EventGroup.CLIENT_JDBC, QueryExecutionProfilerTest.ProfiledRepository.queryName, EventType.RESOURCE_CALL,
-                new TransactionDataMatcher(DsResource.fromSchemaTable(ProfiledRepositoryImpl.schema, ProfiledRepositoryImpl.table),  ProfiledRepositoryImpl.dsAction,
-                        Direction.OUTBOUND, Status.success(), 1000L)));
 
+        final EventMatcher<TransactionData, Void> matcher = EventMatcher.<TransactionData, Void>builder()
+                .setApplication(metricService.getApplicationId())
+                .setGroup(EventGroup.CLIENT_JDBC)
+                .setName(QueryExecutionProfilerTest.ProfiledRepository.queryName)
+                .setType(EventType.TRANSACTION)
+                .setDataMatcher(new TransactionDataMatcher(DsResource.fromSchemaTable(ProfiledRepositoryImpl.schema, ProfiledRepositoryImpl.table),  ProfiledRepositoryImpl.dsAction,
+                        Direction.OUTBOUND, Status.success(), 1000L))
+                .build();
+
+        assertThat((EventModel<TransactionData, Void>) subscriber.poll(), matcher);
     }
 
     @Test
@@ -68,10 +77,16 @@ public class QueryExecutionProfilerTest {
         thrown.expect(RuntimeException.class);
         profiled.profiledQuery();
 
-        assertEquals(1, subscriber.count());
-        assertThat(subscriber.poll(), new EventMatcher(metricService.getApplicationId(), EventGroup.CLIENT_JDBC, QueryExecutionProfilerTest.ProfiledRepository.queryName, EventType.RESOURCE_CALL,
-                new TransactionDataMatcher(DsResource.fromSchemaTable(ProfiledRepositoryImpl.schema, ProfiledRepositoryImpl.table),  ProfiledRepositoryImpl.dsAction,
-                        Direction.OUTBOUND, Status.error(), 1000L)));
+        final EventMatcher<TransactionData, Void> matcher = EventMatcher.<TransactionData, Void>builder()
+                .setApplication(metricService.getApplicationId())
+                .setGroup(EventGroup.CLIENT_JDBC)
+                .setName(QueryExecutionProfilerTest.ProfiledRepository.queryName)
+                .setType(EventType.TRANSACTION)
+                .setDataMatcher(new TransactionDataMatcher(DsResource.fromSchemaTable(ProfiledRepositoryImpl.schema, ProfiledRepositoryImpl.table),  ProfiledRepositoryImpl.dsAction,
+                        Direction.OUTBOUND, Status.error(), 1000L))
+                .build();
+
+        assertThat((EventModel<TransactionData, Void>) subscriber.poll(), matcher);
     }
 
     @Test

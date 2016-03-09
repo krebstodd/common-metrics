@@ -1,12 +1,9 @@
 package com.blispay.common.metrics;
 
-import com.blispay.common.metrics.matchers.TrackingInfoMatcher;
 import com.blispay.common.metrics.model.EventGroup;
 import com.blispay.common.metrics.model.EventModel;
-import com.blispay.common.metrics.model.EventType;
 import com.blispay.common.metrics.model.TrackingInfo;
 import com.blispay.common.metrics.util.LocalMetricContext;
-import com.blispay.common.metrics.util.TrackingInfoAware;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -42,11 +39,11 @@ public abstract class AbstractMetricsTest {
         return new PiiBusinessEventData(username, "Some notes", 1);
     }
 
-    protected static PiiBusinessEventDataMatcher defaultPiiDataMatcher(final String username, final TrackingInfo trackingInfo) {
-        return new PiiBusinessEventDataMatcher(username, "Some notes", 1, trackingInfo);
+    protected static PiiBusinessEventDataMatcher defaultPiiDataMatcher(final String username) {
+        return new PiiBusinessEventDataMatcher(username, "Some notes", 1);
     }
 
-    protected static TrackingInfo trackingInfo() {
+    protected static TrackingInfo createAndSetThreadLocalTrackingInfo() {
         final TrackingInfo ti = new TrackingInfo(
                 UUID.randomUUID().toString(),
                 UUID.randomUUID().toString(),
@@ -58,17 +55,16 @@ public abstract class AbstractMetricsTest {
         return ti;
     }
 
-    protected static EventModel<PiiBusinessEventData> testEvent() {
-        final EventRepository<PiiBusinessEventData> repo = MetricService.globalInstance().eventRepository(PiiBusinessEventData.class)
-                .ofType(EventType.BUSINESS_EVT)
+    protected static EventModel<Void, PiiBusinessEventData> testEvent() {
+        final EventFactory<PiiBusinessEventData> factory = MetricService.globalInstance().eventFactory(PiiBusinessEventData.class)
                 .inGroup(EventGroup.ACCOUNT_DOMAIN)
                 .withName("some-event")
                 .build();
 
-        return repo.save(defaultPiiBusinessEventData());
+        return factory.save(defaultPiiBusinessEventData());
     }
 
-    protected static class PiiBusinessEventData implements TrackingInfoAware {
+    protected static class PiiBusinessEventData {
 
         @JsonProperty("user_name")
         private final String userName;
@@ -78,9 +74,6 @@ public abstract class AbstractMetricsTest {
 
         @JsonProperty("count")
         private final Integer count;
-
-        @JsonProperty("trackingInfo")
-        private TrackingInfo trackingInfo;
 
         public PiiBusinessEventData(final String username, final String notes,
                                     final Integer count) {
@@ -102,14 +95,6 @@ public abstract class AbstractMetricsTest {
             return count;
         }
 
-        public TrackingInfo getTrackingInfo() {
-            return trackingInfo;
-        }
-
-        @Override
-        public void setTrackingInfo(final TrackingInfo trackingInfo) {
-            this.trackingInfo = trackingInfo;
-        }
     }
 
     protected static class PiiBusinessEventDataMatcher extends TypeSafeMatcher<PiiBusinessEventData> {
@@ -117,23 +102,19 @@ public abstract class AbstractMetricsTest {
         private final Matcher<String> usernameMatcher;
         private final Matcher<String> notesMatcher;
         private final Matcher<Integer> countMatcher;
-        private final Matcher<TrackingInfo> trackingInfoMatcher;
 
-        public PiiBusinessEventDataMatcher(final String username, final String notes, final Integer count,
-                                           final TrackingInfo trackingInfo) {
+        public PiiBusinessEventDataMatcher(final String username, final String notes, final Integer count) {
 
             this.usernameMatcher = Matchers.equalTo(username);
             this.notesMatcher = Matchers.equalTo(notes);
             this.countMatcher = Matchers.equalTo(count);
-            this.trackingInfoMatcher = new TrackingInfoMatcher(trackingInfo);
         }
 
         @Override
         public boolean matchesSafely(final PiiBusinessEventData piiBusinessEventData) {
             return usernameMatcher.matches(piiBusinessEventData.getUserName())
                     && notesMatcher.matches(piiBusinessEventData.getNotes())
-                    && countMatcher.matches(piiBusinessEventData.getCount())
-                    && trackingInfoMatcher.matches(piiBusinessEventData.getTrackingInfo());
+                    && countMatcher.matches(piiBusinessEventData.getCount());
         }
 
         @Override

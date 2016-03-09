@@ -1,6 +1,6 @@
 package com.blispay.common.metrics.jvm;
 
-import com.blispay.common.metrics.EventRepository;
+import com.blispay.common.metrics.EventFactory;
 import com.sun.management.GarbageCollectionNotificationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,10 +15,10 @@ public class GcNotificationListener implements NotificationListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(GcNotificationListener.class);
 
-    private final EventRepository<GcEventData> gcEventRepo;
+    private final EventFactory<GcEventData> gcEventFactory;
 
-    public GcNotificationListener(final EventRepository<GcEventData> gcEventRepo) {
-        this.gcEventRepo = gcEventRepo;
+    public GcNotificationListener(final EventFactory<GcEventData> gcEventRepo) {
+        this.gcEventFactory = gcEventRepo;
     }
 
     @Override
@@ -56,7 +56,7 @@ public class GcNotificationListener implements NotificationListener {
                 final GcEventData data = builder.build();
 
                 LOG.debug("Saving garbage collection data.");
-                gcEventRepo.save(data);
+                gcEventFactory.save(data);
 
             // CHECK_OFF: IllegalCatch
             } catch (Exception ex) {
@@ -67,8 +67,8 @@ public class GcNotificationListener implements NotificationListener {
         }
     }
 
-    public EventRepository<GcEventData> getGcEventRepo() {
-        return gcEventRepo;
+    public EventFactory<GcEventData> getGcEventFactory() {
+        return gcEventFactory;
     }
 
 }

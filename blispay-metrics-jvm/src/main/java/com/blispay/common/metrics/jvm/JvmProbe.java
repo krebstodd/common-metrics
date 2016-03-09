@@ -1,10 +1,9 @@
 package com.blispay.common.metrics.jvm;
 
-import com.blispay.common.metrics.EventRepository;
+import com.blispay.common.metrics.EventFactory;
 import com.blispay.common.metrics.MetricService;
 import com.blispay.common.metrics.UtilizationGauge;
 import com.blispay.common.metrics.model.EventGroup;
-import com.blispay.common.metrics.model.EventType;
 import com.blispay.common.metrics.model.utilization.ResourceUtilizationData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +63,7 @@ public class JvmProbe implements Lifecycle {
         if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
             LOG.info("Starting JVM metric probe...");
 
-            final UtilizationGauge.Factory memUtilizationFactory = metricService.utilizationGauge()
+            final UtilizationGauge.Builder memUtilizationFactory = metricService.utilizationGauge()
                     .inGroup(EventGroup.RESOURCE_UTILIZATION_MEM);
 
             memUtilizationFactory.withName("heap-utilization").register(this::heapUtilization);
@@ -84,7 +83,7 @@ public class JvmProbe implements Lifecycle {
             }
 
             // Create JVM wide thread guage metrics.
-            final UtilizationGauge.Factory threadUtilizationFactory = metricService.utilizationGauge()
+            final UtilizationGauge.Builder threadUtilizationFactory = metricService.utilizationGauge()
                     .inGroup(EventGroup.RESOURCE_UTILIZATION_THREADS);
 
             threadUtilizationFactory.withName("jvm-active").register(threadUtilization(JvmProbe::isActive));
@@ -187,8 +186,7 @@ public class JvmProbe implements Lifecycle {
 
         final NotificationEmitter emitter = (NotificationEmitter) gc;
 
-        final EventRepository<GcEventData> gcEventRepo = metricService.eventRepository(GcEventData.class)
-                .ofType(EventType.INFRA_EVT)
+        final EventFactory<GcEventData> gcEventRepo = metricService.eventFactory(GcEventData.class)
                 .inGroup(EventGroup.RESOURCE_UTILIZATION_GC)
                 .withName("gc")
                 .build();

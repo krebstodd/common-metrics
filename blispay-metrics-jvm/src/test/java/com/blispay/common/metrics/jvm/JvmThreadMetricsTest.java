@@ -40,24 +40,34 @@ public class JvmThreadMetricsTest {
         final Matcher<Long> nnLong = Matchers.notNullValue(Long.class);
         final Matcher<Double> nnDbl = Matchers.notNullValue(Double.class);
 
-        final Matcher activeThreadsGauge = new EventMatcher<>(serv.getApplicationId(), EventGroup.RESOURCE_UTILIZATION_THREADS, "jvm-active", EventType.RESOURCE_UTILIZATION,
-                new ResourceUtilizationDataMatcher(nnLong, nnLong, nnLong, nnDbl));
+        final EventMatcher<ResourceUtilizationData, Void> m1 = EventMatcher.<ResourceUtilizationData, Void>builder()
+                .setApplication(serv.getApplicationId())
+                .setGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
+                .setName("jvm-active")
+                .setType(EventType.RESOURCE_UTILIZATION)
+                .setDataMatcher(new ResourceUtilizationDataMatcher(nnLong, nnLong, nnLong, nnDbl))
+                .build();
 
-        final Matcher blockedThreadsGauge = new EventMatcher<>(serv.getApplicationId(), EventGroup.RESOURCE_UTILIZATION_THREADS, "jvm-blocked", EventType.RESOURCE_UTILIZATION,
-                new ResourceUtilizationDataMatcher(nnLong, nnLong, nnLong, nnDbl));
+        final EventMatcher<ResourceUtilizationData, Void> m2 = EventMatcher.<ResourceUtilizationData, Void>builder()
+                .setApplication(serv.getApplicationId())
+                .setGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
+                .setName("jvm-active")
+                .setType(EventType.RESOURCE_UTILIZATION)
+                .setDataMatcher(new ResourceUtilizationDataMatcher(nnLong, nnLong, nnLong, nnDbl))
+                .build();
 
-        assertThat(sn.getMetrics(), Matchers.hasItem(activeThreadsGauge));
-        assertThat(sn.getMetrics(), Matchers.hasItem(blockedThreadsGauge));
+        assertThat(sn.getMetrics(), Matchers.hasItem(m1));
+        assertThat(sn.getMetrics(), Matchers.hasItem(m2));
 
         final CountDownLatch latch = new CountDownLatch(1);
 
-        final int currActive = getActiveThreadMetric(threadReporter.report().getMetrics()).eventData().getCurrentValue().intValue();
+        final int currActive = getActiveThreadMetric(threadReporter.report().getMetrics()).getData().getCurrentValue().intValue();
 
         // Assert that creating a new thread bumps the number of active threads.
         new Thread(() -> {
 
-                final EventModel<ResourceUtilizationData> activeThreads = getActiveThreadMetric(threadReporter.report().getMetrics());
-                assertTrue(currActive < activeThreads.eventData().getCurrentValue().intValue());
+                final EventModel<ResourceUtilizationData, Void> activeThreads = getActiveThreadMetric(threadReporter.report().getMetrics());
+                assertTrue(currActive < activeThreads.getData().getCurrentValue().intValue());
 
                 latch.countDown();
 
@@ -68,11 +78,11 @@ public class JvmThreadMetricsTest {
 
     }
 
-    private EventModel<ResourceUtilizationData> getActiveThreadMetric(final Set<EventModel> snapshot) {
+    private EventModel<ResourceUtilizationData, Void> getActiveThreadMetric(final Set<EventModel> snapshot) {
         return snapshot.stream()
-                .filter(model -> "jvm-active".equals(model.getName()))
+                .filter(model -> "jvm-active".equals(model.getHeader().getName()))
                 .findAny()
-                .map(model -> (EventModel<ResourceUtilizationData>) model)
+                .map(model -> (EventModel<ResourceUtilizationData, Void>) model)
                 .get();
     }
 

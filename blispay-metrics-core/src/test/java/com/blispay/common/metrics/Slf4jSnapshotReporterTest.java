@@ -6,6 +6,7 @@ import com.blispay.common.metrics.model.EventGroup;
 import com.blispay.common.metrics.model.EventType;
 import com.blispay.common.metrics.model.utilization.ResourceUtilizationData;
 import com.blispay.common.metrics.report.Slf4jSnapshotReporter;
+import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -59,7 +60,8 @@ public class Slf4jSnapshotReporterTest extends AbstractMetricsTest {
                 "appId",
                 "thread-pool",
                 EventType.RESOURCE_UTILIZATION,
-                new JsonEventDataMatcher(expectedData)));
+                new JsonEventDataMatcher(expectedData),
+                Matchers.nullValue()));
 
     }
 

@@ -7,7 +7,7 @@ public enum EventType {
     /**
      * A resource call, execution time.
      */
-    RESOURCE_CALL("CAL"),
+    TRANSACTION("TX"),
     /**
      * Resource utilization level.
      */
@@ -19,15 +19,11 @@ public enum EventType {
     /**
      * Event occurrence.
      */
-    BUSINESS_EVT("EVENT"),
+    EVENT("EVENT"),
     /**
-     * Infrastructure event.
+     * Resource status.
      */
-    INFRA_EVT("INFRA_EVT"),
-    /**
-     * Health check.
-     */
-    HEALTH_CHECK("HLTH");
+    STATUS("STATUS");
 
     private final String type;
 

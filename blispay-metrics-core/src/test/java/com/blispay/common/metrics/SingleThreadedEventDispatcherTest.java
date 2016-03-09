@@ -24,7 +24,7 @@ public class SingleThreadedEventDispatcherTest extends AbstractMetricsTest {
 
         ed.start();
 
-        final EventModel<PiiBusinessEventData> evt = testEvent();
+        final EventModel<Void, PiiBusinessEventData> evt = testEvent();
         emitter.emit(evt);
 
         assertEquals(1, subscriber.count());
@@ -58,14 +58,14 @@ public class SingleThreadedEventDispatcherTest extends AbstractMetricsTest {
 
         final TestEventSubscriber subscriber1 = new TestEventSubscriber();
         final TestEventSubscriber subscriber2 = new TestEventSubscriber();
-        subscriber2.addFilter(event -> event.getGroup() != EventGroup.ACCOUNT_DOMAIN);
+        subscriber2.addFilter(event -> event.getHeader().getGroup() != EventGroup.ACCOUNT_DOMAIN);
 
         ed.subscribe(subscriber1);
         ed.subscribe(subscriber2);
 
         ed.start();
 
-        final EventModel<PiiBusinessEventData> evt = testEvent();
+        final EventModel<Void, PiiBusinessEventData> evt = testEvent();
         emitter.emit(evt);
 
         assertEquals(1, subscriber1.count());
@@ -93,7 +93,7 @@ public class SingleThreadedEventDispatcherTest extends AbstractMetricsTest {
 
         ed.start();
 
-        final EventModel<PiiBusinessEventData> evt = testEvent();
+        final EventModel<Void, PiiBusinessEventData> evt = testEvent();
         emitter.emit(evt);
 
         assertEquals(1, subscriber1.count());

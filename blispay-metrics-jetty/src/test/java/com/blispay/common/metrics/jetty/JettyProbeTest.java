@@ -23,6 +23,7 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.hamcrest.Matchers;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -60,14 +61,28 @@ public class JettyProbeTest {
         jettyServer.handle(mockChannel("POST", "/user/create/v1", 200));
         jettyServer.handle(mockChannel("GET", "/user/v1", 404));
 
-        final EventModel<TransactionData> event1 = testReporter.poll();
-        final EventModel<TransactionData> event2 = testReporter.poll();
+        final EventModel<TransactionData, Void> event1 = testReporter.poll();
+        final EventModel<TransactionData, Void> event2 = testReporter.poll();
 
-        assertThat(event1, new EventMatcher(metricService.getApplicationId(), EventGroup.SERVER_HTTP, "http-response", EventType.RESOURCE_CALL,
-                new TransactionDataMatcher(HttpResource.fromUrl("/user/create/v1"), HttpAction.POST, Direction.INBOUND, Status.fromValue(200), 1000L)));
+        final EventMatcher<TransactionData, Void> m1 = EventMatcher.<TransactionData, Void>builder()
+                .setApplication(metricService.getApplicationId())
+                .setGroup(EventGroup.SERVER_HTTP)
+                .setName("http-response")
+                .setType(EventType.TRANSACTION)
+                .setDataMatcher(new TransactionDataMatcher(HttpResource.fromUrl("/user/create/v1"), HttpAction.POST, Direction.INBOUND, Status.fromValue(200), 1000L))
+                .build();
 
-        assertThat(event2, new EventMatcher(metricService.getApplicationId(), EventGroup.SERVER_HTTP, "http-response", EventType.RESOURCE_CALL,
-                new TransactionDataMatcher(HttpResource.fromUrl("/user/v1"), HttpAction.GET, Direction.INBOUND, Status.fromValue(404), 1000L)));
+        final EventMatcher<TransactionData, Void> m2 = EventMatcher.<TransactionData, Void>builder()
+                .setApplication(metricService.getApplicationId())
+                .setGroup(EventGroup.SERVER_HTTP)
+                .setName("http-response")
+                .setType(EventType.TRANSACTION)
+                .setDataMatcher(new TransactionDataMatcher(HttpResource.fromUrl("/user/v1"), HttpAction.GET, Direction.INBOUND, Status.fromValue(404), 1000L))
+                .build();
+
+        assertThat(event1, m1);
+
+        assertThat(event2, m2);
     }
 
     @Test
@@ -89,10 +104,15 @@ public class JettyProbeTest {
                 final Set<EventModel> snapshot = testReporter.report().getMetrics();
                 assertEquals(1, snapshot.size());
 
+                final EventMatcher<ResourceUtilizationData, Void> m1 = EventMatcher.<ResourceUtilizationData, Void>builder()
+                        .setApplication(metricService.getApplicationId())
+                        .setGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
+                        .setName("jetty-thread-pool")
+                        .setType(EventType.RESOURCE_UTILIZATION)
+                        .setDataMatcher(new ResourceUtilizationDataMatcher(Matchers.equalTo(0L), Matchers.equalTo(8L), Matchers.equalTo(1L), Matchers.equalTo(0.125D)))
+                        .build();
 
-                assertThat((EventModel<ResourceUtilizationData>) snapshot.iterator().next(),
-                        new EventMatcher<>(metricService.getApplicationId(), EventGroup.RESOURCE_UTILIZATION_THREADS, "jetty-thread-pool", EventType.RESOURCE_UTILIZATION,
-                                new ResourceUtilizationDataMatcher(0L, 8L, 1L, 0.125D)));
+                assertThat((EventModel<ResourceUtilizationData, Void>) snapshot.iterator().next(), m1);
 
                 threadDispatched.set(true);
                 countDownLatch.countDown();

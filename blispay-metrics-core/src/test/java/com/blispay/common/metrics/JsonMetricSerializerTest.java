@@ -8,20 +8,19 @@ import com.blispay.common.metrics.model.EventGroup;
 import com.blispay.common.metrics.model.EventModel;
 import com.blispay.common.metrics.model.EventType;
 import com.blispay.common.metrics.model.call.Direction;
-import com.blispay.common.metrics.model.call.TransactionData;
 import com.blispay.common.metrics.model.call.Status;
 import com.blispay.common.metrics.model.call.http.HttpAction;
 import com.blispay.common.metrics.model.call.http.HttpResource;
-import com.blispay.common.metrics.model.counter.ResourceCountData;
 import com.blispay.common.metrics.model.utilization.ResourceUtilizationData;
+import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.junit.Test;
 
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 public class JsonMetricSerializerTest extends AbstractMetricsTest {
@@ -35,12 +34,12 @@ public class JsonMetricSerializerTest extends AbstractMetricsTest {
 
         final AtomicReference<EventModel> event = new AtomicReference<>();
 
-        new EventRepository.Builder<>(application, PiiBusinessEventData.class, event::set)
+        final EventFactory<PiiBusinessEventData> factory = new EventFactory.Builder<>(PiiBusinessEventData.class, application, event::set)
                 .inGroup(EventGroup.USER_DOMAIN)
                 .withName("created")
-                .ofType(EventType.BUSINESS_EVT)
-                .build()
-                .save(defaultPiiBusinessEventData());
+                .build();
+
+        factory.save(defaultPiiBusinessEventData());
 
         final JSONObject jsonObject = new JSONObject(jsonSerializer.serialize(event.get()));
 
@@ -53,7 +52,8 @@ public class JsonMetricSerializerTest extends AbstractMetricsTest {
                 EventGroup.USER_DOMAIN,
                 application,
                 "created",
-                EventType.BUSINESS_EVT,
+                EventType.EVENT,
+                Matchers.nullValue(),
                 new JsonEventDataMatcher(expectedData)));
 
     }
@@ -62,12 +62,11 @@ public class JsonMetricSerializerTest extends AbstractMetricsTest {
     public void testSerializesCounterMetrics() {
         final AtomicReference<EventModel> event = new AtomicReference<>();
 
-        new EventRepository.Builder<>(application, ResourceCountData.class, event::set)
+        new ResourceCounter.Builder(application, event::set)
                 .inGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
                 .withName("total-threads")
-                .ofType(EventType.RESOURCE_COUNT)
                 .build()
-                .save(new ResourceCountData(10D));
+                .updateCount(10D);
 
         final JSONObject jsonObject = new JSONObject(jsonSerializer.serialize(event.get()));
 
@@ -79,60 +78,54 @@ public class JsonMetricSerializerTest extends AbstractMetricsTest {
                 application,
                 "total-threads",
                 EventType.RESOURCE_COUNT,
-                new JsonEventDataMatcher(expectedData)));
+                new JsonEventDataMatcher(expectedData),
+                Matchers.nullValue()));
     }
 
     @Test
     public void testSerializesCallTimeMetrics() {
         final AtomicReference<EventModel> event = new AtomicReference<>();
 
-        new EventRepository.Builder<>(application, TransactionData.class, event::set)
+        new TransactionFactory.Builder(application, event::set)
                 .inGroup(EventGroup.CLIENT_HTTP)
                 .withName("some-request")
-                .ofType(EventType.RESOURCE_CALL)
                 .build()
-                .save(TransactionData.builder()
-                        .direction(Direction.INBOUND)
-                        .duration(Duration.ofSeconds(1))
-                        .action(HttpAction.GET)
-                        .resource(HttpResource.fromUrl("http://blispay.com"))
-                        .status(Status.success())
-                        .message("My message.")
-                        .trackingInfo(trackingInfo())
-                        .customField("myField", "myValue")
-                        .build());
+                .create()
+                .inDirection(Direction.INBOUND)
+                .withAction(HttpAction.GET)
+                .onResource(HttpResource.fromUrl("http://blispay.com"))
+                .start()
+                .stop(Status.success());
 
         final JSONObject jsonObject = new JSONObject(jsonSerializer.serialize(event.get()));
 
         final Map<String, Object> expectedData = new HashMap<>();
         expectedData.put("direction", "INBOUND");
-        expectedData.put("durationMillis", 1000);
         expectedData.put("resource", "http://blispay.com");
         expectedData.put("action", "GET");
         expectedData.put("status", 0);
-        expectedData.put("myField", "myValue");
 
         assertThat(jsonObject, new JsonMetricMatcher(
                 EventGroup.CLIENT_HTTP,
                 application,
                 "some-request",
-                EventType.RESOURCE_CALL,
-                new JsonEventDataMatcher(expectedData)));
+                EventType.TRANSACTION,
+                new JsonEventDataMatcher(expectedData),
+                Matchers.nullValue()));
+
+        assertNotNull(jsonObject.getJSONObject("data").getDouble("durationMillis"));
     }
 
     @Test
     public void testSerializesUtilizationMetrics() {
 
-        final AtomicReference<EventModel> event = new AtomicReference<>();
-
-        new EventRepository.Builder<>(application, ResourceUtilizationData.class, event::set)
+        final EventModel event = new UtilizationGauge.Builder(application, (gauge) -> { })
                 .inGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
-                .ofType(EventType.RESOURCE_UTILIZATION)
                 .withName("thread-pool")
-                .build()
-                .save(new ResourceUtilizationData(0L, 1000L, 350L, 0.35D));
+                .register(() -> new ResourceUtilizationData(0L, 1000L, 350L, 0.35D))
+                .snapshot();
 
-        final JSONObject jsonObject = new JSONObject(jsonSerializer.serialize(event.get()));
+        final JSONObject jsonObject = new JSONObject(jsonSerializer.serialize(event));
 
         final Map<String, Object> expectedData = new HashMap<>();
         expectedData.put("min", 0);
@@ -145,7 +138,8 @@ public class JsonMetricSerializerTest extends AbstractMetricsTest {
                 application,
                 "thread-pool",
                 EventType.RESOURCE_UTILIZATION,
-                new JsonEventDataMatcher(expectedData)));
+                new JsonEventDataMatcher(expectedData),
+                Matchers.nullValue()));
     }
 
 }

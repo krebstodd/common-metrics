@@ -1,6 +1,10 @@
 package com.blispay.common.metrics;
 
-import com.blispay.common.metrics.model.TrackingInfo;
+import com.blispay.common.metrics.event.EventEmitter;
+import com.blispay.common.metrics.model.EventGroup;
+import com.blispay.common.metrics.model.EventHeader;
+import com.blispay.common.metrics.model.EventModel;
+import com.blispay.common.metrics.model.EventType;
 import com.blispay.common.metrics.model.call.Action;
 import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.Resource;
@@ -8,13 +12,10 @@ import com.blispay.common.metrics.model.call.Status;
 import com.blispay.common.metrics.model.call.TransactionData;
 import com.blispay.common.metrics.util.LocalMetricContext;
 import com.blispay.common.metrics.util.NameFormatter;
-import com.blispay.common.metrics.util.NotYetStartedException;
-import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Transaction implements AutoCloseable {
@@ -22,21 +23,27 @@ public class Transaction implements AutoCloseable {
     private Long startMillis;
     private AtomicBoolean isRunning = new AtomicBoolean(false);
 
-    private final EventRepository<TransactionData> repository;
-
-    private final TrackingInfo trackingInfo = LocalMetricContext.getTrackingInfo();
-
-    private String name;
-    private ZonedDateTime timestamp;
     private Direction direction;
     private Action action;
     private Resource resource;
 
-    private String message;
-    private Map<String, Object> notes = new HashMap<>();
+    private ZonedDateTime timestamp;
+    private final EventEmitter emitter;
+    private final String appId;
+    private final EventGroup group;
 
-    public Transaction(final EventRepository<TransactionData> repository) {
-        this.repository = repository;
+    private String name;
+    private Object userData;
+
+    Transaction(final EventEmitter emitter,
+                final String appId,
+                final EventGroup group,
+                final String name) {
+
+        this.emitter = emitter;
+        this.appId = appId;
+        this.group = group;
+        this.name = name;
     }
 
     public Transaction withName(final String name) {
@@ -64,17 +71,12 @@ public class Transaction implements AutoCloseable {
         return this;
     }
 
-    public Transaction withNote(final String noteName, final Object note) {
-        this.notes.put(noteName, note);
-        return this;
-    }
-
     private TransactionData build(final Duration duration, final Status status) {
-        return new TransactionData<>(direction, duration.toMillis(), resource, action, status, message, trackingInfo);
+        return new TransactionData<>(direction, duration.toMillis(), resource, action, status);
     }
 
-    public Transaction message(final String message) {
-        this.message = message;
+    public Transaction userData(final Object userData) {
+        this.userData = userData;
         return this;
     }
 
@@ -85,7 +87,7 @@ public class Transaction implements AutoCloseable {
     public Transaction start() {
         if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
 
-            timestamp = ZonedDateTime.now();
+            timestamp = ZonedDateTime.now(ZoneId.of("UTC"));
 
             startMillis = currMillis();
 
@@ -122,19 +124,7 @@ public class Transaction implements AutoCloseable {
         final Duration elapsed = Duration.ofMillis(elapsedMillis());
         isRunning.set(Boolean.FALSE);
 
-        try {
-
-            repository.save(this.name, timestamp, build(elapsed, callStatus));
-
-        // CHECK_OFF: IllegalCatch
-        } catch (Exception ex) {
-            LoggerFactory.getLogger(Transaction.class).error("Caught exception saving transaction...");
-
-            if (ex instanceof NotYetStartedException) {
-                throw ex;
-            }
-        }
-        // CHECK_ON: IllegalCatch
+        emitter.emit(createModel(build(elapsed, callStatus), userData));
 
         return elapsed;
     }
@@ -156,6 +146,21 @@ public class Transaction implements AutoCloseable {
         if (this.isRunning.get() != expected) {
             throw new IllegalStateException("Transaction not in expected state.");
         }
+    }
+
+    private <U> EventModel<TransactionData, U> createModel(final TransactionData data, final U userData) {
+        return new EventModel<>(createHeader(), data, userData);
+    }
+
+    private EventHeader createHeader() {
+        return EventHeader.builder()
+                .timestamp(timestamp)
+                .applicationId(appId)
+                .group(group)
+                .type(EventType.TRANSACTION)
+                .trackingInfo(LocalMetricContext.getTrackingInfo())
+                .name(name)
+                .build();
     }
 
     @Override

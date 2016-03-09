@@ -26,7 +26,7 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
     @Override
     public void dispatch(final EventModel evt) {
 
-        LOG.debug("Dispatching new new event name=[{}]", evt.getName());
+        LOG.debug("Dispatching new new event name=[{}]", evt.getHeader().getName());
         if (!isRunningAtomic().get()) {
             throw new NotYetStartedException("Dispatcher not yet started");
         }
@@ -60,7 +60,7 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
         // CHECK_OFF: IllegalCatch
         } catch (Exception ex) {
 
-            LOG.error("Received error attempting to accept event [{}]", evt.getName());
+            LOG.error("Received error attempting to accept event [{}]", evt.getHeader().getName());
 
         }
         // CHECK_ON: IllegalCatch
@@ -81,7 +81,7 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
         // CHECK_OFF: IllegalCatch
         } catch (Exception ex) {
 
-            LOG.error("Caught exception determining whether filter can accept event occurring on [{}]", model.getTimestamp(), ex);
+            LOG.error("Caught exception determining whether filter can accept event occurring on [{}]", model.getHeader().getTimestamp(), ex);
             return Boolean.FALSE;
 
         }

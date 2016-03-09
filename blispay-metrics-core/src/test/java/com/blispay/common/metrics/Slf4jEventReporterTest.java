@@ -1,7 +1,6 @@
 package com.blispay.common.metrics;
 
 import com.blispay.common.metrics.model.EventGroup;
-import com.blispay.common.metrics.model.EventType;
 import com.blispay.common.metrics.report.Slf4jEventReporter;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -24,9 +23,8 @@ public class Slf4jEventReporterTest extends AbstractMetricsTest {
         metricService.addEventSubscriber(new Slf4jEventReporter(log));
         metricService.start();
 
-        final EventRepository<PiiBusinessEventData> repo = metricService
-                .eventRepository(PiiBusinessEventData.class)
-                .ofType(EventType.BUSINESS_EVT)
+        final EventFactory<PiiBusinessEventData> repo = metricService
+                .eventFactory(PiiBusinessEventData.class)
                 .inGroup(EventGroup.MERCHANT_DOMAIN)
                 .withName("business-event")
                 .build();
