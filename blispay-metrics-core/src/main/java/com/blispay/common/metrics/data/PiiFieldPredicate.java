@@ -8,6 +8,9 @@ import java.util.stream.Collectors;
 
 public class PiiFieldPredicate implements Predicate<String> {
 
+    private static final String UNDERSCORE = "_";
+    private static final String HYPHEN = "-";
+
     private static final Set<String> blacklist = new HashSet<>();
     private static final Set<String> whitelist = new HashSet<>();
 
@@ -79,12 +82,12 @@ public class PiiFieldPredicate implements Predicate<String> {
         blacklist.add("pass_port");
 
         // Add all existing fields both with underscores replaced by dashes and with them replaced by nothing (handles all one word lower, upper, camel cased)
-        blacklist.addAll(replaceAll("_", "-", blacklist));
-        blacklist.addAll(replaceAll("_", "", blacklist));
+        blacklist.addAll(replaceAll(UNDERSCORE, HYPHEN, blacklist));
+        blacklist.addAll(replaceAll(UNDERSCORE, "", blacklist));
 
         whitelist.add("user_agent");
-        whitelist.addAll(replaceAll("_", "-", whitelist));
-        whitelist.addAll(replaceAll("_", "", whitelist));
+        whitelist.addAll(replaceAll(UNDERSCORE, HYPHEN, whitelist));
+        whitelist.addAll(replaceAll(UNDERSCORE, "", whitelist));
     }
 
     public PiiFieldPredicate() {
