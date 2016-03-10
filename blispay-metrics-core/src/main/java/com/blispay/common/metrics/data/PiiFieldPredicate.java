@@ -8,89 +8,90 @@ import java.util.stream.Collectors;
 
 public class PiiFieldPredicate implements Predicate<String> {
 
-    private static final Set<String> bannedSubstrings = new HashSet<>();
+    private static final Set<String> blacklist = new HashSet<>();
+    private static final Set<String> whitelist = new HashSet<>();
 
     static {
 
         // Person name - Handles person name, user name.
-        bannedSubstrings.add("first_name");
-        bannedSubstrings.add("last_name");
-        bannedSubstrings.add("middle_name");
-        bannedSubstrings.add("user_name");
-        bannedSubstrings.add("login");
-        bannedSubstrings.add("full_name");
-        bannedSubstrings.add("pass_word");
+        blacklist.add("first_name");
+        blacklist.add("last_name");
+        blacklist.add("middle_name");
+        blacklist.add("user_name");
+        blacklist.add("login");
+        blacklist.add("full_name");
+        blacklist.add("pass_word");
 
         // Address - Allow state, country
         // http://www.lexisnexis.com/legalnewsroom/top-emerging-trends/b/emerging-trends-law-blog/archive/2011/02/15/california-supreme-court-zip-code-personal-identification-information-bullivant-houser-bailey-song-beverly-credit-card-act.aspx
-        bannedSubstrings.add("delivery");
-        bannedSubstrings.add("street");
-        bannedSubstrings.add("line_1");
-        bannedSubstrings.add("line_2");
-        bannedSubstrings.add("line_3");
-        bannedSubstrings.add("secondary_designator");
-        bannedSubstrings.add("addressee");
-        bannedSubstrings.add("first_line");
-        bannedSubstrings.add("last_line");
-        bannedSubstrings.add("latitude");
-        bannedSubstrings.add("longitude");
-        bannedSubstrings.add("po_box");
-        bannedSubstrings.add("post_office");
+        blacklist.add("delivery");
+        blacklist.add("street");
+        blacklist.add("line_1");
+        blacklist.add("line_2");
+        blacklist.add("line_3");
+        blacklist.add("secondary_designator");
+        blacklist.add("addressee");
+        blacklist.add("first_line");
+        blacklist.add("last_line");
+        blacklist.add("latitude");
+        blacklist.add("longitude");
+        blacklist.add("po_box");
+        blacklist.add("post_office");
 
         // Email
-        bannedSubstrings.add("email");
+        blacklist.add("email");
 
         // Ssn
-        bannedSubstrings.add("ssn");
-        bannedSubstrings.add("social_security");
-        bannedSubstrings.add("nid");
-        bannedSubstrings.add("national_id");
+        blacklist.add("ssn");
+        blacklist.add("social_security");
+        blacklist.add("nid");
+        blacklist.add("national_id");
 
         // dob
-        bannedSubstrings.add("birth");
-        bannedSubstrings.add("dob");
-        bannedSubstrings.add("user_age");
-        bannedSubstrings.add("customer_age");
-        bannedSubstrings.add("applicant_age");
-        bannedSubstrings.add("birth_place");
+        blacklist.add("birth");
+        blacklist.add("dob");
+        blacklist.add("user_age");
+        blacklist.add("customer_age");
+        blacklist.add("applicant_age");
+        blacklist.add("birth_place");
 
         // phone
-        bannedSubstrings.add("phone");
-        bannedSubstrings.add("telephone");
-        bannedSubstrings.add("phone_number");
-        bannedSubstrings.add("telephone_number");
+        blacklist.add("phone");
+        blacklist.add("telephone");
+        blacklist.add("phone_number");
+        blacklist.add("telephone_number");
 
         // card related info
-        bannedSubstrings.add("cvv");
-        bannedSubstrings.add("expiration");
-        bannedSubstrings.add("card_number");
-        bannedSubstrings.add("pan");
-        bannedSubstrings.add("primary_account_number");
-        bannedSubstrings.add("card_holder");
+        blacklist.add("cvv");
+        blacklist.add("expiration");
+        blacklist.add("card_number");
+        blacklist.add("pan");
+        blacklist.add("primary_account_number");
+        blacklist.add("account_number");
+        blacklist.add("card_holder");
 
         // blispay tokens
-        bannedSubstrings.add("session_token");
-        bannedSubstrings.add("agent_token");
+        blacklist.add("session_token");
+        blacklist.add("agent_token");
 
         // Miscellaneous
-        bannedSubstrings.add("drivers_license");
-        bannedSubstrings.add("pass_port");
-        bannedSubstrings.add("ip_address");
+        blacklist.add("drivers_license");
+        blacklist.add("pass_port");
 
         // Add all existing fields both with underscores replaced by dashes and with them replaced by nothing (handles all one word lower, upper, camel cased)
-        bannedSubstrings.addAll(replaceAll("_", "-", bannedSubstrings));
-        bannedSubstrings.addAll(replaceAll("_", "", bannedSubstrings));
+        blacklist.addAll(replaceAll("_", "-", blacklist));
+        blacklist.addAll(replaceAll("_", "", blacklist));
 
+        whitelist.add("user_agent");
+        whitelist.addAll(replaceAll("_", "-", whitelist));
+        whitelist.addAll(replaceAll("_", "", whitelist));
     }
 
-    private final Set<String> overrides;
-
     public PiiFieldPredicate() {
-        this(new HashSet<>());
     }
 
     public PiiFieldPredicate(final Set<String> overrides) {
-        this.overrides = overrides;
+        whitelist.addAll(overrides);
     }
 
     private static Set<String> replaceAll(final String replace, final String with, final Set<String> set) {
@@ -99,11 +100,11 @@ public class PiiFieldPredicate implements Predicate<String> {
 
     @Override
     public boolean test(final String key) {
-        return !overrides.contains(key) && isBanned(key.toLowerCase(Locale.ROOT));
+        return !whitelist.contains(key.toLowerCase(Locale.ROOT)) && isBanned(key.toLowerCase(Locale.ROOT));
     }
 
     private boolean isBanned(final String key) {
         // Test if the key contains a banned substring.
-        return bannedSubstrings.stream().anyMatch(key::contains);
+        return blacklist.stream().anyMatch(key::contains);
     }
 }
