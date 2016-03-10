@@ -5,8 +5,8 @@ import com.blispay.common.metrics.util.NotYetStartedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Note - This is essentially a toy dispatcher that really should only ever be used when all subscribers do something REALLY
@@ -20,7 +20,7 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
     private final Set<EventSubscriber> eventListeners;
 
     public SingleThreadedEventDispatcher() {
-        this.eventListeners = new HashSet<>();
+        this.eventListeners = new CopyOnWriteArraySet<>();
     }
 
     @Override
