@@ -88,7 +88,7 @@ public class JsonMetricSerializerTest extends AbstractMetricsTest {
         final AtomicReference<EventModel> event = new AtomicReference<>();
 
         new TransactionFactory.Builder(application, event::set)
-                .inGroup(EventGroup.CLIENT_HTTP)
+                .inGroup(EventGroup.CLIENT_HTTP_DDS)
                 .withName("some-request")
                 .build()
                 .create()
@@ -107,7 +107,7 @@ public class JsonMetricSerializerTest extends AbstractMetricsTest {
         expectedData.put("status", 0);
 
         assertThat(jsonObject, new JsonMetricMatcher(
-                EventGroup.CLIENT_HTTP,
+                EventGroup.CLIENT_HTTP_DDS,
                 application,
                 "some-request",
                 EventType.TRANSACTION,

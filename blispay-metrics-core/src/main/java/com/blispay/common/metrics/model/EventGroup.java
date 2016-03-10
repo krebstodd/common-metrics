@@ -36,14 +36,9 @@ public enum EventGroup {
     USER_DOMAIN("metrics.business.user-domain"),
     USER_DOMAIN_HEALTH("metrics.health.user-domain"),
 
-    SERVER("metrics.server"),
-
     SERVER_HTTP("metrics.server.http"),
     SERVER_MESSAGE_QUEUE("metrics.server.mq"),
 
-    CLIENT("metrics.client"),
-
-    CLIENT_HTTP("metrics.client.http"),
     CLIENT_HTTP_KMS("metrics.client.http.kms"),
     CLIENT_HTTP_TWILIO("metrics.client.http.twilio"),
     CLIENT_HTTP_SMARTY_STREETS("metrics.client.http.smarty-streets"),
@@ -58,11 +53,9 @@ public enum EventGroup {
     CLIENT_MQ_REQ("metrics.client.mq.req"),
     CLIENT_MQ_EVT("metrics.client.mq.evt"),
 
-    CLIENT_MESSAGE_BUS("metrics.client.bus"),
     CLIENT_MESSAGE_BUS_COMMAND("metrics.client.bus.command"),
     CLIENT_MESSAGE_BUS_EVENT("metrics.client.bus.event"),
 
-    RESOURCE_UTILIZATION("metrics.resource"),
     RESOURCE_UTILIZATION_GC("metrics.resource.gc"),
     RESOURCE_UTILIZATION_MEM("metrics.resource.memory"),
     RESOURCE_UTILIZATION_THREADS("metrics.resource.threads"),

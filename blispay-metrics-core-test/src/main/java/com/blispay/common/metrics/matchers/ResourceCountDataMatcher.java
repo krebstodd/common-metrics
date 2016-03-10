@@ -34,6 +34,6 @@ public class ResourceCountDataMatcher extends TypeSafeMatcher<ResourceCountData>
 
     @Override
     public void describeTo(final Description description) {
-
+        description.appendText("count=[").appendDescriptionOf(count).appendText("]");
     }
 }

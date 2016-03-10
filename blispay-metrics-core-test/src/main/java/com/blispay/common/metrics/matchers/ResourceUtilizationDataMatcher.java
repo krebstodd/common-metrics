@@ -52,6 +52,14 @@ public class ResourceUtilizationDataMatcher extends TypeSafeMatcher<ResourceUtil
 
     @Override
     public void describeTo(final Description description) {
-
+        description.appendText("min=[")
+                .appendDescriptionOf(min)
+                .appendText("], max=[")
+                .appendDescriptionOf(max)
+                .appendText("], curr=[")
+                .appendDescriptionOf(curr)
+                .appendText("], currPct=[")
+                .appendDescriptionOf(currPct)
+                .appendText("]");
     }
 }

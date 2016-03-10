@@ -62,6 +62,23 @@ public class EventMatcher<D, U> extends TypeSafeMatcher<EventModel<D, U>> {
     @Override
     public void describeTo(final Description description) {
 
+        description.appendText("timestamp=[")
+                .appendDescriptionOf(timestampMatcher)
+                .appendText("], application=[")
+                .appendDescriptionOf(applicationMatcher)
+                .appendText("], group=[")
+                .appendDescriptionOf(groupMatcher)
+                .appendText("], name=[")
+                .appendDescriptionOf(nameMatcher)
+                .appendText("], type=[")
+                .appendDescriptionOf(typeMatcher)
+                .appendText("], data=[")
+                .appendDescriptionOf(dataMatcher)
+                .appendText("], userData=[")
+                .appendDescriptionOf(userDataMatcher)
+                .appendText("], trackingInfo=[")
+                .appendDescriptionOf(trackingInfoMatcher)
+                .appendText("]");
     }
 
     public static <D, U> Builder<D, U> builder() {

@@ -84,7 +84,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
         thrown.expect(IllegalStateException.class);
 
         metricService.eventFactory(PiiBusinessEventData.class)
-                .inGroup(EventGroup.CLIENT)
+                .inGroup(EventGroup.CLIENT_HTTP_DDS)
                 .withName("someResource")
                 .build()
                 .save(defaultPiiBusinessEventData());
@@ -179,7 +179,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
         metricService.start();
 
         final Transaction tx = metricService.transactionFactory()
-                .inGroup(EventGroup.CLIENT_HTTP)
+                .inGroup(EventGroup.SERVER_HTTP)
                 .withName("request")
                 .inDirection(Direction.OUTBOUND)
                 .withAction(HttpAction.POST)
@@ -199,7 +199,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
 
         final EventMatcher<TransactionData, Void> matcher = EventMatcher.<TransactionData, Void>builder()
                 .setApplication(application)
-                .setGroup(EventGroup.CLIENT_HTTP)
+                .setGroup(EventGroup.SERVER_HTTP)
                 .setName("request")
                 .setType(EventType.TRANSACTION)
                 .setDataMatcher(new TransactionDataMatcher(HttpResource.fromUrl("/test/url"), HttpAction.POST, Direction.OUTBOUND, Status.success(), 1000L))
@@ -383,7 +383,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
         assertFalse(usesCustom.get());
 
         serv.eventFactory(ResourceCountData.class)
-                .inGroup(EventGroup.CLIENT)
+                .inGroup(EventGroup.SERVER_HTTP)
                 .withName("someResource")
                 .build()
                 .save(new ResourceCountData(1D));
@@ -401,14 +401,14 @@ public class MetricServiceTest extends AbstractMetricsTest {
 
         final AtomicBoolean isHealthy = new AtomicBoolean(Boolean.TRUE);
         metricService.stateMonitor()
-                .inGroup(EventGroup.HEALTH)
+                .inGroup(EventGroup.ACCOUNT_DOMAIN_HEALTH)
                 .withName("my-resource")
                 .withSupplier(() -> new StatusData(isHealthy.get(), "Some message"))
                 .register();
 
         final EventModel health = reporter.report().getMetrics().iterator().next();
         assertEquals("my-resource", health.getHeader().getName());
-        assertEquals(EventGroup.HEALTH, health.getHeader().getGroup());
+        assertEquals(EventGroup.ACCOUNT_DOMAIN_HEALTH, health.getHeader().getGroup());
         assertTrue(health.getData() instanceof StatusData);
         assertTrue(((StatusData) health.getData()).getStatusValue());
 
@@ -416,7 +416,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
 
         final EventModel health2 = reporter.report().getMetrics().iterator().next();
         assertEquals("my-resource", health.getHeader().getName());
-        assertEquals(EventGroup.HEALTH, health.getHeader().getGroup());
+        assertEquals(EventGroup.ACCOUNT_DOMAIN_HEALTH, health.getHeader().getGroup());
         assertTrue(health.getData() instanceof StatusData);
         assertFalse(((StatusData) health2.getData()).getStatusValue());
 

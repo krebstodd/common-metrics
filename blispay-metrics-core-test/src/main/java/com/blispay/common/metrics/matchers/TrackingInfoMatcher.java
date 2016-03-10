@@ -35,6 +35,14 @@ public class TrackingInfoMatcher extends TypeSafeMatcher<TrackingInfo> {
 
     @Override
     public void describeTo(final Description description) {
-
+        description.appendText("userTrackingId=[")
+                .appendDescriptionOf(userIdMatcher)
+                .appendText("], agentTrackingId=[")
+                .appendDescriptionOf(agentIdMatcher)
+                .appendText("], apiTrackingId=[")
+                .appendDescriptionOf(apiIdMatcher)
+                .appendText("], sessionTrackingId=[")
+                .appendDescriptionOf(sessionIdMatcher)
+                .appendText("]");
     }
 }

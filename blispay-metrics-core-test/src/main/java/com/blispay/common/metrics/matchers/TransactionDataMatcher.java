@@ -64,7 +64,17 @@ public class TransactionDataMatcher extends TypeSafeMatcher<TransactionData> {
 
     @Override
     public void describeTo(final Description description) {
-
+        description.appendText("resource=[")
+                .appendDescriptionOf(resourceMatcher)
+                .appendText("], action=[")
+                .appendDescriptionOf(actionMatcher)
+                .appendText("], status=[")
+                .appendDescriptionOf(statusMatcher)
+                .appendText("], direction=[")
+                .appendDescriptionOf(directionMatcher)
+                .appendText("], runtimeRange=[")
+                .appendValue(approxRuntime - acceptableDelta).appendText(", ").appendValue(approxRuntime + acceptableDelta)
+                .appendText("]");
     }
 
     protected Boolean approximatelyEqual(final Long expected, final Long actual, final Long acceptableDelta) {
