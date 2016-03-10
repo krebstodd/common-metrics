@@ -5,7 +5,7 @@ import com.blispay.common.metrics.model.EventGroup;
 import com.blispay.common.metrics.model.EventModel;
 import com.google.common.base.Preconditions;
 
-public final class EventFactory<U> {
+public class EventFactory<U> {
 
     private final Class<U> userDataHint;
     private final String applicationId;
@@ -13,7 +13,7 @@ public final class EventFactory<U> {
     private final EventGroup group;
     private final String name;
 
-    private EventFactory(final Class<U> userDataHint,
+    protected EventFactory(final Class<U> userDataHint,
                          final String applicationId,
                          final EventEmitter emitter,
                          final EventGroup group,
