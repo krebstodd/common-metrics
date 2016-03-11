@@ -85,9 +85,7 @@ public class PiiFieldPredicate implements Predicate<String> {
         blacklist.addAll(replaceAll(UNDERSCORE, HYPHEN, blacklist));
         blacklist.addAll(replaceAll(UNDERSCORE, "", blacklist));
 
-        whitelist.add("user_agent");
-        whitelist.addAll(replaceAll(UNDERSCORE, HYPHEN, whitelist));
-        whitelist.addAll(replaceAll(UNDERSCORE, "", whitelist));
+        whitelist.add("userAgent");
     }
 
     public PiiFieldPredicate() {
