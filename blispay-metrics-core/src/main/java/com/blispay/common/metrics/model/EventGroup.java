@@ -53,6 +53,7 @@ public enum EventGroup {
     CLIENT_MQ_REQ("metrics.client.mq.req"),
     CLIENT_MQ_EVT("metrics.client.mq.evt"),
 
+    SERVER_MESSAGE_BUS("metrics.server.bus"),
     CLIENT_MESSAGE_BUS_COMMAND("metrics.client.bus.command"),
     CLIENT_MESSAGE_BUS_EVENT("metrics.client.bus.event"),
 
