@@ -11,11 +11,6 @@ public abstract class MetricProbe implements SmartLifecycle {
     }
 
     @Override
-    public void stop(final Runnable runnable) {
-
-    }
-
-    @Override
     public void start() {
 
     }
@@ -23,6 +18,11 @@ public abstract class MetricProbe implements SmartLifecycle {
     @Override
     public void stop() {
 
+    }
+
+    @Override
+    public void stop(final Runnable runnable) {
+        runnable.run();
     }
 
     @Override
