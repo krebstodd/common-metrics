@@ -9,7 +9,11 @@ public enum StartupPhase {
     /**
      * Service spring startup phase. 
      */
-    SERVICE(1);
+    SERVICE(1),
+    /**
+     * Probe spring startup phase.
+     */
+    PROBE(2);
 
     private final Integer phase;
 

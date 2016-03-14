@@ -1,13 +1,13 @@
 package com.blispay.common.metrics.jvm;
 
 import com.blispay.common.metrics.EventFactory;
+import com.blispay.common.metrics.MetricProbe;
 import com.blispay.common.metrics.MetricService;
 import com.blispay.common.metrics.UtilizationGauge;
 import com.blispay.common.metrics.model.EventGroup;
 import com.blispay.common.metrics.model.utilization.ResourceUtilizationData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.Lifecycle;
 
 import javax.management.ListenerNotFoundException;
 import javax.management.NotificationEmitter;
@@ -24,7 +24,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class JvmProbe implements Lifecycle {
+public class JvmProbe extends MetricProbe {
 
     private static final Logger LOG = LoggerFactory.getLogger(JvmProbe.class);
 
