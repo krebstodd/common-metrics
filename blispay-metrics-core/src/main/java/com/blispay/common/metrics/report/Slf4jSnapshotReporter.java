@@ -45,7 +45,7 @@ public class Slf4jSnapshotReporter extends ScheduledSnapshotReporter {
 
         LOG.info("Starting snapshot report...");
 
-        final Set<EventModel> snapshot = snapshotProviderSupplier.get().stream().map(SnapshotProvider::snapshot).collect(Collectors.toSet());
+        final Set<EventModel> snapshot = new HashSet<>(snapshotProviderSupplier.get()).stream().map(SnapshotProvider::snapshot).collect(Collectors.toSet());
         snapshot.forEach(ss -> logger.info(serializer.serialize(ss)));
 
         LOG.info("Snapshot report complete.");

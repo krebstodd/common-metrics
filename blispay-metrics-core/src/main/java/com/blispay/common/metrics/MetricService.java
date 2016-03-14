@@ -55,6 +55,10 @@ public class MetricService implements SmartLifecycle {
         return new ResourceCounter.Builder(applicationId, eventDispatcher.newEventEmitter());
     }
 
+    public <U> Gauge.Builder<U> gauge(final Class<U> hint) {
+        return new Gauge.Builder<>(hint, applicationId, snapshotProviders::add);
+    }
+
     public void removeSnapshotProvider(final SnapshotProvider provider) {
         this.snapshotProviders.remove(provider);
     }
