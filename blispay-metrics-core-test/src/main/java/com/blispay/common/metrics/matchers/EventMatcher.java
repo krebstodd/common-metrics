@@ -81,6 +81,27 @@ public class EventMatcher<D, U> extends TypeSafeMatcher<EventModel<D, U>> {
                 .appendText("]");
     }
 
+    @Override
+    protected void describeMismatchSafely(final EventModel<D, U> item, final Description mismatchDescription) {
+        mismatchDescription.appendText("timestamp=[")
+                .appendValue(item.getHeader().getTimestamp())
+                .appendText("], application=[")
+                .appendValue(item.getHeader().getApplication())
+                .appendText("], group=[")
+                .appendValue(item.getHeader().getGroup())
+                .appendText("], name=[")
+                .appendValue(item.getHeader().getName())
+                .appendText("], type=[")
+                .appendValue(item.getHeader().getType())
+                .appendText("], data=[")
+                .appendValue(item.getData())
+                .appendText("], userData=[")
+                .appendValue(item.getUserData())
+                .appendText("], trackingInfo=[")
+                .appendValue(item.getHeader().getTrackingInfo())
+                .appendText("]");
+    }
+
     public static <D, U> Builder<D, U> builder() {
         return new Builder<>();
     }
