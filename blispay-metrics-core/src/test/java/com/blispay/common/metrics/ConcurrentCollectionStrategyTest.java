@@ -94,8 +94,7 @@ public class ConcurrentCollectionStrategyTest {
         assertEquals(2, results.size());
 
         final Duration expectedTotalLatency = Duration.ofMillis(500);
-        assertTrue(approximatelyEqual(expectedTotalLatency.toMillis(), execTimeMillis, 100L));
-
+        assertTrue(approximatelyEqual(expectedTotalLatency.toMillis(), execTimeMillis, 200L));
 
     }
 

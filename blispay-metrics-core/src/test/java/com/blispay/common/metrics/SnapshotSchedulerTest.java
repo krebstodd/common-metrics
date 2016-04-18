@@ -47,7 +47,7 @@ public class SnapshotSchedulerTest {
         scheduler.stop();
 
         for (int i = 0; i < snapshotDelay.size(); i++) {
-            assertApproximatelyEqual((i + 1) * snapshotRate, snapshotDelay.get(i) - startTimeMillis, 100L);
+            assertApproximatelyEqual((i + 1) * snapshotRate, snapshotDelay.get(i) - startTimeMillis, 200L);
         }
     }
 
@@ -80,7 +80,7 @@ public class SnapshotSchedulerTest {
         scheduler.stop();
 
         for (int i = 0; i < snapshotDelay.size(); i++) {
-            assertApproximatelyEqual(initialDelay + (i + 1) * snapshotRate, snapshotDelay.get(i) - startTimeMillis, 100L);
+            assertApproximatelyEqual(initialDelay + (i + 1) * snapshotRate, snapshotDelay.get(i) - startTimeMillis, 200L);
         }
 
     }
@@ -115,7 +115,7 @@ public class SnapshotSchedulerTest {
         final long initialDelay = snapshotRate;
         for (int i = 0; i < snapshotDelay.size(); i++) {
             final long expectedDelay = initialDelay + (i * snapshotLatency) + (i * snapshotRate);
-            assertApproximatelyEqual(expectedDelay, snapshotDelay.get(i) - startTimeMillis, 100L);
+            assertApproximatelyEqual(expectedDelay, snapshotDelay.get(i) - startTimeMillis, 200L);
         }
 
     }
@@ -150,7 +150,7 @@ public class SnapshotSchedulerTest {
 
         for (int i = 0; i < snapshotDelay.size(); i++) {
             final long expectedDelay = initialDelay + (i * snapshotLatency) + (i * snapshotRate);
-            assertApproximatelyEqual(expectedDelay, snapshotDelay.get(i) - startTimeMillis, 100L);
+            assertApproximatelyEqual(expectedDelay, snapshotDelay.get(i) - startTimeMillis, 200L);
         }
 
     }
