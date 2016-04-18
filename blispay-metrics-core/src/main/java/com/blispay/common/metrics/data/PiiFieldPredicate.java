@@ -11,10 +11,33 @@ public class PiiFieldPredicate implements Predicate<String> {
     private static final String UNDERSCORE = "_";
     private static final String HYPHEN = "-";
 
-    private static final Set<String> blacklist = new HashSet<>();
-    private static final Set<String> whitelist = new HashSet<>();
+    private final Set<String> blacklist = new HashSet<>();
+    private final Set<String> whitelist = new HashSet<>();
 
-    static {
+    public PiiFieldPredicate() {
+        this(new HashSet<>());
+    }
+
+    public PiiFieldPredicate(final Set<String> overrides) {
+        whitelist.addAll(overrides);
+        initLists();
+    }
+
+    private static Set<String> replaceAll(final String replace, final String with, final Set<String> set) {
+        return set.stream().map(str -> str.replace(replace, with)).collect(Collectors.toSet());
+    }
+
+    @Override
+    public boolean test(final String key) {
+        return !whitelist.contains(key) && isBanned(key.toLowerCase(Locale.ROOT));
+    }
+
+    private boolean isBanned(final String key) {
+        // Test if the key contains a banned substring.
+        return blacklist.stream().anyMatch(key::contains);
+    }
+
+    private void initLists() {
 
         // Person name - Handles person name, user name.
         blacklist.add("first_name");
@@ -88,28 +111,4 @@ public class PiiFieldPredicate implements Predicate<String> {
         whitelist.add("userAgent");
     }
 
-    public PiiFieldPredicate() {
-    }
-
-    public PiiFieldPredicate(final Set<String> overrides) {
-        whitelist.addAll(overrides);
-    }
-
-    private static Set<String> replaceAll(final String replace, final String with, final Set<String> set) {
-        return set.stream().map(str -> str.replace(replace, with)).collect(Collectors.toSet());
-    }
-
-    @Override
-    public boolean test(final String key) {
-        System.out.println("-------------------");
-        System.out.println("TESTING KEY >> " + key + " :: " + !whitelist.contains(key) + " ::: " + isBanned(key.toLowerCase(Locale.ROOT)));
-        System.out.println(whitelist);
-        System.out.println("-------------------");
-        return !whitelist.contains(key) && isBanned(key.toLowerCase(Locale.ROOT));
-    }
-
-    private boolean isBanned(final String key) {
-        // Test if the key contains a banned substring.
-        return blacklist.stream().anyMatch(key::contains);
-    }
 }
