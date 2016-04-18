@@ -28,8 +28,6 @@ public class JsonMetricSerializerTest extends AbstractMetricsTest {
 
     private static final String application = "testapp";
 
-    private static final JsonMetricSerializer jsonSerializer = new JsonMetricSerializer();
-
     @Test
     public void testSerializesBusinessMetrics() {
 
@@ -42,6 +40,7 @@ public class JsonMetricSerializerTest extends AbstractMetricsTest {
 
         factory.save(defaultPiiBusinessEventData());
 
+        final JsonMetricSerializer jsonSerializer = new JsonMetricSerializer();
         final JSONObject jsonObject = new JSONObject(jsonSerializer.serialize(event.get()));
 
         final Map<String, Object> expectedData = new HashMap<>();
@@ -69,6 +68,7 @@ public class JsonMetricSerializerTest extends AbstractMetricsTest {
                 .build()
                 .updateCount(10D);
 
+        final JsonMetricSerializer jsonSerializer = new JsonMetricSerializer();
         final JSONObject jsonObject = new JSONObject(jsonSerializer.serialize(event.get()));
 
         final Map<String, Object> expectedData = new HashMap<>();
@@ -98,6 +98,7 @@ public class JsonMetricSerializerTest extends AbstractMetricsTest {
                 .start()
                 .stop(Status.success());
 
+        final JsonMetricSerializer jsonSerializer = new JsonMetricSerializer();
         final JSONObject jsonObject = new JSONObject(jsonSerializer.serialize(event.get()));
 
         final Map<String, Object> expectedData = new HashMap<>();
@@ -126,6 +127,7 @@ public class JsonMetricSerializerTest extends AbstractMetricsTest {
                 .register(() -> new ResourceUtilizationData(0L, 1000L, 350L, 0.35D))
                 .snapshot();
 
+        final JsonMetricSerializer jsonSerializer = new JsonMetricSerializer();
         final JSONObject jsonObject = new JSONObject(jsonSerializer.serialize(event));
 
         final Map<String, Object> expectedData = new HashMap<>();
