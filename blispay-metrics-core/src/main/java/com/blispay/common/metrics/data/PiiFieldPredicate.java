@@ -101,6 +101,8 @@ public class PiiFieldPredicate implements Predicate<String> {
 
     @Override
     public boolean test(final String key) {
+        System.out.println("TESTING KEY >> " + key + " :: " + !whitelist.contains(key) + " ::: " + isBanned(key.toLowerCase(Locale.ROOT)));
+
         return !whitelist.contains(key) && isBanned(key.toLowerCase(Locale.ROOT));
     }
 

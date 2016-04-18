@@ -42,14 +42,6 @@ public class JsonMetricMatcher extends TypeSafeMatcher<JSONObject> {
 
     @Override
     public boolean matchesSafely(final JSONObject jsonObject) {
-
-        System.out.println(timestampMatcher.matches(JsonMetricUtil.parseTimeStamp(jsonObject)));
-        System.out.println(applicationIdMatcher.matches(JsonMetricUtil.parseApplication(jsonObject)));
-        System.out.println(groupMatcher.matches(JsonMetricUtil.parseGroup(jsonObject)));
-        System.out.println(nameMatcher.matches(JsonMetricUtil.parseName(jsonObject)));
-        System.out.println(typeMatcher.matches(JsonMetricUtil.parseType(jsonObject)));
-        System.out.println(dataMatcher.matches(JsonMetricUtil.parseData(jsonObject)));
-        
         return timestampMatcher.matches(JsonMetricUtil.parseTimeStamp(jsonObject))
                 && applicationIdMatcher.matches(JsonMetricUtil.parseApplication(jsonObject))
                 && groupMatcher.matches(JsonMetricUtil.parseGroup(jsonObject))
