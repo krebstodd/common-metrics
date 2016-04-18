@@ -61,6 +61,20 @@ public class JsonMetricMatcher extends TypeSafeMatcher<JSONObject> {
 
     @Override
     public void describeTo(final Description description) {
-
+        description.appendText("timestamp=[")
+                .appendDescriptionOf(timestampMatcher)
+                .appendText("], applicationId=[")
+                .appendDescriptionOf(applicationIdMatcher)
+                .appendText("], group=[")
+                .appendDescriptionOf(groupMatcher)
+                .appendText("], name=[")
+                .appendDescriptionOf(nameMatcher)
+                .appendText("], type=[")
+                .appendDescriptionOf(typeMatcher)
+                .appendText("], data=[")
+                .appendDescriptionOf(dataMatcher)
+                .appendText("], userData=[")
+                .appendDescriptionOf(userDataMatcher)
+                .appendText("]");
     }
 }

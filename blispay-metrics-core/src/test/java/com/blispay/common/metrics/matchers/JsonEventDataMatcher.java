@@ -22,6 +22,6 @@ public class JsonEventDataMatcher extends TypeSafeMatcher<JSONObject> {
 
     @Override
     public void describeTo(final Description description) {
-
+        description.appendValue(expected);
     }
 }
