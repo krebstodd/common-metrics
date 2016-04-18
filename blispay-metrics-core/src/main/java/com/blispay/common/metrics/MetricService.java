@@ -80,7 +80,11 @@ public class MetricService implements SmartLifecycle {
         LOG.info("Adding new snapshot reporter [{}].", snReporter.getClass().getName());
 
         snReporter.setSnapshotProviders(() -> snapshotProviders);
-        snReporter.start();
+
+        if (!snReporter.isRunning()) {
+            snReporter.start();
+        }
+
         snapshotReporters.add(snReporter);
     }
 

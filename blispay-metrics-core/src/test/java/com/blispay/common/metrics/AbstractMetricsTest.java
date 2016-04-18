@@ -27,10 +27,6 @@ public abstract class AbstractMetricsTest {
     // CHECK_ON: JavadocVariable
     // CHECK_ON: VisibilityModifier
 
-    protected Boolean approximatelyEqual(final Double expected, final Double actual, final Double acceptableDelta) {
-        return Math.abs(expected - actual) < acceptableDelta;
-    }
-
     protected static PiiBusinessEventData defaultPiiBusinessEventData() {
         return defaultPiiBusinessEventData("user1");
     }

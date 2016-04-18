@@ -1,20 +1,41 @@
 package com.blispay.common.metrics.report;
 
-import java.util.Set;
-import java.util.function.Supplier;
+import org.slf4j.Logger;
 
-public interface SnapshotReporter {
+public abstract class SnapshotReporter {
 
-    Snapshot report();
+    private final SnapshotCollectionStrategy snapshotCollector;
 
-    void setSnapshotProviders(final Supplier<Set<SnapshotProvider>> providers);
+    private SnapshotProviderSet snapshotProviderSet;
 
-    default void start() {
+    public SnapshotReporter(final SnapshotCollectionStrategy snapshotCollector) {
+        this.snapshotCollector = snapshotCollector;
+    }
+
+    public abstract void start();
+
+    public abstract void stop();
+
+    public abstract Boolean isRunning();
+
+    public abstract Logger logger();
+
+    /**
+     * Perform a report.
+     * @return Snapshot of the current provider set.
+     */
+    public Snapshot report() {
+
+        if (snapshotProviderSet == null) {
+            throw new IllegalStateException("Snapshot provider set not initialized.");
+        }
+
+        return new Snapshot(snapshotCollector.performCollection(snapshotProviderSet.getAll()));
 
     }
 
-    default void stop() {
-
+    public void setSnapshotProviders(final SnapshotProviderSet providerSet) {
+        this.snapshotProviderSet = providerSet;
     }
 
 }

@@ -1,88 +1,83 @@
 package com.blispay.common.metrics.report;
 
-import org.slf4j.Logger;
-
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class ScheduledSnapshotReporter implements SnapshotReporter {
+public abstract class ScheduledSnapshotReporter extends SnapshotReporter {
 
-    private final ScheduledExecutorService executorService;
-
-    private final Integer period;
-
-    private final TimeUnit unit;
-
-    private final AtomicBoolean isRunning = new AtomicBoolean(false);
+    private final SnapshotScheduler scheduler;
+    private final AtomicBoolean isRunning = new AtomicBoolean(Boolean.FALSE);
 
     /**
-     * Create a new scheduled reporter. Subclass must implement a report method that will be called periodically.
+     * Snapshot reporter that runs on a scheduled rate.
      *
-     * @param period The period between calls to report method.
-     * @param unit The time unit of the period argument.
+     * @param scheduler Scheduler alerts reporter when to perform a snapshot.
+     * @param snapshotCollectionStrategy Strategy for collecting snapshots.
      */
-    public ScheduledSnapshotReporter(final Integer period, final TimeUnit unit) {
-        this.period = period;
-        this.unit = unit;
-        executorService = Executors.newSingleThreadScheduledExecutor();
+    public ScheduledSnapshotReporter(final SnapshotScheduler scheduler,
+                                     final SnapshotCollectionStrategy snapshotCollectionStrategy) {
+
+        super(snapshotCollectionStrategy);
+        this.scheduler = scheduler;
+
+        if (scheduler.getPeriod().compareTo(snapshotCollectionStrategy.getTimeout()) < 0) {
+            logger().warn("Snapshot schedule period is greater than collection strategy timeout, could result in reporter thread contention.");
+        }
     }
 
-    protected abstract Logger getLogger();
+    protected abstract void handleScheduledSnapshot(final Snapshot snapshot);
 
+    private void executeScheduledSnapshot() {
+        handleScheduledSnapshot(super.report());
+    }
+    
     /**
      * Start scheduling the recurring reports.
      */
+    @Override
     public void start() {
 
-        getLogger().info("Starting scheduled snapshot reporter with period [{}] units [{}]...", period, unit);
+        logger().info("Starting scheduled snapshot reporter...");
 
-        if (isRunning.compareAndSet(false, true)) {
-            this.executorService.scheduleAtFixedRate(this::doReport , period, period, unit);
+        if (this.isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
+
+            this.scheduler.setListener(this::executeScheduledSnapshot);
+            this.scheduler.start();
+
+        } else {
+
+            throw new IllegalStateException("Cannot start a running reporter.");
+
         }
 
-        getLogger().info("Snapshot reporter started.");
-
-    }
-
-    private void doReport() {
-        try {
-
-            getLogger().info("Starting timed slf4j metrics report...");
-            this.report();
-            getLogger().info("Timed slf4j metrics report complete.");
-
-        // CHECK_OFF: IllegalCatch
-        } catch (Throwable throwable) {
-            getLogger().error("Caught exception attempting to run scheduled gauge report...", throwable);
-        }
-        // CHECK_ON: IllegalCatch
+        logger().info("Snapshot reporter started.");
 
     }
 
     /**
      * Stop scheduling future reports.
      */
+    @Override
     public void stop() {
 
-        getLogger().info("Stopping scheduled snapshot reporter...");
+        logger().info("Stopping scheduled snapshot reporter...");
 
-        this.executorService.shutdown();
+        if (isRunning.compareAndSet(Boolean.TRUE, Boolean.FALSE)) {
 
-        try {
-            if (!this.executorService.awaitTermination(1L, TimeUnit.SECONDS)) {
-                this.executorService.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            getLogger().error("There was an error gracefully shutting down snapshot reporter, initiating hard shut down.");
-            this.executorService.shutdownNow();
-        } finally {
-            getLogger().info("Scheduled snapshot reporter stopped.");
+            this.scheduler.stop();
+
+        } else {
+
+            throw new IllegalStateException("Cannot stop a non-running reporter.");
+
         }
+
+        logger().info("Scheduled snapshot reporter stopped.");
+
     }
 
+    @Override
     public Boolean isRunning() {
-        return isRunning.get();
+        return this.isRunning.get();
     }
+
 }

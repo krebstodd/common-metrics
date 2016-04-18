@@ -1,23 +1,36 @@
 package com.blispay.common.metrics.report;
 
-import java.util.Set;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class BasicSnapshotReporter implements SnapshotReporter {
+public class BasicSnapshotReporter extends SnapshotReporter {
 
-    private Supplier<Set<SnapshotProvider>> providerSupplier;
+    private static Logger LOG = LoggerFactory.getLogger(BasicSnapshotReporter.class);
 
-    @Override
-    public Snapshot report() {
-        return new Snapshot(providerSupplier.get().stream()
-                .map(snProvider -> snProvider.snapshot())
-                .collect(Collectors.toSet()));
+    public BasicSnapshotReporter() {
+        this(new SingleThreadedCollectionStrategy());
+    }
+
+    public BasicSnapshotReporter(final SnapshotCollectionStrategy snapshotCollector) {
+        super(snapshotCollector);
     }
 
     @Override
-    public void setSnapshotProviders(final Supplier<Set<SnapshotProvider>> providers) {
-        this.providerSupplier = providers;
+    public void start() {
+    }
+
+    @Override
+    public void stop() {
+    }
+
+    @Override
+    public Boolean isRunning() {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public Logger logger() {
+        return LOG;
     }
 
 }

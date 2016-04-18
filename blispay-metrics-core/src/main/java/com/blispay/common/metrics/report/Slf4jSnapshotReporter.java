@@ -1,65 +1,57 @@
 package com.blispay.common.metrics.report;
 
-import com.blispay.common.metrics.data.JsonMetricSerializer;
 import com.blispay.common.metrics.data.EventSerializer;
+import com.blispay.common.metrics.data.JsonMetricSerializer;
 import com.blispay.common.metrics.model.EventModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class Slf4jSnapshotReporter extends ScheduledSnapshotReporter {
 
     private static final Logger LOG = LoggerFactory.getLogger(Slf4jSnapshotReporter.class);
 
     private final EventSerializer serializer;
-    private final Logger logger;
-    private Supplier<Set<SnapshotProvider>> snapshotProviderSupplier;
+    private final Logger mericLogger;
 
-    public Slf4jSnapshotReporter(final Logger logger, final Integer period, final TimeUnit timeUnit) {
-        this(new JsonMetricSerializer(), logger, period, timeUnit);
+    public Slf4jSnapshotReporter(final Logger mericLogger,
+                                 final SnapshotScheduler scheduler,
+                                 final SnapshotCollectionStrategy snapshotCollectionStrategy) {
+
+        this(new JsonMetricSerializer(), mericLogger, scheduler, snapshotCollectionStrategy);
     }
 
     /**
      * Create a new scheduled reporter. Subclass must implement a report method that will be called periodically.
      *
      * @param serializer metric serializer to user.
-     * @param logger the logger to use.
-     * @param period The period between calls to report method.
-     * @param timeUnit The time unit of the period argument.
+     * @param mericLogger the logger to use for dumping metrics logs.
+     * @param scheduler Schedules snapshots.
+     * @param snapshotCollectionStrategy Collection strategy.
      */
-    public Slf4jSnapshotReporter(final EventSerializer serializer, final Logger logger, final Integer period, final TimeUnit timeUnit) {
-        super(period, timeUnit);
+    public Slf4jSnapshotReporter(final EventSerializer serializer,
+                                 final Logger mericLogger,
+                                 final SnapshotScheduler scheduler,
+                                 final SnapshotCollectionStrategy snapshotCollectionStrategy) {
+
+        super(scheduler, snapshotCollectionStrategy);
 
         this.serializer = serializer;
-        this.logger = logger;
-        this.snapshotProviderSupplier = HashSet::new;
+        this.mericLogger = mericLogger;
     }
 
     @Override
-    public Snapshot report() {
-
-        LOG.info("Starting snapshot report...");
-
-        final Set<EventModel> snapshot = new HashSet<>(snapshotProviderSupplier.get()).stream().map(SnapshotProvider::snapshot).collect(Collectors.toSet());
-        snapshot.forEach(ss -> logger.info(serializer.serialize(ss)));
-
-        LOG.info("Snapshot report complete.");
-
-        return new Snapshot(snapshot);
-    }
-
-    @Override
-    public void setSnapshotProviders(final Supplier<Set<SnapshotProvider>> providers) {
-        this.snapshotProviderSupplier = providers;
-    }
-
-    @Override
-    protected Logger getLogger() {
+    public Logger logger() {
         return LOG;
     }
+
+    @Override
+    protected void handleScheduledSnapshot(final Snapshot snapshot) {
+        snapshot.getMetrics().forEach(this::logMetricEvent);
+    }
+
+    private void logMetricEvent(final EventModel event) {
+        mericLogger.info(serializer.serialize(event));
+    }
+
 }
+

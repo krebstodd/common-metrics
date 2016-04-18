@@ -25,8 +25,7 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
 
     @Override
     public void dispatch(final EventModel evt) {
-
-        LOG.debug("Dispatching new new event name=[{}]", evt.getHeader().getName());
+        LOG.info("Dispatching new new event name=[{}]", evt.getHeader().getName());
         if (!isRunningAtomic().get()) {
             throw new NotYetStartedException("Dispatcher not yet started");
         }

@@ -14,10 +14,10 @@ public class EventFactory<U> {
     private final String name;
 
     protected EventFactory(final Class<U> userDataHint,
-                         final String applicationId,
-                         final EventEmitter emitter,
-                         final EventGroup group,
-                         final String name) {
+                           final String applicationId,
+                           final EventEmitter emitter,
+                           final EventGroup group,
+                           final String name) {
 
         this.userDataHint = userDataHint;
         this.applicationId = applicationId;
