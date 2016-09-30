@@ -4,6 +4,7 @@ import com.blispay.common.metrics.model.EventGroup;
 import com.blispay.common.metrics.model.EventModel;
 import com.blispay.common.metrics.model.EventType;
 import com.blispay.common.metrics.model.TrackingInfo;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -61,8 +62,7 @@ public class EventMatcher<D, U> extends TypeSafeMatcher<EventModel<D, U>> {
 
     @Override
     public void describeTo(final Description description) {
-
-        description.appendText("timestamp=[")
+        description.appendText("EventModel(timestamp=[")
                 .appendDescriptionOf(timestampMatcher)
                 .appendText("], application=[")
                 .appendDescriptionOf(applicationMatcher)
@@ -78,17 +78,17 @@ public class EventMatcher<D, U> extends TypeSafeMatcher<EventModel<D, U>> {
                 .appendDescriptionOf(userDataMatcher)
                 .appendText("], trackingInfo=[")
                 .appendDescriptionOf(trackingInfoMatcher)
-                .appendText("]");
+                .appendText("])");
     }
 
     @Override
     protected void describeMismatchSafely(final EventModel<D, U> item, final Description mismatchDescription) {
-        mismatchDescription.appendText("timestamp=[")
+        mismatchDescription.appendText("was EventModel(timestamp=[")
                 .appendValue(item.getHeader().getTimestamp())
                 .appendText("], application=[")
                 .appendValue(item.getHeader().getApplication())
                 .appendText("], group=[")
-                .appendValue(item.getHeader().getGroup())
+                .appendValue(item.getHeader().getGroup().getValue())
                 .appendText("], name=[")
                 .appendValue(item.getHeader().getName())
                 .appendText("], type=[")
@@ -96,10 +96,10 @@ public class EventMatcher<D, U> extends TypeSafeMatcher<EventModel<D, U>> {
                 .appendText("], data=[")
                 .appendValue(item.getData())
                 .appendText("], userData=[")
-                .appendValue(item.getUserData())
+                .appendValue(ReflectionToStringBuilder.toString(item.getUserData()))
                 .appendText("], trackingInfo=[")
-                .appendValue(item.getHeader().getTrackingInfo())
-                .appendText("]");
+                .appendValue(ReflectionToStringBuilder.toString(item.getHeader().getTrackingInfo()))
+                .appendText("])");
     }
 
     public static <D, U> Builder<D, U> builder() {
