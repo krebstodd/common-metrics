@@ -36,11 +36,13 @@ public enum EventGroup {
     USER_DOMAIN("metrics.business.user-domain"),
     USER_DOMAIN_HEALTH("metrics.health.user-domain"),
 
+    EXTERNALSERVICES_DOMAIN("metrics.business.external-services"),
+    EXTERNALSERVICES_DOMAIN_HEALTH("metrics.health.external-services"),
+
     SERVER_HTTP("metrics.server.http"),
     SERVER_MESSAGE_QUEUE("metrics.server.mq"),
 
     CLIENT_HTTP_KMS("metrics.client.http.kms"),
-    CLIENT_HTTP_S3("metrics.client.http.s3"),
     CLIENT_HTTP_TWILIO("metrics.client.http.twilio"),
     CLIENT_HTTP_SMARTY_STREETS("metrics.client.http.smarty-streets"),
     CLIENT_HTTP_SENDGRID("metrics.client.http.sendgrid"),
