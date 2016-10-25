@@ -43,6 +43,7 @@ public enum EventGroup {
     SERVER_MESSAGE_QUEUE("metrics.server.mq"),
 
     CLIENT_HTTP_KMS("metrics.client.http.kms"),
+    CLIENT_HTTP_S3("metrics.client.http.s3"),
     CLIENT_HTTP_TWILIO("metrics.client.http.twilio"),
     CLIENT_HTTP_SMARTY_STREETS("metrics.client.http.smarty-streets"),
     CLIENT_HTTP_SENDGRID("metrics.client.http.sendgrid"),
