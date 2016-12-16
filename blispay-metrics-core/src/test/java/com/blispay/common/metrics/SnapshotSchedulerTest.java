@@ -17,8 +17,16 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+/**
+ * Class SnapshotSchedulerTest.
+ */
 public class SnapshotSchedulerTest {
 
+    /**
+     * Method testScheduleFixedRate.
+     *
+     * @throws InterruptedException InterruptedException.
+     */
     @Test
     public void testScheduleFixedRate() throws InterruptedException {
 
@@ -29,7 +37,8 @@ public class SnapshotSchedulerTest {
         final SnapshotScheduler scheduler = SnapshotScheduler.scheduleFixedRate(Duration.ofMillis(snapshotRate));
 
         final List<Long> snapshotDelay = new LinkedList<>();
-        scheduler.setListener(() -> {
+        scheduler.setListener(
+            () -> {
                 snapshotDelay.add(System.currentTimeMillis());
 
                 try {
@@ -51,6 +60,11 @@ public class SnapshotSchedulerTest {
         }
     }
 
+    /**
+     * Method testScheduleFixedRateWithCustomInitialDelay.
+     *
+     * @throws InterruptedException InterruptedException.
+     */
     @Test
     public void testScheduleFixedRateWithCustomInitialDelay() throws InterruptedException {
 
@@ -62,7 +76,8 @@ public class SnapshotSchedulerTest {
         final SnapshotScheduler scheduler = SnapshotScheduler.scheduleFixedRateWithInitialDelay(Duration.ofMillis(snapshotRate), Duration.ofMillis(initialDelay));
 
         final List<Long> snapshotDelay = new LinkedList<>();
-        scheduler.setListener(() -> {
+        scheduler.setListener(
+            () -> {
                 snapshotDelay.add(System.currentTimeMillis());
 
                 try {
@@ -85,6 +100,11 @@ public class SnapshotSchedulerTest {
 
     }
 
+    /**
+     * Method testScheduleFixedDelay.
+     *
+     * @throws InterruptedException InterruptedException.
+     */
     @Test
     public void testScheduleFixedDelay() throws InterruptedException {
 
@@ -95,7 +115,8 @@ public class SnapshotSchedulerTest {
         final SnapshotScheduler scheduler = SnapshotScheduler.scheduleFixedDelay(Duration.ofMillis(snapshotRate));
 
         final List<Long> snapshotDelay = new LinkedList<>();
-        scheduler.setListener(() -> {
+        scheduler.setListener(
+            () -> {
                 snapshotDelay.add(System.currentTimeMillis());
 
                 try {
@@ -114,12 +135,17 @@ public class SnapshotSchedulerTest {
 
         final long initialDelay = snapshotRate;
         for (int i = 0; i < snapshotDelay.size(); i++) {
-            final long expectedDelay = initialDelay + (i * snapshotLatency) + (i * snapshotRate);
+            final long expectedDelay = initialDelay + i * snapshotLatency + i * snapshotRate;
             assertApproximatelyEqual(expectedDelay, snapshotDelay.get(i) - startTimeMillis, 200L);
         }
 
     }
 
+    /**
+     * Method testScheduleFixedDelayWithCustomInitialDelay.
+     *
+     * @throws InterruptedException InterruptedException.
+     */
     @Test
     public void testScheduleFixedDelayWithCustomInitialDelay() throws InterruptedException {
 
@@ -131,7 +157,8 @@ public class SnapshotSchedulerTest {
         final SnapshotScheduler scheduler = SnapshotScheduler.scheduleFixedDelay(Duration.ofMillis(snapshotRate));
 
         final List<Long> snapshotDelay = new LinkedList<>();
-        scheduler.setListener(() -> {
+        scheduler.setListener(
+            () -> {
                 snapshotDelay.add(System.currentTimeMillis());
 
                 try {
@@ -149,12 +176,16 @@ public class SnapshotSchedulerTest {
         scheduler.stop();
 
         for (int i = 0; i < snapshotDelay.size(); i++) {
-            final long expectedDelay = initialDelay + (i * snapshotLatency) + (i * snapshotRate);
+            final long expectedDelay = initialDelay + i * snapshotLatency + i * snapshotRate;
             assertApproximatelyEqual(expectedDelay, snapshotDelay.get(i) - startTimeMillis, 200L);
         }
 
     }
 
+    /**
+     * Method testNotificationListenerRequired.
+     *
+     */
     @Test(expected = IllegalStateException.class)
     public void testNotificationListenerRequired() {
 
@@ -162,6 +193,10 @@ public class SnapshotSchedulerTest {
 
     }
 
+    /**
+     * Method testCannotStartRunningScheduler.
+     *
+     */
     @Test
     public void testCannotStartRunningScheduler() {
 
@@ -186,6 +221,12 @@ public class SnapshotSchedulerTest {
 
     }
 
+    /**
+     * Method testStopShutsDownExecutorService.
+     *
+     * @throws IllegalAccessException IllegalAccessException.
+     * @throws NoSuchFieldException NoSuchFieldException.
+     */
     @Test
     public void testStopShutsDownExecutorService() throws NoSuchFieldException, IllegalAccessException {
 

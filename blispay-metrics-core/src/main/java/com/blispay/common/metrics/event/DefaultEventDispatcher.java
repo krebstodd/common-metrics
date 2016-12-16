@@ -1,4 +1,6 @@
 package com.blispay.common.metrics.event;
 
-public class DefaultEventDispatcher extends SingleThreadedEventDispatcher {
-}
+/**
+ * Class DefaultEventDispatcher.
+ */
+public class DefaultEventDispatcher extends SingleThreadedEventDispatcher {}

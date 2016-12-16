@@ -15,8 +15,16 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+/**
+ * Class GarbageCollectionMetricsTest.
+ */
 public class GarbageCollectionMetricsTest {
 
+    /**
+     * Method testGarbageCollectionEventsPublished.
+     *
+     * @throws InterruptedException InterruptedException.
+     */
     @Test
     public void testGarbageCollectionEventsPublished() throws InterruptedException {
 
@@ -34,33 +42,35 @@ public class GarbageCollectionMetricsTest {
         assertEquals(2, subscriber.count());
 
         final EventMatcher<Void, GcEventData> m1 = EventMatcher.<Void, GcEventData>builder()
-                .setApplication(serv.getApplicationId())
-                .setGroup(EventGroup.RESOURCE_UTILIZATION_GC)
-                .setName("gc")
-                .setType(EventType.EVENT)
-                .setUserDataMatcher(new GcEventDataMatcher())
-                .build();
+                                                               .setApplication(serv.getApplicationId())
+                                                               .setGroup(EventGroup.RESOURCE_UTILIZATION_GC)
+                                                               .setName("gc")
+                                                               .setType(EventType.EVENT)
+                                                               .setUserDataMatcher(new GcEventDataMatcher())
+                                                               .build();
 
         assertThat((EventModel<Void, GcEventData>) subscriber.poll(), m1);
     }
 
+    /**
+     * Class GcEventDataMatcher.
+     */
     private static class GcEventDataMatcher extends TypeSafeMatcher<GcEventData> {
 
         @Override
         public boolean matchesSafely(final GcEventData data) {
 
             return data.getAction() != null
-                    && data.getName() != null
-                    && data.getDuration() != null
-                    && data.getStartTime() != null
-                    && data.getEndTime() != null
-                    && !data.prePostFreeMemory().isEmpty();
+                   && data.getName() != null
+                   && data.getDuration() != null
+                   && data.getStartTime() != null
+                   && data.getEndTime() != null
+                   && !data.prePostFreeMemory().isEmpty();
         }
-
 
         @Override
-        public void describeTo(final Description description) {
+        public void describeTo(final Description description) {}
 
-        }
     }
+
 }

@@ -6,6 +6,9 @@ import com.blispay.common.metrics.model.EventModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Class Slf4jSnapshotReporter.
+ */
 public class Slf4jSnapshotReporter extends ScheduledSnapshotReporter {
 
     private static final Logger LOG = LoggerFactory.getLogger(Slf4jSnapshotReporter.class);
@@ -13,9 +16,14 @@ public class Slf4jSnapshotReporter extends ScheduledSnapshotReporter {
     private final EventSerializer serializer;
     private final Logger mericLogger;
 
-    public Slf4jSnapshotReporter(final Logger mericLogger,
-                                 final SnapshotScheduler scheduler,
-                                 final SnapshotCollectionStrategy snapshotCollectionStrategy) {
+    /**
+     * Constructs Slf4jSnapshotReporter.
+     *
+     * @param mericLogger mericLogger.
+     * @param scheduler scheduler.
+     * @param snapshotCollectionStrategy snapshotCollectionStrategy.
+     */
+    public Slf4jSnapshotReporter(final Logger mericLogger, final SnapshotScheduler scheduler, final SnapshotCollectionStrategy snapshotCollectionStrategy) {
 
         this(new JsonMetricSerializer(), mericLogger, scheduler, snapshotCollectionStrategy);
     }
@@ -28,10 +36,7 @@ public class Slf4jSnapshotReporter extends ScheduledSnapshotReporter {
      * @param scheduler Schedules snapshots.
      * @param snapshotCollectionStrategy Collection strategy.
      */
-    public Slf4jSnapshotReporter(final EventSerializer serializer,
-                                 final Logger mericLogger,
-                                 final SnapshotScheduler scheduler,
-                                 final SnapshotCollectionStrategy snapshotCollectionStrategy) {
+    public Slf4jSnapshotReporter(final EventSerializer serializer, final Logger mericLogger, final SnapshotScheduler scheduler, final SnapshotCollectionStrategy snapshotCollectionStrategy) {
 
         super(scheduler, snapshotCollectionStrategy);
 
@@ -54,4 +59,3 @@ public class Slf4jSnapshotReporter extends ScheduledSnapshotReporter {
     }
 
 }
-

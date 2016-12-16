@@ -9,8 +9,6 @@ import com.blispay.common.metrics.model.utilization.ResourceUtilizationData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.management.ListenerNotFoundException;
-import javax.management.NotificationEmitter;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -23,7 +21,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.management.ListenerNotFoundException;
+import javax.management.NotificationEmitter;
 
+/**
+ * Class JvmProbe.
+ */
 public class JvmProbe extends MetricProbe {
 
     private static final Logger LOG = LoggerFactory.getLogger(JvmProbe.class);
@@ -36,6 +39,11 @@ public class JvmProbe extends MetricProbe {
 
     private List<GcNotificationListener> gcListeners;
 
+    /**
+     * Constructs JvmProbe.
+     *
+     * @param metricService metricService.
+     */
     public JvmProbe(final MetricService metricService) {
         this(metricService, ManagementFactory.getMemoryMXBean(), ManagementFactory.getMemoryPoolMXBeans(), ManagementFactory.getGarbageCollectorMXBeans());
     }
@@ -47,10 +55,7 @@ public class JvmProbe extends MetricProbe {
      * @param memoryPools Collection of memory pool mx beans.
      * @param garbageCollectors Collection of gc mx beans.
      */
-    public JvmProbe(final MetricService metricService,
-                    final MemoryMXBean mxBean,
-                    final List<MemoryPoolMXBean> memoryPools,
-                    final List<GarbageCollectorMXBean> garbageCollectors) {
+    public JvmProbe(final MetricService metricService, final MemoryMXBean mxBean, final List<MemoryPoolMXBean> memoryPools, final List<GarbageCollectorMXBean> garbageCollectors) {
 
         this.metricService = metricService;
         this.mxBean = mxBean;
@@ -63,8 +68,7 @@ public class JvmProbe extends MetricProbe {
         if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
             LOG.info("Starting JVM metric probe...");
 
-            final UtilizationGauge.Builder memUtilizationFactory = metricService.utilizationGauge()
-                    .inGroup(EventGroup.RESOURCE_UTILIZATION_MEM);
+            final UtilizationGauge.Builder memUtilizationFactory = metricService.utilizationGauge().inGroup(EventGroup.RESOURCE_UTILIZATION_MEM);
 
             memUtilizationFactory.withName("heap-utilization").register(this::heapUtilization);
             memUtilizationFactory.withName("non-heap-utilization").register(this::nonHeapUtilization);
@@ -83,8 +87,7 @@ public class JvmProbe extends MetricProbe {
             }
 
             // Create JVM wide thread guage metrics.
-            final UtilizationGauge.Builder threadUtilizationFactory = metricService.utilizationGauge()
-                    .inGroup(EventGroup.RESOURCE_UTILIZATION_THREADS);
+            final UtilizationGauge.Builder threadUtilizationFactory = metricService.utilizationGauge().inGroup(EventGroup.RESOURCE_UTILIZATION_THREADS);
 
             threadUtilizationFactory.withName("jvm-active").register(threadUtilization(JvmProbe::isActive));
             threadUtilizationFactory.withName("jvm-blocked").register(threadUtilization(JvmProbe::isBlocked));
@@ -186,10 +189,7 @@ public class JvmProbe extends MetricProbe {
 
         final NotificationEmitter emitter = (NotificationEmitter) gc;
 
-        final EventFactory<GcEventData> gcEventRepo = metricService.eventFactory(GcEventData.class)
-                .inGroup(EventGroup.RESOURCE_UTILIZATION_GC)
-                .withName("gc")
-                .build();
+        final EventFactory<GcEventData> gcEventRepo = metricService.eventFactory(GcEventData.class).inGroup(EventGroup.RESOURCE_UTILIZATION_GC).withName("gc").build();
 
         final GcNotificationListener gcListener = new GcNotificationListener(gcEventRepo);
         emitter.addNotificationListener(gcListener, new GcNotificationFilter(), null);
@@ -214,9 +214,7 @@ public class JvmProbe extends MetricProbe {
     }
 
     private static Boolean isBlocked(final Thread thread) {
-        return thread.getState() == Thread.State.BLOCKED
-                || thread.getState() == Thread.State.WAITING
-                || thread.getState() == Thread.State.TIMED_WAITING;
+        return thread.getState() == Thread.State.BLOCKED || thread.getState() == Thread.State.WAITING || thread.getState() == Thread.State.TIMED_WAITING;
     }
 
     private static String poolMetricName(final String poolName) {
@@ -225,12 +223,12 @@ public class JvmProbe extends MetricProbe {
 
     private static void removeGarbageCollectionListeners(final List<NotificationEmitter> emitters, final List<GcNotificationListener> gc) {
         emitters.forEach(emitter -> gc.forEach(listener -> {
-                try {
-                    emitter.removeNotificationListener(listener);
-                } catch (ListenerNotFoundException e) {
-                    LOG.debug("Emitter does not own this listener, moving on.");
-                }
-            }));
+            try {
+                emitter.removeNotificationListener(listener);
+            } catch (ListenerNotFoundException e) {
+                LOG.debug("Emitter does not own this listener, moving on.");
+            }
+        }));
     }
 
 }

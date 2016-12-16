@@ -27,17 +27,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+/**
+ * Class QueryExecutionProfilerTest.
+ */
 public class QueryExecutionProfilerTest {
 
-    private static final Duration simulatedLatency = Duration.ofSeconds(1);
+    private static final Duration SIMULATED_LATENCY = Duration.ofSeconds(1);
 
     // CHECK_OFF: JavadocVariable
     // CHECK_OFF: VisibilityModifier
     @Rule
     public ExpectedException thrown = ExpectedException.none();
+
     // CHECK_ON: JavadocVariable
     // CHECK_ON: VisibilityModifier
 
+    /**
+     * Method testProfileJpaRepository.
+     *
+     */
     @Test
     public void testProfileJpaRepository() {
         final ConfigurableListableBeanFactory beanFactory = TestSpringConfig.buildContext().getBeanFactory();
@@ -53,17 +61,25 @@ public class QueryExecutionProfilerTest {
         assertEquals(1, subscriber.count());
 
         final EventMatcher<TransactionData, Void> matcher = EventMatcher.<TransactionData, Void>builder()
-                .setApplication(metricService.getApplicationId())
-                .setGroup(EventGroup.CLIENT_JDBC)
-                .setName(QueryExecutionProfilerTest.ProfiledRepository.queryName)
-                .setType(EventType.TRANSACTION)
-                .setDataMatcher(new TransactionDataMatcher(DsResource.fromSchemaTable(ProfiledRepositoryImpl.schema, ProfiledRepositoryImpl.table),  ProfiledRepositoryImpl.dsAction,
-                        Direction.OUTBOUND, Status.success(), 1000L))
-                .build();
+                                                                        .setApplication(metricService.getApplicationId())
+                                                                        .setGroup(EventGroup.CLIENT_JDBC)
+                                                                        .setName(QueryExecutionProfilerTest.ProfiledRepository.queryName)
+                                                                        .setType(EventType.TRANSACTION)
+                                                                        .setDataMatcher(new TransactionDataMatcher(DsResource.fromSchemaTable(ProfiledRepositoryImpl.schema,
+                                                                                                                                              ProfiledRepositoryImpl.table),
+                                                                                                                   ProfiledRepositoryImpl.dsAction,
+                                                                                                                   Direction.OUTBOUND,
+                                                                                                                   Status.success(),
+                                                                                                                   1000L))
+                                                                        .build();
 
         assertThat((EventModel<TransactionData, Void>) subscriber.poll(), matcher);
     }
 
+    /**
+     * Method testJpaRepositoryThrowsException.
+     *
+     */
     @Test
     public void testJpaRepositoryThrowsException() {
         final ConfigurableListableBeanFactory beanFactory = TestSpringConfig.buildContext(Boolean.TRUE).getBeanFactory();
@@ -78,17 +94,25 @@ public class QueryExecutionProfilerTest {
         profiled.profiledQuery();
 
         final EventMatcher<TransactionData, Void> matcher = EventMatcher.<TransactionData, Void>builder()
-                .setApplication(metricService.getApplicationId())
-                .setGroup(EventGroup.CLIENT_JDBC)
-                .setName(QueryExecutionProfilerTest.ProfiledRepository.queryName)
-                .setType(EventType.TRANSACTION)
-                .setDataMatcher(new TransactionDataMatcher(DsResource.fromSchemaTable(ProfiledRepositoryImpl.schema, ProfiledRepositoryImpl.table),  ProfiledRepositoryImpl.dsAction,
-                        Direction.OUTBOUND, Status.error(), 1000L))
-                .build();
+                                                                        .setApplication(metricService.getApplicationId())
+                                                                        .setGroup(EventGroup.CLIENT_JDBC)
+                                                                        .setName(QueryExecutionProfilerTest.ProfiledRepository.queryName)
+                                                                        .setType(EventType.TRANSACTION)
+                                                                        .setDataMatcher(new TransactionDataMatcher(DsResource.fromSchemaTable(ProfiledRepositoryImpl.schema,
+                                                                                                                                              ProfiledRepositoryImpl.table),
+                                                                                                                   ProfiledRepositoryImpl.dsAction,
+                                                                                                                   Direction.OUTBOUND,
+                                                                                                                   Status.error(),
+                                                                                                                   1000L))
+                                                                        .build();
 
         assertThat((EventModel<TransactionData, Void>) subscriber.poll(), matcher);
     }
 
+    /**
+     * Method testJpaRepositoryNonProfiledQuery.
+     *
+     */
     @Test
     public void testJpaRepositoryNonProfiledQuery() {
         final ConfigurableListableBeanFactory beanFactory = TestSpringConfig.buildContext().getBeanFactory();
@@ -104,42 +128,69 @@ public class QueryExecutionProfilerTest {
         assertEquals(0, subscriber.count());
     }
 
+    /**
+     * Interface ProfiledRepository.
+     */
     public interface ProfiledRepository extends CrudRepository<Object, Integer>, com.blispay.common.metrics.spring.ProfiledRepository {
 
         /**
          * Query name.
          */
         String queryName = "doQuery";
+
         /**
          * Schema name.
          */
         String schema = "test-schema";
+
         /**
          * Table name.
          */
         String table = "test-table";
+
         /**
          * Query action.
          */
         DsAction dsAction = DsAction.INSERT;
 
+        /**
+         * Method profiledQuery.
+         *
+         * @return return value.
+         */
         @ProfiledQuery(name = queryName, schema = schema, table = table, action = DsAction.INSERT)
         Optional<Integer> profiledQuery();
 
+        /**
+         * Method nonProfiledQuery.
+         *
+         * @return return value.
+         */
         Optional<Integer> nonProfiledQuery();
 
     }
 
+    /**
+     * Class ProfiledRepositoryImpl.
+     */
     public static class ProfiledRepositoryImpl implements ProfiledRepository {
 
         private final AtomicBoolean executed = new AtomicBoolean(Boolean.FALSE);
 
         private final Optional<RuntimeException> ex;
 
+        /**
+         * Constructs ProfiledRepositoryImpl.
+         */
         public ProfiledRepositoryImpl() {
             this(Optional.empty());
         }
 
+        /**
+         * Constructs ProfiledRepositoryImpl.
+         *
+         * @param exceptionOptional exceptionOptional.
+         */
         public ProfiledRepositoryImpl(final Optional<RuntimeException> exceptionOptional) {
             this.ex = exceptionOptional;
         }
@@ -148,13 +199,14 @@ public class QueryExecutionProfilerTest {
         public Optional<Integer> profiledQuery() {
 
             try {
-                Thread.sleep(simulatedLatency.toMillis());
+                Thread.sleep(SIMULATED_LATENCY.toMillis());
             } catch (InterruptedException e) {
                 throw new IllegalStateException(e);
             }
 
             executed.set(Boolean.TRUE);
-            ex.ifPresent(exception -> {
+            ex.ifPresent(
+                exception -> {
                     throw exception;
                 });
 
@@ -166,13 +218,14 @@ public class QueryExecutionProfilerTest {
         public Optional<Integer> nonProfiledQuery() {
 
             try {
-                Thread.sleep(simulatedLatency.toMillis());
+                Thread.sleep(SIMULATED_LATENCY.toMillis());
             } catch (InterruptedException e) {
                 throw new IllegalStateException(e);
             }
 
             executed.set(Boolean.TRUE);
-            ex.ifPresent(exception -> {
+            ex.ifPresent(
+                exception -> {
                     throw exception;
                 });
 
@@ -216,25 +269,16 @@ public class QueryExecutionProfilerTest {
         }
 
         @Override
-        public void delete(final Integer integer) {
-
-        }
+        public void delete(final Integer integer) {}
 
         @Override
-        public void delete(final Object obj) {
-
-        }
+        public void delete(final Object obj) {}
 
         @Override
-        public void delete(final Iterable<?> iterable) {
-
-        }
+        public void delete(final Iterable<?> iterable) {}
 
         @Override
-        public void deleteAll() {
-
-        }
-
+        public void deleteAll() {}
 
     }
 

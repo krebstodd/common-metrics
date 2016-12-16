@@ -19,6 +19,9 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
 
     private final Set<EventSubscriber> eventListeners;
 
+    /**
+     * Constructs SingleThreadedEventDispatcher.
+     */
     public SingleThreadedEventDispatcher() {
         this.eventListeners = new CopyOnWriteArraySet<>();
     }
@@ -30,9 +33,7 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
             throw new NotYetStartedException("Dispatcher not yet started");
         }
 
-        eventListeners.stream()
-                .filter(reporter -> passesFilters(reporter, evt))
-                .forEach(reporter -> acceptEvent(reporter, evt));
+        eventListeners.stream().filter(reporter -> passesFilters(reporter, evt)).forEach(reporter -> acceptEvent(reporter, evt));
     }
 
     @Override
@@ -50,25 +51,23 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
         eventListeners.remove(listener);
     }
 
-
     private void acceptEvent(final EventSubscriber subscriber, final EventModel evt) {
         try {
 
             subscriber.acceptEvent(evt);
 
-        // CHECK_OFF: IllegalCatch
+            // CHECK_OFF: IllegalCatch
         } catch (Exception ex) {
 
             LOG.error("Received error attempting to accept event [{}]", evt.getHeader().getName());
 
         }
+
         // CHECK_ON: IllegalCatch
     }
 
     private Boolean passesFilters(final EventSubscriber reporter, final EventModel event) {
-        return reporter.getFilters()
-                .stream()
-                .allMatch(filter -> safeFilter(filter, event));
+        return reporter.getFilters().stream().allMatch(filter -> safeFilter(filter, event));
     }
 
     private static Boolean safeFilter(final EventFilter filter, final EventModel model) {
@@ -77,13 +76,14 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
 
             return filter.acceptsEvent(model);
 
-        // CHECK_OFF: IllegalCatch
+            // CHECK_OFF: IllegalCatch
         } catch (Exception ex) {
 
             LOG.error("Caught exception determining whether filter can accept event occurring on [{}]", model.getHeader().getTimestamp(), ex);
             return Boolean.FALSE;
 
         }
+
         // CHECK_ON: IllegalCatch
 
     }
@@ -124,7 +124,5 @@ public class SingleThreadedEventDispatcher extends EventDispatcher {
         LOG.info("Dispatcher started.");
 
     }
-
-
 
 }

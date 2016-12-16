@@ -16,6 +16,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+/**
+ * Class ConcurrentCollectionStrategy.
+ */
 public class ConcurrentCollectionStrategy implements SnapshotCollectionStrategy {
 
     private static final Logger LOG = LoggerFactory.getLogger(ConcurrentCollectionStrategy.class);
@@ -25,6 +28,11 @@ public class ConcurrentCollectionStrategy implements SnapshotCollectionStrategy 
     private final Long timeout;
     private final TimeUnit timeoutUnit;
 
+    /**
+     * Constructs ConcurrentCollectionStrategy.
+     *
+     * @param numThreads numThreads.
+     */
     public ConcurrentCollectionStrategy(final Integer numThreads) {
         this(numThreads, DEFAULT_TIMEOUT);
     }
@@ -35,8 +43,7 @@ public class ConcurrentCollectionStrategy implements SnapshotCollectionStrategy 
      * @param numThreads Fixed thread pool size.
      * @param timeout Max timeout for collection.
      */
-    public ConcurrentCollectionStrategy(final Integer numThreads,
-                                        final Duration timeout) {
+    public ConcurrentCollectionStrategy(final Integer numThreads, final Duration timeout) {
 
         this.service = multiThreadedExecutor(numThreads);
         this.timeout = timeout.toMillis();
@@ -48,11 +55,7 @@ public class ConcurrentCollectionStrategy implements SnapshotCollectionStrategy 
 
         try {
 
-            return service.invokeAll(snapshotProviders, timeout, timeoutUnit).stream()
-                    .map(this::getOrTimeout)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .collect(Collectors.toSet());
+            return service.invokeAll(snapshotProviders, timeout, timeoutUnit).stream().map(this::getOrTimeout).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toSet());
 
         } catch (InterruptedException e) {
 

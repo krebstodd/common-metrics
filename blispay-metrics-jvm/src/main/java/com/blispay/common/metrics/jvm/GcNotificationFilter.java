@@ -5,6 +5,9 @@ import com.sun.management.GarbageCollectionNotificationInfo;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
 
+/**
+ * Class GcNotificationFilter.
+ */
 public class GcNotificationFilter implements NotificationFilter {
 
     @Override

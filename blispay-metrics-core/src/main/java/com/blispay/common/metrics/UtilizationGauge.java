@@ -14,6 +14,9 @@ import java.time.ZonedDateTime;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * Class UtilizationGauge.
+ */
 public class UtilizationGauge implements SnapshotProvider {
 
     private final String applicationId;
@@ -29,10 +32,7 @@ public class UtilizationGauge implements SnapshotProvider {
      * @param name Name of the gauge.
      * @param supplier Supplier of gauge state.
      */
-    public UtilizationGauge(final String applicationId,
-                            final EventGroup group,
-                            final String name,
-                            final Supplier<ResourceUtilizationData> supplier) {
+    public UtilizationGauge(final String applicationId, final EventGroup group, final String name, final Supplier<ResourceUtilizationData> supplier) {
 
         this.applicationId = applicationId;
         this.group = group;
@@ -48,15 +48,18 @@ public class UtilizationGauge implements SnapshotProvider {
 
     private EventHeader createHeader() {
         return EventHeader.builder()
-                .timestamp(ZonedDateTime.now(ZoneId.of("UTC")))
-                .applicationId(applicationId)
-                .group(group)
-                .type(EventType.RESOURCE_UTILIZATION)
-                .trackingInfo(LocalMetricContext.getTrackingInfo())
-                .name(name)
-                .build();
+                          .timestamp(ZonedDateTime.now(ZoneId.of("UTC")))
+                          .applicationId(applicationId)
+                          .group(group)
+                          .type(EventType.RESOURCE_UTILIZATION)
+                          .trackingInfo(LocalMetricContext.getTrackingInfo())
+                          .name(name)
+                          .build();
     }
 
+    /**
+     * Class Builder.
+     */
     public static class Builder {
 
         private final Consumer<UtilizationGauge> gaugeRepository;
@@ -65,21 +68,45 @@ public class UtilizationGauge implements SnapshotProvider {
         private EventGroup group;
         private String name;
 
+        /**
+         * Constructs Builder.
+         *
+         * @param applicationId applicationId.
+         * @param gaugeRepository gaugeRepository.
+         */
         public Builder(final String applicationId, final Consumer<UtilizationGauge> gaugeRepository) {
             this.applicationId = applicationId;
             this.gaugeRepository = gaugeRepository;
         }
 
+        /**
+         * Method inGroup.
+         *
+         * @param group group.
+         * @return return value.
+         */
         public Builder inGroup(final EventGroup group) {
             this.group = group;
             return this;
         }
 
+        /**
+         * Method withName.
+         *
+         * @param name name.
+         * @return return value.
+         */
         public Builder withName(final String name) {
             this.name = name;
             return this;
         }
 
+        /**
+         * Method withNameFromType.
+         *
+         * @param type type.
+         * @return return value.
+         */
         public Builder withNameFromType(final Class<?> type) {
             this.name = NameFormatter.toEventName(type);
             return this;
@@ -98,4 +125,5 @@ public class UtilizationGauge implements SnapshotProvider {
         }
 
     }
+
 }

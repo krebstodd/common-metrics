@@ -14,8 +14,15 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Class ConcurrentCollectionStrategyTest.
+ */
 public class ConcurrentCollectionStrategyTest {
 
+    /**
+     * Method testUsesFixedThreads.
+     *
+     */
     @Test
     public void testUsesFixedThreads() {
 
@@ -43,6 +50,10 @@ public class ConcurrentCollectionStrategyTest {
 
     }
 
+    /**
+     * Method testCatchesAndLogsSingleProvidersException.
+     *
+     */
     @Test
     public void testCatchesAndLogsSingleProvidersException() {
 
@@ -55,7 +66,8 @@ public class ConcurrentCollectionStrategyTest {
 
         mockProviders.add(new SlowSnapshotProvider(providerLatency, mockEvent()));
         mockProviders.add(new SlowSnapshotProvider(providerLatency, mockEvent()));
-        mockProviders.add(() -> {
+        mockProviders.add(
+            () -> {
                 throw new RuntimeException("Some runtime exception...");
             });
         mockProviders.add(new SlowSnapshotProvider(providerLatency, mockEvent()));
@@ -72,6 +84,10 @@ public class ConcurrentCollectionStrategyTest {
 
     }
 
+    /**
+     * Method testLogsTimeoutAndReturnsSuccessfulSnapshots.
+     *
+     */
     @Test
     public void testLogsTimeoutAndReturnsSuccessfulSnapshots() {
 
@@ -102,6 +118,14 @@ public class ConcurrentCollectionStrategyTest {
         return new EventModel<>(null, null);
     }
 
+    /**
+     * Method approximatelyEqual.
+     *
+     * @param expected expected.
+     * @param actual actual.
+     * @param acceptableDelta acceptableDelta.
+     * @return return value.
+     */
     protected Boolean approximatelyEqual(final Long expected, final Long actual, final Long acceptableDelta) {
         return Math.abs(expected - actual) < acceptableDelta;
     }

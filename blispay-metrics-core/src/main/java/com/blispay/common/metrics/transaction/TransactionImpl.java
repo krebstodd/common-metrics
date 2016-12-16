@@ -18,6 +18,9 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Class TransactionImpl.
+ */
 public class TransactionImpl implements Transaction {
 
     private Long startMillis;
@@ -35,10 +38,15 @@ public class TransactionImpl implements Transaction {
     private String name;
     private Object userData;
 
-    protected TransactionImpl(final EventEmitter emitter,
-                              final String appId,
-                              final EventGroup group,
-                              final String name) {
+    /**
+     * Constructs TransactionImpl.
+     *
+     * @param emitter emitter.
+     * @param appId appId.
+     * @param group group.
+     * @param name name.
+     */
+    protected TransactionImpl(final EventEmitter emitter, final String appId, final EventGroup group, final String name) {
 
         this.emitter = emitter;
         this.appId = appId;
@@ -46,31 +54,67 @@ public class TransactionImpl implements Transaction {
         this.name = name;
     }
 
+    /**
+     * Method withName.
+     *
+     * @param name name.
+     * @return return value.
+     */
     public Transaction withName(final String name) {
         this.name = name;
         return this;
     }
 
+    /**
+     * Method withNameFromType.
+     *
+     * @param type type.
+     * @return return value.
+     */
     public Transaction withNameFromType(final Class<?> type) {
         this.name = NameFormatter.toEventName(type);
         return this;
     }
 
+    /**
+     * Method inDirection.
+     *
+     * @param direction direction.
+     * @return return value.
+     */
     public Transaction inDirection(final Direction direction) {
         this.direction = direction;
         return this;
     }
 
+    /**
+     * Method withAction.
+     *
+     * @param action action.
+     * @return return value.
+     */
     public Transaction withAction(final Action action) {
         this.action = action;
         return this;
     }
 
+    /**
+     * Method onResource.
+     *
+     * @param resource resource.
+     * @return return value.
+     */
     public Transaction onResource(final Resource resource) {
         this.resource = resource;
         return this;
     }
 
+    /**
+     * Method userData.
+     *
+     * @param userData userData.
+     * @return return value.
+     */
     public Transaction userData(final Object userData) {
         this.userData = userData;
         return this;
@@ -98,18 +142,39 @@ public class TransactionImpl implements Transaction {
         }
     }
 
+    /**
+     * Method success.
+     *
+     * @return return value.
+     */
     public Duration success() {
         return stop(Status.success());
     }
 
+    /**
+     * Method error.
+     *
+     * @return return value.
+     */
     public Duration error() {
         return stop(Status.error());
     }
 
+    /**
+     * Method warn.
+     *
+     * @return return value.
+     */
     public Duration warn() {
         return stop(Status.warning());
     }
 
+    /**
+     * Method warn.
+     *
+     * @param level level.
+     * @return return value.
+     */
     public Duration warn(final Integer level) {
         return stop(Status.warning(level));
     }
@@ -129,10 +194,20 @@ public class TransactionImpl implements Transaction {
         return elapsed;
     }
 
+    /**
+     * Method isRunning.
+     *
+     * @return return value.
+     */
     public Boolean isRunning() {
         return isRunning.get();
     }
 
+    /**
+     * Method elapsedMillis.
+     *
+     * @return return value.
+     */
     public Long elapsedMillis() {
         assertRunning(Boolean.TRUE);
         return currMillis() - startMillis;
@@ -153,14 +228,7 @@ public class TransactionImpl implements Transaction {
     }
 
     private EventHeader createHeader() {
-        return EventHeader.builder()
-                .timestamp(timestamp)
-                .applicationId(appId)
-                .group(group)
-                .type(EventType.TRANSACTION)
-                .trackingInfo(LocalMetricContext.getTrackingInfo())
-                .name(name)
-                .build();
+        return EventHeader.builder().timestamp(timestamp).applicationId(appId).group(group).type(EventType.TRANSACTION).trackingInfo(LocalMetricContext.getTrackingInfo()).name(name).build();
     }
 
     @Override

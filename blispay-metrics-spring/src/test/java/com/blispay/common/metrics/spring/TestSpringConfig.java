@@ -10,6 +10,9 @@ import org.springframework.core.env.PropertySource;
 
 import java.util.Optional;
 
+/**
+ * Class TestSpringConfig.
+ */
 @Configuration
 @EnableAspectJAutoProxy
 public class TestSpringConfig {
@@ -19,6 +22,11 @@ public class TestSpringConfig {
      */
     public static final String THROW_EXCEPTIONS_PROP = "throwExceptions";
 
+    /**
+     * Method metricService.
+     *
+     * @return return value.
+     */
     @Bean
     public MetricService metricService() {
         return new MetricService("test-service");
@@ -52,16 +60,33 @@ public class TestSpringConfig {
         }
     }
 
+    /**
+     * Method methodExecutionProfiler.
+     *
+     * @param service service.
+     * @return return value.
+     */
     @Bean
     public MethodExecutionProfiler methodExecutionProfiler(final MetricService service) {
         return new MethodExecutionProfiler(service);
     }
 
+    /**
+     * Method queryExecutionProfiler.
+     *
+     * @param service service.
+     * @return return value.
+     */
     @Bean
     public QueryExecutionProfiler queryExecutionProfiler(final MetricService service) {
         return new QueryExecutionProfiler(service);
     }
 
+    /**
+     * Method buildContext.
+     *
+     * @return return value.
+     */
     public static AnnotationConfigApplicationContext buildContext() {
         return buildContext(Boolean.FALSE);
     }
@@ -76,18 +101,18 @@ public class TestSpringConfig {
         final AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
 
         ctx.register(TestSpringConfig.class);
-        ctx.getEnvironment().getPropertySources().addLast(new PropertySource<String>("testSource") {
-
-            @Override
-            public Object getProperty(final String name) {
-                if (THROW_EXCEPTIONS_PROP.equals(name)) {
-                    return throwExceptions;
-                } else {
-                    return null;
+        ctx.getEnvironment()
+            .getPropertySources()
+            .addLast(new PropertySource<String>("testSource") {
+                @Override
+                public Object getProperty(final String name) {
+                    if (THROW_EXCEPTIONS_PROP.equals(name)) {
+                        return throwExceptions;
+                    } else {
+                        return null;
+                    }
                 }
-            }
-
-        });
+            });
 
         ctx.refresh();
         ctx.start();

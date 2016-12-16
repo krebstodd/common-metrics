@@ -1,5 +1,8 @@
 package com.blispay.common.metrics.model.status;
 
+/**
+ * Class StatusData.
+ */
 public class StatusData {
 
     private final Boolean statusValue;
@@ -17,10 +20,20 @@ public class StatusData {
         this.statusMessage = statusMessage;
     }
 
+    /**
+     * Method getStatusValue.
+     *
+     * @return return value.
+     */
     public Boolean getStatusValue() {
         return statusValue;
     }
 
+    /**
+     * Method getStatusMessage.
+     *
+     * @return return value.
+     */
     public String getStatusMessage() {
         return statusMessage;
     }

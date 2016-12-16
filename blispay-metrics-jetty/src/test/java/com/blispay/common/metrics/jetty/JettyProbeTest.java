@@ -41,9 +41,18 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-// CHECK_OFF: MagicNumber
+//CHECK_OFF: MagicNumber
+
+/**
+ * Class JettyProbeTest.
+ */
 public class JettyProbeTest {
 
+    /**
+     * Method testInstrumentedServer.
+     *
+     * @throws Exception Exception.
+     */
     @Test
     public void testInstrumentedServer() throws Exception {
 
@@ -65,26 +74,39 @@ public class JettyProbeTest {
         final EventModel<TransactionData, Void> event2 = testReporter.poll();
 
         final EventMatcher<TransactionData, Void> m1 = EventMatcher.<TransactionData, Void>builder()
-                .setApplication(metricService.getApplicationId())
-                .setGroup(EventGroup.SERVER_HTTP)
-                .setName("http-response")
-                .setType(EventType.TRANSACTION)
-                .setDataMatcher(new TransactionDataMatcher(HttpResource.fromUrl("/user/create/v1"), HttpAction.POST, Direction.INBOUND, Status.fromValue(200), 1000L))
-                .build();
+                                                                   .setApplication(metricService.getApplicationId())
+                                                                   .setGroup(EventGroup.SERVER_HTTP)
+                                                                   .setName("http-response")
+                                                                   .setType(EventType.TRANSACTION)
+                                                                   .setDataMatcher(new TransactionDataMatcher(HttpResource.fromUrl("/user/create/v1"),
+                                                                                                              HttpAction.POST,
+                                                                                                              Direction.INBOUND,
+                                                                                                              Status.fromValue(200),
+                                                                                                              1000L))
+                                                                   .build();
 
         final EventMatcher<TransactionData, Void> m2 = EventMatcher.<TransactionData, Void>builder()
-                .setApplication(metricService.getApplicationId())
-                .setGroup(EventGroup.SERVER_HTTP)
-                .setName("http-response")
-                .setType(EventType.TRANSACTION)
-                .setDataMatcher(new TransactionDataMatcher(HttpResource.fromUrl("/user/v1"), HttpAction.GET, Direction.INBOUND, Status.fromValue(404), 1000L))
-                .build();
+                                                                   .setApplication(metricService.getApplicationId())
+                                                                   .setGroup(EventGroup.SERVER_HTTP)
+                                                                   .setName("http-response")
+                                                                   .setType(EventType.TRANSACTION)
+                                                                   .setDataMatcher(new TransactionDataMatcher(HttpResource.fromUrl("/user/v1"),
+                                                                                                              HttpAction.GET,
+                                                                                                              Direction.INBOUND,
+                                                                                                              Status.fromValue(404),
+                                                                                                              1000L))
+                                                                   .build();
 
         assertThat(event1, m1);
 
         assertThat(event2, m2);
     }
 
+    /**
+     * Method testThreadPoolMetrics.
+     *
+     * @throws Exception Exception.
+     */
     @Test
     @Ignore
     public void testThreadPoolMetrics() throws Exception {
@@ -100,17 +122,21 @@ public class JettyProbeTest {
         new JettyProbe(tp, (HttpChannel<?> channel) -> { }, metricService);
         tp.start();
 
-        tp.execute(() -> {
+        tp.execute(
+            () -> {
                 final Set<EventModel> snapshot = testReporter.report().getMetrics();
                 assertEquals(1, snapshot.size());
 
                 final EventMatcher<ResourceUtilizationData, Void> m1 = EventMatcher.<ResourceUtilizationData, Void>builder()
-                        .setApplication(metricService.getApplicationId())
-                        .setGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
-                        .setName("jetty-thread-pool")
-                        .setType(EventType.RESOURCE_UTILIZATION)
-                        .setDataMatcher(new ResourceUtilizationDataMatcher(Matchers.equalTo(0L), Matchers.equalTo(8L), Matchers.equalTo(1L), Matchers.equalTo(0.125D)))
-                        .build();
+                                                                                   .setApplication(metricService.getApplicationId())
+                                                                                   .setGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
+                                                                                   .setName("jetty-thread-pool")
+                                                                                   .setType(EventType.RESOURCE_UTILIZATION)
+                                                                                   .setDataMatcher(new ResourceUtilizationDataMatcher(Matchers.equalTo(0L),
+                                                                                                                                      Matchers.equalTo(8L),
+                                                                                                                                      Matchers.equalTo(1L),
+                                                                                                                                      Matchers.equalTo(0.125D)))
+                                                                                   .build();
 
                 assertThat((EventModel<ResourceUtilizationData, Void>) snapshot.iterator().next(), m1);
 
@@ -123,7 +149,7 @@ public class JettyProbeTest {
     }
 
     private static Consumer<HttpChannel<?>> simulatedHandler(final Duration simulatedExecutionTime) {
-        return (channel) -> {
+        return channel -> {
             try {
                 Thread.sleep(simulatedExecutionTime.toMillis());
             } catch (InterruptedException e) {
@@ -157,4 +183,5 @@ public class JettyProbeTest {
     }
 
 }
-// CHECK_ON: MagicNumber
+
+//CHECK_ON: MagicNumber

@@ -5,6 +5,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
+/**
+ * Class EventModel.
+ *
+ * @param <D> Generic param type.
+ * @param <U> Generic param type.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public final class EventModel<D, U> {
@@ -18,8 +24,13 @@ public final class EventModel<D, U> {
     @JsonProperty("userData")
     private final U userData;
 
-    public EventModel(final EventHeader header,
-                      final D data) {
+    /**
+     * Constructs EventModel.
+     *
+     * @param header header.
+     * @param data data.
+     */
+    public EventModel(final EventHeader header, final D data) {
 
         this(header, data, null);
     }
@@ -31,23 +42,36 @@ public final class EventModel<D, U> {
      * @param data Payload of event.
      * @param userData Custom user data.
      */
-    public EventModel(final EventHeader header,
-                      final D data,
-                      final U userData) {
+    public EventModel(final EventHeader header, final D data, final U userData) {
 
         this.header = header;
         this.data = data;
         this.userData = userData;
     }
 
+    /**
+     * Method getData.
+     *
+     * @return return value.
+     */
     public D getData() {
         return data;
     }
 
+    /**
+     * Method getUserData.
+     *
+     * @return return value.
+     */
     public U getUserData() {
         return userData;
     }
 
+    /**
+     * Method getHeader.
+     *
+     * @return return value.
+     */
     public EventHeader getHeader() {
         return this.header;
     }

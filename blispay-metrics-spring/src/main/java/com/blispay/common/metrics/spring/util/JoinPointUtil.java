@@ -7,20 +7,42 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Optional;
 
+/**
+ * Class JoinPointUtil.
+ */
 public final class JoinPointUtil {
 
-    private JoinPointUtil() {
+    /**
+     * Constructs JoinPointUtil.
+     */
+    private JoinPointUtil() {}
 
-    }
-
+    /**
+     * Method getDeclaringClass.
+     *
+     * @param joinPoint joinPoint.
+     * @return return value.
+     */
     public static Class<?> getDeclaringClass(final JoinPoint joinPoint) {
         return ((MethodSignature) joinPoint.getSignature()).getMethod().getDeclaringClass();
     }
 
+    /**
+     * Method getMethodName.
+     *
+     * @param joinPoint joinPoint.
+     * @return return value.
+     */
     public static String getMethodName(final JoinPoint joinPoint) {
         return getMethod(joinPoint).getName();
     }
 
+    /**
+     * Method getMethod.
+     *
+     * @param joinPoint joinPoint.
+     * @return return value.
+     */
     public static Method getMethod(final JoinPoint joinPoint) {
         return ((MethodSignature) joinPoint.getSignature()).getMethod();
     }
@@ -38,10 +60,7 @@ public final class JoinPointUtil {
     public static <T> Optional<T> getAnnotation(final JoinPoint joinPoint, final Class<T> type) {
         final MethodSignature signature = (MethodSignature) joinPoint.getSignature();
 
-        return Arrays.asList(signature.getMethod().getAnnotations())
-                .stream()
-                .filter(type::isInstance)
-                .findAny()
-                .map(ann -> (T) ann);
+        return Arrays.asList(signature.getMethod().getAnnotations()).stream().filter(type::isInstance).findAny().map(ann -> (T) ann);
     }
+
 }

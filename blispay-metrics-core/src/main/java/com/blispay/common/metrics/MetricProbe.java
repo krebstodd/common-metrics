@@ -5,6 +5,9 @@ import org.springframework.context.SmartLifecycle;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Class MetricProbe.
+ */
 public abstract class MetricProbe implements SmartLifecycle {
 
     private final AtomicBoolean isRunning = new AtomicBoolean(Boolean.FALSE);
@@ -39,4 +42,5 @@ public abstract class MetricProbe implements SmartLifecycle {
     public int getPhase() {
         return StartupPhase.PROBE.value();
     }
+
 }

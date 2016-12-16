@@ -6,6 +6,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation type Profiled.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @Inherited
@@ -13,6 +16,7 @@ public @interface Profiled {
 
     /**
      * The name of the metric associated with the profiled code.
+     * @return value.
      */
     String value();
 

@@ -26,18 +26,26 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Class MethodExecutionProfilerTest.
+ */
 public class MethodExecutionProfilerTest {
 
-    private static final String metricName = "test-name";
-    private static final Duration simulatedLatency = Duration.ofSeconds(1);
+    private static final String METRIC_NAME = "test-name";
+    private static final Duration SIMULATED_LATENCY = Duration.ofSeconds(1);
 
     // CHECK_OFF: JavadocVariable
     // CHECK_OFF: VisibilityModifier
     @Rule
     public ExpectedException thrown = ExpectedException.none();
+
     // CHECK_ON: JavadocVariable
     // CHECK_ON: VisibilityModifier
 
+    /**
+     * Method testProfileMethodExecution.
+     *
+     */
     @Test
     public void testProfileMethodExecution() {
 
@@ -55,16 +63,24 @@ public class MethodExecutionProfilerTest {
         assertEquals(1, subscriber.count());
 
         final EventMatcher<TransactionData, Void> matcher = EventMatcher.<TransactionData, Void>builder()
-                .setApplication(metricService.getApplicationId())
-                .setGroup(EventGroup.INTERNAL_METHOD_CALL)
-                .setName("execute")
-                .setType(EventType.TRANSACTION)
-                .setDataMatcher(new TransactionDataMatcher(InternalResource.fromClass(ProfiledClass.class), InternalAction.fromMethodName("testProfile"), Direction.INTERNAL, Status.success(), 1000L))
-                .build();
+                                                                        .setApplication(metricService.getApplicationId())
+                                                                        .setGroup(EventGroup.INTERNAL_METHOD_CALL)
+                                                                        .setName("execute")
+                                                                        .setType(EventType.TRANSACTION)
+                                                                        .setDataMatcher(new TransactionDataMatcher(InternalResource.fromClass(ProfiledClass.class),
+                                                                                                                   InternalAction.fromMethodName("testProfile"),
+                                                                                                                   Direction.INTERNAL,
+                                                                                                                   Status.success(),
+                                                                                                                   1000L))
+                                                                        .build();
 
         assertThat((EventModel<TransactionData, Void>) subscriber.poll(), matcher);
     }
 
+    /**
+     * Method testProfileMethodExecutionWithException.
+     *
+     */
     @Test
     public void testProfileMethodExecutionWithException() {
         final ConfigurableListableBeanFactory beanFactory = TestSpringConfig.buildContext(Boolean.TRUE).getBeanFactory();
@@ -84,26 +100,41 @@ public class MethodExecutionProfilerTest {
         assertEquals(1, subscriber.count());
 
         final EventMatcher<TransactionData, Void> matcher = EventMatcher.<TransactionData, Void>builder()
-                .setApplication(metricService.getApplicationId())
-                .setGroup(EventGroup.INTERNAL_METHOD_CALL)
-                .setName("execute")
-                .setType(EventType.TRANSACTION)
-                .setDataMatcher(new TransactionDataMatcher(InternalResource.fromClass(ProfiledClass.class), InternalAction.fromMethodName("testProfile"), Direction.INTERNAL, Status.error(), 1000L))
-                .build();
+                                                                        .setApplication(metricService.getApplicationId())
+                                                                        .setGroup(EventGroup.INTERNAL_METHOD_CALL)
+                                                                        .setName("execute")
+                                                                        .setType(EventType.TRANSACTION)
+                                                                        .setDataMatcher(new TransactionDataMatcher(InternalResource.fromClass(ProfiledClass.class),
+                                                                                                                   InternalAction.fromMethodName("testProfile"),
+                                                                                                                   Direction.INTERNAL,
+                                                                                                                   Status.error(),
+                                                                                                                   1000L))
+                                                                        .build();
 
         assertThat((EventModel<TransactionData, Void>) subscriber.poll(), matcher);
     }
 
+    /**
+     * Class ProfiledClass.
+     */
     public static class ProfiledClass {
 
         private final AtomicBoolean executed = new AtomicBoolean(Boolean.FALSE);
 
         private final Optional<RuntimeException> ex;
 
+        /**
+         * Constructs ProfiledClass.
+         */
         public ProfiledClass() {
             this(Optional.empty());
         }
 
+        /**
+         * Constructs ProfiledClass.
+         *
+         * @param exceptionOptional exceptionOptional.
+         */
         public ProfiledClass(final Optional<RuntimeException> exceptionOptional) {
             this.ex = exceptionOptional;
         }
@@ -111,20 +142,26 @@ public class MethodExecutionProfilerTest {
         /**
          * Profiled method.
          */
-        @Profiled(metricName)
+        @Profiled(METRIC_NAME)
         public void testProfile() {
             try {
-                Thread.sleep(simulatedLatency.toMillis());
+                Thread.sleep(SIMULATED_LATENCY.toMillis());
             } catch (InterruptedException e) {
                 throw new IllegalStateException(e);
             }
 
             executed.set(Boolean.TRUE);
-            ex.ifPresent(exception -> {
+            ex.ifPresent(
+                exception -> {
                     throw exception;
                 });
         }
 
+        /**
+         * Method wasExecuted.
+         *
+         * @return return value.
+         */
         public Boolean wasExecuted() {
             return executed.get();
         }

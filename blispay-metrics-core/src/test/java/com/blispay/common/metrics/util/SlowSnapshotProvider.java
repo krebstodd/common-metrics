@@ -5,6 +5,9 @@ import com.blispay.common.metrics.report.SnapshotProvider;
 
 import java.time.Duration;
 
+/**
+ * Class SlowSnapshotProvider.
+ */
 public class SlowSnapshotProvider implements SnapshotProvider {
 
     private final Duration waitTime;
@@ -15,8 +18,7 @@ public class SlowSnapshotProvider implements SnapshotProvider {
      * @param waitTime Amount of time to wait before returning value.
      * @param model Model to return.
      */
-    public SlowSnapshotProvider(final Duration waitTime,
-                                final EventModel model) {
+    public SlowSnapshotProvider(final Duration waitTime, final EventModel model) {
 
         this.waitTime = waitTime;
         this.model = model;
@@ -34,4 +36,5 @@ public class SlowSnapshotProvider implements SnapshotProvider {
         return model;
 
     }
+
 }

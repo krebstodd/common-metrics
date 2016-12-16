@@ -10,6 +10,9 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 
+/**
+ * Class TransactionDataMatcher.
+ */
 public class TransactionDataMatcher extends TypeSafeMatcher<TransactionData> {
 
     private final Matcher<String> resourceMatcher;
@@ -27,8 +30,7 @@ public class TransactionDataMatcher extends TypeSafeMatcher<TransactionData> {
      * @param status status
      * @param approxMillis approxMillis
      */
-    public TransactionDataMatcher(final Resource resource, final Action action, final Direction direction,
-                                  final Status status, final Long approxMillis) {
+    public TransactionDataMatcher(final Resource resource, final Action action, final Direction direction, final Status status, final Long approxMillis) {
 
         this(resource, action, direction, status, approxMillis, approxMillis);
     }
@@ -42,9 +44,8 @@ public class TransactionDataMatcher extends TypeSafeMatcher<TransactionData> {
      * @param approxMillis approxMillis
      * @param acceptableDelta acceptableDelta
      */
-    public TransactionDataMatcher(final Resource resource, final Action action, final Direction direction,
-                                  final Status status, final Long approxMillis, final Long acceptableDelta) {
-        
+    public TransactionDataMatcher(final Resource resource, final Action action, final Direction direction, final Status status, final Long approxMillis, final Long acceptableDelta) {
+
         this.resourceMatcher = Matchers.equalTo(resource.getValue());
         this.actionMatcher = Matchers.equalTo(action.getValue());
         this.directionMatcher = Matchers.equalTo(direction);
@@ -56,27 +57,37 @@ public class TransactionDataMatcher extends TypeSafeMatcher<TransactionData> {
     @Override
     public boolean matchesSafely(final TransactionData raBaseResourceCallEventData) {
         return resourceMatcher.matches(raBaseResourceCallEventData.getResource().getValue())
-                && actionMatcher.matches(raBaseResourceCallEventData.getAction().getValue())
-                && statusMatcher.matches(raBaseResourceCallEventData.getStatus())
-                && directionMatcher.matches(raBaseResourceCallEventData.getDirection())
-                && approximatelyEqual(approxRuntime, raBaseResourceCallEventData.getDurationMillis(), acceptableDelta);
+               && actionMatcher.matches(raBaseResourceCallEventData.getAction().getValue())
+               && statusMatcher.matches(raBaseResourceCallEventData.getStatus())
+               && directionMatcher.matches(raBaseResourceCallEventData.getDirection())
+               && approximatelyEqual(approxRuntime, raBaseResourceCallEventData.getDurationMillis(), acceptableDelta);
     }
 
     @Override
     public void describeTo(final Description description) {
         description.appendText("resource=[")
-                .appendDescriptionOf(resourceMatcher)
-                .appendText("], action=[")
-                .appendDescriptionOf(actionMatcher)
-                .appendText("], status=[")
-                .appendDescriptionOf(statusMatcher)
-                .appendText("], direction=[")
-                .appendDescriptionOf(directionMatcher)
-                .appendText("], runtimeRange=[")
-                .appendValue(approxRuntime - acceptableDelta).appendText(", ").appendValue(approxRuntime + acceptableDelta)
-                .appendText("]");
+                   .appendDescriptionOf(resourceMatcher)
+                   .appendText("], action=[")
+                   .appendDescriptionOf(actionMatcher)
+                   .appendText("], status=[")
+                   .appendDescriptionOf(statusMatcher)
+                   .appendText("], direction=[")
+                   .appendDescriptionOf(directionMatcher)
+                   .appendText("], runtimeRange=[")
+                   .appendValue(approxRuntime - acceptableDelta)
+                   .appendText(", ")
+                   .appendValue(approxRuntime + acceptableDelta)
+                   .appendText("]");
     }
 
+    /**
+     * Method approximatelyEqual.
+     *
+     * @param expected expected.
+     * @param actual actual.
+     * @param acceptableDelta acceptableDelta.
+     * @return return value.
+     */
     protected Boolean approximatelyEqual(final Long expected, final Long actual, final Long acceptableDelta) {
         return Math.abs(expected - actual) < acceptableDelta;
     }

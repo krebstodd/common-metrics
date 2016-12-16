@@ -23,19 +23,31 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Class MemoryPoolMetricsTest.
+ */
 @RunWith(Parameterized.class)
 public class MemoryPoolMetricsTest {
 
-    private static final String application = MetricTestUtil.randomAppId();
+    private static final String APPLICATION = MetricTestUtil.randomAppId();
 
     private static SnapshotReporter REPORTER;
 
     private final String metricName;
 
+    /**
+     * Constructs MemoryPoolMetricsTest.
+     *
+     * @param metricName metricName.
+     */
     public MemoryPoolMetricsTest(final String metricName) {
         this.metricName = metricName;
     }
 
+    /**
+     * Method testJvmProbe.
+     *
+     */
     @Test
     public void testJvmProbe() {
 
@@ -47,17 +59,18 @@ public class MemoryPoolMetricsTest {
             assertTrue(event.getData().getCurrentValue() < event.getData().getMaxValue());
         }
 
-        assertEquals(String.valueOf(event.getData().getCurrentPercentage()),
-                String.valueOf((double) event.getData().getCurrentValue() / event.getData().getMaxValue()));
+        assertEquals(String.valueOf(event.getData().getCurrentPercentage()), String.valueOf((double) event.getData().getCurrentValue() / event.getData().getMaxValue()));
 
         final EventMatcher<ResourceUtilizationData, Void> m1 = EventMatcher.<ResourceUtilizationData, Void>builder()
-                .setApplication(application)
-                .setGroup(EventGroup.RESOURCE_UTILIZATION_MEM)
-                .setName(metricName)
-                .setType(EventType.RESOURCE_UTILIZATION)
-                .setDataMatcher(new ResourceUtilizationDataMatcher(Matchers.notNullValue(Long.class), Matchers.notNullValue(Long.class),
-                        Matchers.notNullValue(Long.class), Matchers.notNullValue(Double.class)))
-                .build();
+                                                                           .setApplication(APPLICATION)
+                                                                           .setGroup(EventGroup.RESOURCE_UTILIZATION_MEM)
+                                                                           .setName(metricName)
+                                                                           .setType(EventType.RESOURCE_UTILIZATION)
+                                                                           .setDataMatcher(new ResourceUtilizationDataMatcher(Matchers.notNullValue(Long.class),
+                                                                                                                              Matchers.notNullValue(Long.class),
+                                                                                                                              Matchers.notNullValue(Long.class),
+                                                                                                                              Matchers.notNullValue(Double.class)))
+                                                                           .build();
 
         assertThat(event, m1);
 
@@ -65,12 +78,13 @@ public class MemoryPoolMetricsTest {
 
     private EventModel<ResourceUtilizationData, Void> parseUtilizationMetrics(final String metricName) {
 
-        return REPORTER.report().getMetrics()
-                .stream()
-                .filter(metric -> metric.getHeader().getName().equals(metricName))
-                .findFirst()
-                .map(metric -> (EventModel<ResourceUtilizationData, Void>) metric)
-                .get();
+        return REPORTER.report()
+                       .getMetrics()
+                       .stream()
+                       .filter(metric -> metric.getHeader().getName().equals(metricName))
+                       .findFirst()
+                       .map(metric -> (EventModel<ResourceUtilizationData, Void>) metric)
+                       .get();
 
     }
 
@@ -80,15 +94,9 @@ public class MemoryPoolMetricsTest {
      */
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {{"metaspace-pool-utilization"},
-            {"total-utilization"},
-            {"compressed-class-space-pool-utilization"},
-            {"heap-utilization"},
-            {"ps-eden-space-pool-utilization"},
-            {"non-heap-utilization"},
-            {"ps-old-gen-pool-utilization"},
-            {"code-cache-pool-utilization"},
-            {"ps-survivor-space-pool-utilization"}
+        return Arrays.asList(new Object[][] {
+            {"metaspace-pool-utilization" }, {"total-utilization" }, {"compressed-class-space-pool-utilization" }, {"heap-utilization" }, {"ps-eden-space-pool-utilization" },
+            {"non-heap-utilization" }, {"ps-old-gen-pool-utilization" }, {"code-cache-pool-utilization" }, {"ps-survivor-space-pool-utilization" }
         });
     }
 
@@ -98,7 +106,7 @@ public class MemoryPoolMetricsTest {
     @BeforeClass
     public static void setup() {
 
-        final MetricService serv = new MetricService(application);
+        final MetricService serv = new MetricService(APPLICATION);
         serv.start();
 
         REPORTER = new BasicSnapshotReporter();

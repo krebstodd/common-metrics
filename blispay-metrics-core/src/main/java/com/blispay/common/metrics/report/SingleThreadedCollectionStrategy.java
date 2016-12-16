@@ -7,7 +7,11 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Class SingleThreadedCollectionStrategy.
+ */
 public class SingleThreadedCollectionStrategy implements SnapshotCollectionStrategy {
+
     @Override
     public Set<EventModel> performCollection(final Collection<SnapshotProvider> snapshotProviders) {
         return snapshotProviders.stream().map(SnapshotProvider::snapshot).collect(Collectors.toSet());

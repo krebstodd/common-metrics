@@ -8,6 +8,9 @@ import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.json.JSONObject;
 
+/**
+ * Class JsonMetricMatcher.
+ */
 public class JsonMetricMatcher extends TypeSafeMatcher<JSONObject> {
 
     private final Matcher<String> timestampMatcher;
@@ -27,8 +30,7 @@ public class JsonMetricMatcher extends TypeSafeMatcher<JSONObject> {
      * @param dataMatcher data
      * @param userDataMatcher user data
      */
-    public JsonMetricMatcher(final EventGroup group, final String applicationName, final String name, final EventType type,
-                             final Matcher dataMatcher, final Matcher userDataMatcher) {
+    public JsonMetricMatcher(final EventGroup group, final String applicationName, final String name, final EventType type, final Matcher dataMatcher, final Matcher userDataMatcher) {
 
         this.timestampMatcher = Matchers.endsWith("Z");
         this.applicationIdMatcher = Matchers.equalTo(applicationName);
@@ -43,30 +45,31 @@ public class JsonMetricMatcher extends TypeSafeMatcher<JSONObject> {
     @Override
     public boolean matchesSafely(final JSONObject jsonObject) {
         return timestampMatcher.matches(JsonMetricUtil.parseTimeStamp(jsonObject))
-                && applicationIdMatcher.matches(JsonMetricUtil.parseApplication(jsonObject))
-                && groupMatcher.matches(JsonMetricUtil.parseGroup(jsonObject))
-                && nameMatcher.matches(JsonMetricUtil.parseName(jsonObject))
-                && typeMatcher.matches(JsonMetricUtil.parseType(jsonObject))
-                && dataMatcher.matches(JsonMetricUtil.parseData(jsonObject))
-                && userDataMatcher.matches(JsonMetricUtil.parseUserData(jsonObject));
+               && applicationIdMatcher.matches(JsonMetricUtil.parseApplication(jsonObject))
+               && groupMatcher.matches(JsonMetricUtil.parseGroup(jsonObject))
+               && nameMatcher.matches(JsonMetricUtil.parseName(jsonObject))
+               && typeMatcher.matches(JsonMetricUtil.parseType(jsonObject))
+               && dataMatcher.matches(JsonMetricUtil.parseData(jsonObject))
+               && userDataMatcher.matches(JsonMetricUtil.parseUserData(jsonObject));
     }
 
     @Override
     public void describeTo(final Description description) {
         description.appendText("timestamp=[")
-                .appendDescriptionOf(timestampMatcher)
-                .appendText("], applicationId=[")
-                .appendDescriptionOf(applicationIdMatcher)
-                .appendText("], group=[")
-                .appendDescriptionOf(groupMatcher)
-                .appendText("], name=[")
-                .appendDescriptionOf(nameMatcher)
-                .appendText("], type=[")
-                .appendDescriptionOf(typeMatcher)
-                .appendText("], data=[")
-                .appendDescriptionOf(dataMatcher)
-                .appendText("], userData=[")
-                .appendDescriptionOf(userDataMatcher)
-                .appendText("]");
+                   .appendDescriptionOf(timestampMatcher)
+                   .appendText("], applicationId=[")
+                   .appendDescriptionOf(applicationIdMatcher)
+                   .appendText("], group=[")
+                   .appendDescriptionOf(groupMatcher)
+                   .appendText("], name=[")
+                   .appendDescriptionOf(nameMatcher)
+                   .appendText("], type=[")
+                   .appendDescriptionOf(typeMatcher)
+                   .appendText("], data=[")
+                   .appendDescriptionOf(dataMatcher)
+                   .appendText("], userData=[")
+                   .appendDescriptionOf(userDataMatcher)
+                   .appendText("]");
     }
+
 }

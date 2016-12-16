@@ -10,6 +10,9 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 
+/**
+ * Class TransactionDataMatcher.
+ */
 public class TransactionDataMatcher extends TypeSafeMatcher<TransactionData> {
 
     private static Long ACCEPTABLE_RT_DELTA = 100L;
@@ -28,8 +31,7 @@ public class TransactionDataMatcher extends TypeSafeMatcher<TransactionData> {
      * @param status status
      * @param approxMillis approxMillis
      */
-    public TransactionDataMatcher(final Resource resource, final Action action, final Direction direction,
-                                  final Status status, final Long approxMillis) {
+    public TransactionDataMatcher(final Resource resource, final Action action, final Direction direction, final Status status, final Long approxMillis) {
 
         this.resourceMatcher = Matchers.equalTo(resource.getValue());
         this.actionMatcher = Matchers.equalTo(action.getValue());
@@ -41,17 +43,23 @@ public class TransactionDataMatcher extends TypeSafeMatcher<TransactionData> {
     @Override
     public boolean matchesSafely(final TransactionData raBaseResourceCallEventData) {
         return resourceMatcher.matches(raBaseResourceCallEventData.getResource().getValue())
-                && actionMatcher.matches(raBaseResourceCallEventData.getAction().getValue())
-                && statusMatcher.matches(raBaseResourceCallEventData.getStatus())
-                && directionMatcher.matches(raBaseResourceCallEventData.getDirection())
-                && approximatelyEqual(approxRuntime, raBaseResourceCallEventData.getDurationMillis(), ACCEPTABLE_RT_DELTA);
+               && actionMatcher.matches(raBaseResourceCallEventData.getAction().getValue())
+               && statusMatcher.matches(raBaseResourceCallEventData.getStatus())
+               && directionMatcher.matches(raBaseResourceCallEventData.getDirection())
+               && approximatelyEqual(approxRuntime, raBaseResourceCallEventData.getDurationMillis(), ACCEPTABLE_RT_DELTA);
     }
 
     @Override
-    public void describeTo(final Description description) {
+    public void describeTo(final Description description) {}
 
-    }
-
+    /**
+     * Method approximatelyEqual.
+     *
+     * @param expected expected.
+     * @param actual actual.
+     * @param acceptableDelta acceptableDelta.
+     * @return return value.
+     */
     protected Boolean approximatelyEqual(final Long expected, final Long actual, final Long acceptableDelta) {
         return Math.abs(expected - actual) < acceptableDelta;
     }

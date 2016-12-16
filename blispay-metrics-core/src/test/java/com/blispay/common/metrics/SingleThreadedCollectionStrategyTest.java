@@ -14,8 +14,15 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * Class SingleThreadedCollectionStrategyTest.
+ */
 public class SingleThreadedCollectionStrategyTest {
 
+    /**
+     * Method testCollectsAllSequentially.
+     *
+     */
     @Test
     public void testCollectsAllSequentially() {
 
@@ -29,22 +36,22 @@ public class SingleThreadedCollectionStrategyTest {
         final SnapshotProvider provider2 = mock(SnapshotProvider.class);
 
         when(provider1.snapshot()).thenAnswer(invocation -> {
-                try {
-                    Thread.sleep(provider1Delay);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                return e1;
-            });
+            try {
+                Thread.sleep(provider1Delay);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return e1;
+        });
 
         when(provider2.snapshot()).thenAnswer(invocation -> {
-                try {
-                    Thread.sleep(provider2Delay);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                return e2;
-            });
+            try {
+                Thread.sleep(provider2Delay);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return e2;
+        });
 
         final SingleThreadedCollectionStrategy strategy = new SingleThreadedCollectionStrategy();
 
@@ -59,11 +66,23 @@ public class SingleThreadedCollectionStrategyTest {
 
     }
 
+    /**
+     * Method testProvidesMaxDuration.
+     *
+     */
     @Test
     public void testProvidesMaxDuration() {
         assertEquals(Duration.ofMillis(Integer.MAX_VALUE), new SingleThreadedCollectionStrategy().getTimeout());
     }
 
+    /**
+     * Method approximatelyEqual.
+     *
+     * @param expected expected.
+     * @param actual actual.
+     * @param acceptableDelta acceptableDelta.
+     * @return return value.
+     */
     protected Boolean approximatelyEqual(final Long expected, final Long actual, final Long acceptableDelta) {
         return Math.abs(expected - actual) < acceptableDelta;
     }

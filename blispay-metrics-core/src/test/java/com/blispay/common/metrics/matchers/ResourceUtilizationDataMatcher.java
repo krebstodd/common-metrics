@@ -6,6 +6,9 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 
+/**
+ * Class ResourceUtilizationDataMatcher.
+ */
 public class ResourceUtilizationDataMatcher extends TypeSafeMatcher<ResourceUtilizationData> {
 
     private final Matcher<Long> min;
@@ -41,17 +44,15 @@ public class ResourceUtilizationDataMatcher extends TypeSafeMatcher<ResourceUtil
         this.currPct = currPct;
     }
 
-
     @Override
     public boolean matchesSafely(final ResourceUtilizationData resourceUtilizationMetric) {
         return min.matches(resourceUtilizationMetric.getMinValue())
-                && max.matches(resourceUtilizationMetric.getMaxValue())
-                && curr.matches(resourceUtilizationMetric.getCurrentValue())
-                && currPct.matches(resourceUtilizationMetric.getCurrentPercentage());
+               && max.matches(resourceUtilizationMetric.getMaxValue())
+               && curr.matches(resourceUtilizationMetric.getCurrentValue())
+               && currPct.matches(resourceUtilizationMetric.getCurrentPercentage());
     }
 
     @Override
-    public void describeTo(final Description description) {
+    public void describeTo(final Description description) {}
 
-    }
 }

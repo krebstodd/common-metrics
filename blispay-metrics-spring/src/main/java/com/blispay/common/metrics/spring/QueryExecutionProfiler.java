@@ -1,13 +1,13 @@
 package com.blispay.common.metrics.spring;
 
 import com.blispay.common.metrics.MetricService;
-import com.blispay.common.metrics.transaction.Transaction;
-import com.blispay.common.metrics.transaction.TransactionFactory;
 import com.blispay.common.metrics.model.EventGroup;
 import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.ds.DsResource;
 import com.blispay.common.metrics.spring.annotation.ProfiledQuery;
 import com.blispay.common.metrics.spring.util.JoinPointUtil;
+import com.blispay.common.metrics.transaction.Transaction;
+import com.blispay.common.metrics.transaction.TransactionFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -16,9 +16,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
-// CHECK_OFF: IllegalCatch
-// CHECK_OFF: IllegalThrows
+//CHECK_OFF: IllegalCatch
+//CHECK_OFF: IllegalThrows
 
+/**
+ * Class QueryExecutionProfiler.
+ */
 @Aspect
 public class QueryExecutionProfiler {
 
@@ -32,10 +35,7 @@ public class QueryExecutionProfiler {
      */
     public QueryExecutionProfiler(final MetricService metricService) {
 
-        this.txFactory = metricService.transactionFactory()
-                .inDirection(Direction.OUTBOUND)
-                .inGroup(EventGroup.CLIENT_JDBC)
-                .build();
+        this.txFactory = metricService.transactionFactory().inDirection(Direction.OUTBOUND).inGroup(EventGroup.CLIENT_JDBC).build();
 
     }
 
@@ -85,10 +85,7 @@ public class QueryExecutionProfiler {
 
         final ProfiledQuery annotation = optQueryInfo.get();
 
-        return Optional.of(txFactory.create()
-                .withName(annotation.name())
-                .withAction(annotation.action())
-                .onResource(DsResource.fromSchemaTable(annotation.schema(), annotation.table())));
+        return Optional.of(txFactory.create().withName(annotation.name()).withAction(annotation.action()).onResource(DsResource.fromSchemaTable(annotation.schema(), annotation.table())));
 
     }
 
@@ -96,3 +93,4 @@ public class QueryExecutionProfiler {
 
 // CHECK_ON: IllegalCatch
 // CHECK_ON: IllegalThrows
+

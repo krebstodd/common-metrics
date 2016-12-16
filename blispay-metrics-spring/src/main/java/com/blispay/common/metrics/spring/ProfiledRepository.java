@@ -1,4 +1,6 @@
 package com.blispay.common.metrics.spring;
 
-public interface ProfiledRepository {
-}
+/**
+ * Interface ProfiledRepository.
+ */
+public interface ProfiledRepository {}

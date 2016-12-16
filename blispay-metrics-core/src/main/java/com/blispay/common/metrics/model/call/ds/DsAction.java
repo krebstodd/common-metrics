@@ -2,20 +2,26 @@ package com.blispay.common.metrics.model.call.ds;
 
 import com.blispay.common.metrics.model.call.Action;
 
+/**
+ * Enum DsAction.
+ */
 public enum DsAction implements Action {
 
     /**
      * Insert.
      */
     INSERT("INSERT"),
+
     /**
      * Update.
      */
     UPDATE("UPDATE"),
+
     /**
      * Delete.
      */
     DELETE("DELETE"),
+
     /**
      * Select.
      */
@@ -23,7 +29,12 @@ public enum DsAction implements Action {
 
     private final String action;
 
-    private DsAction(final String action) {
+    /**
+     * Constructs DsAction.
+     *
+     * @param action action.
+     */
+    DsAction(final String action) {
         this.action = action;
     }
 

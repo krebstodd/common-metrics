@@ -10,6 +10,9 @@ import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * Class JettyProbe.
+ */
 public class JettyProbe {
 
     private final Server instrumentedServer;
@@ -21,14 +24,17 @@ public class JettyProbe {
      * @param channelHandler Channel handler being handed to http server.
      * @param metricService Metric service to register probe on.
      */
-    public JettyProbe(final QueuedThreadPool threadPool,
-                      final Consumer<HttpChannel<?>> channelHandler,
-                      final MetricService metricService) {
+    public JettyProbe(final QueuedThreadPool threadPool, final Consumer<HttpChannel<?>> channelHandler, final MetricService metricService) {
 
         this.instrumentedServer = new InstrumentedJettyServer(metricService, threadPool, channelHandler);
         instrumentThreadPool(metricService, threadPool);
     }
 
+    /**
+     * Method getInstrumentedServer.
+     *
+     * @return return value.
+     */
     public Server getInstrumentedServer() {
         return instrumentedServer;
     }
@@ -40,10 +46,7 @@ public class JettyProbe {
      */
     private static void instrumentThreadPool(final MetricService metricService, final QueuedThreadPool pool) {
 
-        metricService.utilizationGauge()
-                .inGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
-                .withName("jetty-thread-pool")
-                .register(JettyProbe.threadPoolMonitor(pool));
+        metricService.utilizationGauge().inGroup(EventGroup.RESOURCE_UTILIZATION_THREADS).withName("jetty-thread-pool").register(JettyProbe.threadPoolMonitor(pool));
 
     }
 

@@ -15,6 +15,9 @@ import java.time.ZonedDateTime;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * Class StateMonitor.
+ */
 public class StateMonitor implements SnapshotProvider {
 
     private final String applicationId;
@@ -30,10 +33,7 @@ public class StateMonitor implements SnapshotProvider {
      * @param name Event name.
      * @param supplier Health supplier.
      */
-    public StateMonitor(final String applicationId,
-                        final EventGroup group,
-                        final String name,
-                        final Supplier<StatusData> supplier) {
+    public StateMonitor(final String applicationId, final EventGroup group, final String name, final Supplier<StatusData> supplier) {
 
         this.applicationId = applicationId;
         this.group = group;
@@ -49,15 +49,18 @@ public class StateMonitor implements SnapshotProvider {
 
     private EventHeader createHeader() {
         return EventHeader.builder()
-                .timestamp(ZonedDateTime.now(ZoneId.of("UTC")))
-                .applicationId(applicationId)
-                .group(group)
-                .type(EventType.STATUS)
-                .trackingInfo(LocalMetricContext.getTrackingInfo())
-                .name(name)
-                .build();
+                          .timestamp(ZonedDateTime.now(ZoneId.of("UTC")))
+                          .applicationId(applicationId)
+                          .group(group)
+                          .type(EventType.STATUS)
+                          .trackingInfo(LocalMetricContext.getTrackingInfo())
+                          .name(name)
+                          .build();
     }
 
+    /**
+     * Class Builder.
+     */
     public static class Builder {
 
         private final Consumer<StateMonitor> gaugeRepository;
@@ -67,26 +70,56 @@ public class StateMonitor implements SnapshotProvider {
         private String name;
         private Supplier<StatusData> supplier;
 
+        /**
+         * Constructs Builder.
+         *
+         * @param applicationId applicationId.
+         * @param gaugeRepository gaugeRepository.
+         */
         public Builder(final String applicationId, final Consumer<StateMonitor> gaugeRepository) {
             this.applicationId = applicationId;
             this.gaugeRepository = gaugeRepository;
         }
 
+        /**
+         * Method inGroup.
+         *
+         * @param group group.
+         * @return return value.
+         */
         public Builder inGroup(final EventGroup group) {
             this.group = group;
             return this;
         }
 
+        /**
+         * Method withName.
+         *
+         * @param name name.
+         * @return return value.
+         */
         public Builder withName(final String name) {
             this.name = name;
             return this;
         }
 
+        /**
+         * Method withNameFromType.
+         *
+         * @param type type.
+         * @return return value.
+         */
         public Builder withNameFromType(final Class<?> type) {
             this.name = NameFormatter.toEventName(type);
             return this;
         }
 
+        /**
+         * Method withSupplier.
+         *
+         * @param supplier supplier.
+         * @return return value.
+         */
         public Builder withSupplier(final Supplier<StatusData> supplier) {
             this.supplier = supplier;
             return this;

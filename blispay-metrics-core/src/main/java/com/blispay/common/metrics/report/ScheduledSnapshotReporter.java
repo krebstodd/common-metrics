@@ -2,6 +2,9 @@ package com.blispay.common.metrics.report;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Class ScheduledSnapshotReporter.
+ */
 public abstract class ScheduledSnapshotReporter extends SnapshotReporter {
 
     private final SnapshotScheduler scheduler;
@@ -13,8 +16,7 @@ public abstract class ScheduledSnapshotReporter extends SnapshotReporter {
      * @param scheduler Scheduler alerts reporter when to perform a snapshot.
      * @param snapshotCollectionStrategy Strategy for collecting snapshots.
      */
-    public ScheduledSnapshotReporter(final SnapshotScheduler scheduler,
-                                     final SnapshotCollectionStrategy snapshotCollectionStrategy) {
+    public ScheduledSnapshotReporter(final SnapshotScheduler scheduler, final SnapshotCollectionStrategy snapshotCollectionStrategy) {
 
         super(snapshotCollectionStrategy);
         this.scheduler = scheduler;
@@ -24,12 +26,17 @@ public abstract class ScheduledSnapshotReporter extends SnapshotReporter {
         }
     }
 
-    protected abstract void handleScheduledSnapshot(final Snapshot snapshot);
+    /**
+     * Method handleScheduledSnapshot.
+     *
+     * @param snapshot snapshot.
+     */
+    protected abstract void handleScheduledSnapshot(Snapshot snapshot);
 
     private void executeScheduledSnapshot() {
         handleScheduledSnapshot(super.report());
     }
-    
+
     /**
      * Start scheduling the recurring reports.
      */

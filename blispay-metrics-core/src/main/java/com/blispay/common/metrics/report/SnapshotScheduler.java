@@ -9,6 +9,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Class SnapshotScheduler.
+ */
 public final class SnapshotScheduler {
 
     private static final Logger LOG = LoggerFactory.getLogger(SnapshotScheduler.class);
@@ -24,9 +27,14 @@ public final class SnapshotScheduler {
 
     private NotificationListener notificationListener;
 
-    private SnapshotScheduler(final Duration period,
-                              final Duration initialDelay,
-                              final Strategy strategy) {
+    /**
+     * Constructs SnapshotScheduler.
+     *
+     * @param period period.
+     * @param initialDelay initialDelay.
+     * @param strategy strategy.
+     */
+    private SnapshotScheduler(final Duration period, final Duration initialDelay, final Strategy strategy) {
 
         this.period = period.toNanos();
         this.initialDelay = initialDelay.toNanos();
@@ -82,6 +90,11 @@ public final class SnapshotScheduler {
 
     }
 
+    /**
+     * Method isRunning.
+     *
+     * @return return value.
+     */
     public Boolean isRunning() {
         return isRunning.get();
     }
@@ -101,36 +114,77 @@ public final class SnapshotScheduler {
 
     }
 
+    /**
+     * Method getPeriod.
+     *
+     * @return return value.
+     */
     public Duration getPeriod() {
         return Duration.ofMillis(this.period);
     }
 
+    /**
+     * Method scheduleFixedRate.
+     *
+     * @param period period.
+     * @return return value.
+     */
     public static SnapshotScheduler scheduleFixedRate(final Duration period) {
         return new SnapshotScheduler(period, period, Strategy.FIXED_RATE);
     }
-    
+
+    /**
+     * Method scheduleFixedRateWithInitialDelay.
+     *
+     * @param period period.
+     * @param delay delay.
+     * @return return value.
+     */
     public static SnapshotScheduler scheduleFixedRateWithInitialDelay(final Duration period, final Duration delay) {
         return new SnapshotScheduler(period, delay, Strategy.FIXED_RATE);
     }
 
+    /**
+     * Method scheduleFixedDelay.
+     *
+     * @param period period.
+     * @return return value.
+     */
     public static SnapshotScheduler scheduleFixedDelay(final Duration period) {
         return new SnapshotScheduler(period, period, Strategy.FIXED_DELAY);
     }
 
+    /**
+     * Method scheduleFixedDelayWithInitialDelay.
+     *
+     * @param period period.
+     * @param delay delay.
+     * @return return value.
+     */
     public static SnapshotScheduler scheduleFixedDelayWithInitialDelay(final Duration period, final Duration delay) {
         return new SnapshotScheduler(period, delay, Strategy.FIXED_DELAY);
     }
 
-    private static enum Strategy {
-
+    /**
+     * Enum Strategy.
+     */
+    private enum Strategy {
         FIXED_RATE,
         FIXED_DELAY;
-
     }
 
+    /**
+     * Interface NotificationListener.
+     */
     @FunctionalInterface
     public interface NotificationListener {
+
+        /**
+         * Method doNotify.
+         *
+         */
         void doNotify();
+
     }
 
 }

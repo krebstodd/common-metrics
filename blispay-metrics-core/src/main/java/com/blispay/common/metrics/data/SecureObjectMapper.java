@@ -15,6 +15,9 @@ import com.fasterxml.jackson.databind.ser.SerializerFactory;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Class SecureObjectMapper.
+ */
 public class SecureObjectMapper extends ObjectMapper {
 
     /**
@@ -24,6 +27,9 @@ public class SecureObjectMapper extends ObjectMapper {
 
     private final ObjectMapper mapper;
 
+    /**
+     * Constructs SecureObjectMapper.
+     */
     public SecureObjectMapper() {
         this(new PiiFieldPredicate());
     }
@@ -37,9 +43,7 @@ public class SecureObjectMapper extends ObjectMapper {
 
         this.mapper = new ObjectMapper();
 
-        final SerializerFactory serializerFactory = BeanSerializerFactory
-                .instance
-                .withSerializerModifier(new SecureSerializerModifier(piiPredicate));
+        final SerializerFactory serializerFactory = BeanSerializerFactory.instance.withSerializerModifier(new SecureSerializerModifier(piiPredicate));
 
         this.mapper.setSerializerFactory(serializerFactory);
 
@@ -50,11 +54,19 @@ public class SecureObjectMapper extends ObjectMapper {
         return mapper.writeValueAsString(obj);
     }
 
-    private static class SecureSerializerModifier extends BeanSerializerModifier {
+    /**
+     * Class SecureSerializerModifier.
+     */
+    private static final class SecureSerializerModifier extends BeanSerializerModifier {
 
         private final PiiFieldPredicate piiPredicate;
 
-        public SecureSerializerModifier(final PiiFieldPredicate piiPredicate) {
+        /**
+         * Constructs SecureSerializerModifier.
+         *
+         * @param piiPredicate piiPredicate.
+         */
+        private SecureSerializerModifier(final PiiFieldPredicate piiPredicate) {
             this.piiPredicate = piiPredicate;
         }
 
@@ -76,6 +88,9 @@ public class SecureObjectMapper extends ObjectMapper {
 
     }
 
+    /**
+     * Class PiiSerializer.
+     */
     private static class PiiSerializer extends JsonSerializer {
 
         @Override

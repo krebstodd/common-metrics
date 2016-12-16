@@ -6,6 +6,9 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+/**
+ * Class PiiFieldPredicate.
+ */
 public class PiiFieldPredicate implements Predicate<String> {
 
     private static final String UNDERSCORE = "_";
@@ -14,10 +17,18 @@ public class PiiFieldPredicate implements Predicate<String> {
     private final Set<String> blacklist = new HashSet<>();
     private final Set<String> whitelist = new HashSet<>();
 
+    /**
+     * Constructs PiiFieldPredicate.
+     */
     public PiiFieldPredicate() {
         this(new HashSet<>());
     }
 
+    /**
+     * Constructs PiiFieldPredicate.
+     *
+     * @param overrides overrides.
+     */
     public PiiFieldPredicate(final Set<String> overrides) {
         whitelist.addAll(overrides);
         initLists();
@@ -33,6 +44,7 @@ public class PiiFieldPredicate implements Predicate<String> {
     }
 
     private boolean isBanned(final String key) {
+
         // Test if the key contains a banned substring.
         return blacklist.stream().anyMatch(key::contains);
     }

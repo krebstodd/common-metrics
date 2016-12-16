@@ -11,39 +11,33 @@ import java.util.Set;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Class PiiFieldPredicateTest.
+ */
 public class PiiFieldPredicateTest {
 
+    /**
+     * Method testMapAllVersionsOfKey.
+     *
+     */
     @Test
     public void testMapAllVersionsOfKey() {
 
-        final List<String> expectedBanned = Arrays.asList(
-                "user_name",
-                "USER_NAME",
-                "user-name",
-                "USER-NAME",
-                "username",
-                "userName",
-                "USERNAME",
-                "jays_user_name",
-                "user_name_");
+        final List<String> expectedBanned = Arrays.asList("user_name", "USER_NAME", "user-name", "USER-NAME", "username", "userName", "USERNAME", "jays_user_name", "user_name_");
 
         assertTrue(expectedBanned.stream().allMatch(new PiiFieldPredicate()));
 
     }
 
+    /**
+     * Method testOverrideBannedKey.
+     *
+     */
     @Test
     public void testOverrideBannedKey() {
 
         // All of these should still be banned, only allow exact match overrides.
-        final List<String> expectedBanned = Arrays.asList(
-                "USER_NAME",
-                "user-name",
-                "USER-NAME",
-                "username",
-                "userName",
-                "USERNAME",
-                "jays_user_name",
-                "user_name_");
+        final List<String> expectedBanned = Arrays.asList("USER_NAME", "user-name", "USER-NAME", "username", "userName", "USERNAME", "jays_user_name", "user_name_");
 
         final Set<String> overrides = new HashSet<>();
         overrides.add("user_name");

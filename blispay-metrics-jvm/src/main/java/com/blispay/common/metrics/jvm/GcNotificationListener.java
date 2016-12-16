@@ -5,18 +5,26 @@ import com.sun.management.GarbageCollectionNotificationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.management.MemoryUsage;
+import java.util.Map;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.openmbean.CompositeData;
-import java.lang.management.MemoryUsage;
-import java.util.Map;
 
+/**
+ * Class GcNotificationListener.
+ */
 public class GcNotificationListener implements NotificationListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(GcNotificationListener.class);
 
     private final EventFactory<GcEventData> gcEventFactory;
 
+    /**
+     * Constructs GcNotificationListener.
+     *
+     * @param gcEventRepo gcEventRepo.
+     */
     public GcNotificationListener(final EventFactory<GcEventData> gcEventRepo) {
         this.gcEventFactory = gcEventRepo;
     }
@@ -42,13 +50,12 @@ public class GcNotificationListener implements NotificationListener {
                     LOG.debug("Detected pre-gc memory usage for region [{}]", key);
                 }
 
-                final GcEventData.Builder builder = new GcEventData.Builder()
-                        .action(gcInfo.getGcAction())
-                        .cause(gcInfo.getGcCause())
-                        .name(gcInfo.getGcName())
-                        .durationMillis(gcInfo.getGcInfo().getDuration())
-                        .startTime(gcInfo.getGcInfo().getStartTime())
-                        .endTime(gcInfo.getGcInfo().getEndTime());
+                final GcEventData.Builder builder = new GcEventData.Builder().action(gcInfo.getGcAction())
+                                                                             .cause(gcInfo.getGcCause())
+                                                                             .name(gcInfo.getGcName())
+                                                                             .durationMillis(gcInfo.getGcInfo().getDuration())
+                                                                             .startTime(gcInfo.getGcInfo().getStartTime())
+                                                                             .endTime(gcInfo.getGcInfo().getEndTime());
 
                 preGc.forEach((poolName, usage) -> builder.preGcFreeMem(poolName, usage.getUsed()));
                 postGc.forEach((poolName, usage) -> builder.postGcFreeMem(poolName, usage.getUsed()));
@@ -58,15 +65,21 @@ public class GcNotificationListener implements NotificationListener {
                 LOG.debug("Saving garbage collection data.");
                 gcEventFactory.save(data);
 
-            // CHECK_OFF: IllegalCatch
+                // CHECK_OFF: IllegalCatch
             } catch (Exception ex) {
                 LOG.error("Caught exception building garbage collection metric.", ex);
             }
+
             // CHECK_ON: IllegalCatch
 
         }
     }
 
+    /**
+     * Method getGcEventFactory.
+     *
+     * @return return value.
+     */
     public EventFactory<GcEventData> getGcEventFactory() {
         return gcEventFactory;
     }

@@ -6,6 +6,9 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 
+/**
+ * Class TrackingInfoMatcher.
+ */
 public class TrackingInfoMatcher extends TypeSafeMatcher<TrackingInfo> {
 
     private final Matcher<String> userIdMatcher;
@@ -27,22 +30,23 @@ public class TrackingInfoMatcher extends TypeSafeMatcher<TrackingInfo> {
     @Override
     public boolean matchesSafely(final TrackingInfo trackingInfo) {
         return userIdMatcher.matches(trackingInfo.getUserTrackingId())
-                && sessionIdMatcher.matches(trackingInfo.getSessionTrackingId())
-                && agentIdMatcher.matches(trackingInfo.getAgentTrackingId())
-                && apiIdMatcher.matches(trackingInfo.getApiTrackingId());
+               && sessionIdMatcher.matches(trackingInfo.getSessionTrackingId())
+               && agentIdMatcher.matches(trackingInfo.getAgentTrackingId())
+               && apiIdMatcher.matches(trackingInfo.getApiTrackingId());
 
     }
 
     @Override
     public void describeTo(final Description description) {
         description.appendText("userTrackingId=[")
-                .appendDescriptionOf(userIdMatcher)
-                .appendText("], agentTrackingId=[")
-                .appendDescriptionOf(agentIdMatcher)
-                .appendText("], apiTrackingId=[")
-                .appendDescriptionOf(apiIdMatcher)
-                .appendText("], sessionTrackingId=[")
-                .appendDescriptionOf(sessionIdMatcher)
-                .appendText("]");
+                   .appendDescriptionOf(userIdMatcher)
+                   .appendText("], agentTrackingId=[")
+                   .appendDescriptionOf(agentIdMatcher)
+                   .appendText("], apiTrackingId=[")
+                   .appendDescriptionOf(apiIdMatcher)
+                   .appendText("], sessionTrackingId=[")
+                   .appendDescriptionOf(sessionIdMatcher)
+                   .appendText("]");
     }
+
 }

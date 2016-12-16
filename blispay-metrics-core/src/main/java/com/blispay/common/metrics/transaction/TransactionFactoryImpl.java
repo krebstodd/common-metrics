@@ -6,6 +6,9 @@ import com.blispay.common.metrics.model.call.Action;
 import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.Resource;
 
+/**
+ * Class TransactionFactoryImpl.
+ */
 public class TransactionFactoryImpl implements TransactionFactory {
 
     private final String applicationId;
@@ -17,8 +20,18 @@ public class TransactionFactoryImpl implements TransactionFactory {
     private final Action action;
     private final Resource resource;
 
-    protected TransactionFactoryImpl(final String applicationId, final EventEmitter emitter,
-                                     final EventGroup group, final String name, final Direction direction, final Action action,
+    /**
+     * Constructs TransactionFactoryImpl.
+     *
+     * @param applicationId applicationId.
+     * @param emitter emitter.
+     * @param group group.
+     * @param name name.
+     * @param direction direction.
+     * @param action action.
+     * @param resource resource.
+     */
+    protected TransactionFactoryImpl(final String applicationId, final EventEmitter emitter, final EventGroup group, final String name, final Direction direction, final Action action,
                                      final Resource resource) {
 
         this.applicationId = applicationId;
@@ -38,10 +51,7 @@ public class TransactionFactoryImpl implements TransactionFactory {
      */
     public Transaction create() {
 
-        return new TransactionImpl(emitter, applicationId, group, name)
-                .inDirection(direction)
-                .withAction(action)
-                .onResource(resource);
+        return new TransactionImpl(emitter, applicationId, group, name).inDirection(direction).withAction(action).onResource(resource);
 
     }
 

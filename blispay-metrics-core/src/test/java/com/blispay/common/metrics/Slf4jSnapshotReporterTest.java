@@ -25,8 +25,16 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+/**
+ * Class Slf4jSnapshotReporterTest.
+ */
 public class Slf4jSnapshotReporterTest extends AbstractMetricsTest {
 
+    /**
+     * Method testSlf4jSingleThreadedSnapshotReporter.
+     *
+     * @throws InterruptedException InterruptedException.
+     */
     @Test
     public void testSlf4jSingleThreadedSnapshotReporter() throws InterruptedException {
         final Logger log = mock(Logger.class);
@@ -39,9 +47,9 @@ public class Slf4jSnapshotReporterTest extends AbstractMetricsTest {
         final AtomicLong curVal = new AtomicLong(50L);
 
         metricService.utilizationGauge()
-                .inGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
-                .withName("thread-pool")
-                .register(() -> new ResourceUtilizationData(min, max, curVal.get(), (double) curVal.get() / max));
+                     .inGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
+                     .withName("thread-pool")
+                     .register(() -> new ResourceUtilizationData(min, max, curVal.get(), (double) curVal.get() / max));
 
         final SnapshotScheduler scheduler = SnapshotScheduler.scheduleFixedDelay(Duration.ofMillis(750));
         final SingleThreadedCollectionStrategy collectionStrategy = new SingleThreadedCollectionStrategy();
@@ -62,16 +70,21 @@ public class Slf4jSnapshotReporterTest extends AbstractMetricsTest {
 
         // Parse the log line into a json object and test that it's the expected format for the event we just created.
         final List<String> logLines = argument.getAllValues();
-        assertThat(new JSONObject(logLines.get(0)), new JsonMetricMatcher(
-                EventGroup.RESOURCE_UTILIZATION_THREADS,
-                "appId",
-                "thread-pool",
-                EventType.RESOURCE_UTILIZATION,
-                new JsonEventDataMatcher(expectedData),
-                Matchers.nullValue()));
+        assertThat(new JSONObject(logLines.get(0)),
+                   new JsonMetricMatcher(EventGroup.RESOURCE_UTILIZATION_THREADS,
+                                         "appId",
+                                         "thread-pool",
+                                         EventType.RESOURCE_UTILIZATION,
+                                         new JsonEventDataMatcher(expectedData),
+                                         Matchers.nullValue()));
 
     }
 
+    /**
+     * Method testSlf4jMultiThreadedSnapshotReporter.
+     *
+     * @throws InterruptedException InterruptedException.
+     */
     @Test
     public void testSlf4jMultiThreadedSnapshotReporter() throws InterruptedException {
         final Logger log = mock(Logger.class);
@@ -84,9 +97,9 @@ public class Slf4jSnapshotReporterTest extends AbstractMetricsTest {
         final AtomicLong curVal = new AtomicLong(50L);
 
         metricService.utilizationGauge()
-                .inGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
-                .withName("thread-pool")
-                .register(() -> new ResourceUtilizationData(min, max, curVal.get(), (double) curVal.get() / max));
+                     .inGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
+                     .withName("thread-pool")
+                     .register(() -> new ResourceUtilizationData(min, max, curVal.get(), (double) curVal.get() / max));
 
         final SnapshotScheduler scheduler = SnapshotScheduler.scheduleFixedDelay(Duration.ofMillis(750));
         final ConcurrentCollectionStrategy collectionStrategy = new ConcurrentCollectionStrategy(5, Duration.ofSeconds(10));
@@ -107,13 +120,13 @@ public class Slf4jSnapshotReporterTest extends AbstractMetricsTest {
 
         // Parse the log line into a json object and test that it's the expected format for the event we just created.
         final List<String> logLines = argument.getAllValues();
-        assertThat(new JSONObject(logLines.get(0)), new JsonMetricMatcher(
-                EventGroup.RESOURCE_UTILIZATION_THREADS,
-                "appId",
-                "thread-pool",
-                EventType.RESOURCE_UTILIZATION,
-                new JsonEventDataMatcher(expectedData),
-                Matchers.nullValue()));
+        assertThat(new JSONObject(logLines.get(0)),
+                   new JsonMetricMatcher(EventGroup.RESOURCE_UTILIZATION_THREADS,
+                                         "appId",
+                                         "thread-pool",
+                                         EventType.RESOURCE_UTILIZATION,
+                                         new JsonEventDataMatcher(expectedData),
+                                         Matchers.nullValue()));
 
     }
 

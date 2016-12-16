@@ -22,8 +22,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Class JvmThreadMetricsTest.
+ */
 public class JvmThreadMetricsTest {
 
+    /**
+     * Method testJvmThreadMetrics.
+     *
+     * @throws InterruptedException InterruptedException.
+     */
     @Test
     public void testJvmThreadMetrics() throws InterruptedException {
 
@@ -41,20 +49,20 @@ public class JvmThreadMetricsTest {
         final Matcher<Double> nnDbl = Matchers.notNullValue(Double.class);
 
         final EventMatcher<ResourceUtilizationData, Void> m1 = EventMatcher.<ResourceUtilizationData, Void>builder()
-                .setApplication(serv.getApplicationId())
-                .setGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
-                .setName("jvm-active")
-                .setType(EventType.RESOURCE_UTILIZATION)
-                .setDataMatcher(new ResourceUtilizationDataMatcher(nnLong, nnLong, nnLong, nnDbl))
-                .build();
+                                                                           .setApplication(serv.getApplicationId())
+                                                                           .setGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
+                                                                           .setName("jvm-active")
+                                                                           .setType(EventType.RESOURCE_UTILIZATION)
+                                                                           .setDataMatcher(new ResourceUtilizationDataMatcher(nnLong, nnLong, nnLong, nnDbl))
+                                                                           .build();
 
         final EventMatcher<ResourceUtilizationData, Void> m2 = EventMatcher.<ResourceUtilizationData, Void>builder()
-                .setApplication(serv.getApplicationId())
-                .setGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
-                .setName("jvm-active")
-                .setType(EventType.RESOURCE_UTILIZATION)
-                .setDataMatcher(new ResourceUtilizationDataMatcher(nnLong, nnLong, nnLong, nnDbl))
-                .build();
+                                                                           .setApplication(serv.getApplicationId())
+                                                                           .setGroup(EventGroup.RESOURCE_UTILIZATION_THREADS)
+                                                                           .setName("jvm-active")
+                                                                           .setType(EventType.RESOURCE_UTILIZATION)
+                                                                           .setDataMatcher(new ResourceUtilizationDataMatcher(nnLong, nnLong, nnLong, nnDbl))
+                                                                           .build();
 
         assertThat(sn.getMetrics(), Matchers.hasItem(m1));
         assertThat(sn.getMetrics(), Matchers.hasItem(m2));
@@ -64,7 +72,8 @@ public class JvmThreadMetricsTest {
         final int currActive = getActiveThreadMetric(threadReporter.report().getMetrics()).getData().getCurrentValue().intValue();
 
         // Assert that creating a new thread bumps the number of active threads.
-        new Thread(() -> {
+        new Thread(
+            () -> {
 
                 final EventModel<ResourceUtilizationData, Void> activeThreads = getActiveThreadMetric(threadReporter.report().getMetrics());
                 assertTrue(currActive < activeThreads.getData().getCurrentValue().intValue());
@@ -79,11 +88,7 @@ public class JvmThreadMetricsTest {
     }
 
     private EventModel<ResourceUtilizationData, Void> getActiveThreadMetric(final Set<EventModel> snapshot) {
-        return snapshot.stream()
-                .filter(model -> "jvm-active".equals(model.getHeader().getName()))
-                .findAny()
-                .map(model -> (EventModel<ResourceUtilizationData, Void>) model)
-                .get();
+        return snapshot.stream().filter(model -> "jvm-active".equals(model.getHeader().getName())).findAny().map(model -> (EventModel<ResourceUtilizationData, Void>) model).get();
     }
 
 }

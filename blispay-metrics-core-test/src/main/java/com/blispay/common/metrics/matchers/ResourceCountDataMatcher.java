@@ -6,6 +6,9 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 
+/**
+ * Class ResourceCountDataMatcher.
+ */
 public class ResourceCountDataMatcher extends TypeSafeMatcher<ResourceCountData> {
 
     private final Matcher<Double> count;
@@ -26,7 +29,6 @@ public class ResourceCountDataMatcher extends TypeSafeMatcher<ResourceCountData>
         this.count = count;
     }
 
-
     @Override
     public boolean matchesSafely(final ResourceCountData resourceUtilizationMetric) {
         return count.matches(resourceUtilizationMetric.getCount());
@@ -36,4 +38,5 @@ public class ResourceCountDataMatcher extends TypeSafeMatcher<ResourceCountData>
     public void describeTo(final Description description) {
         description.appendText("count=[").appendDescriptionOf(count).appendText("]");
     }
+
 }

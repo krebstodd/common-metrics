@@ -8,6 +8,9 @@ import com.blispay.common.metrics.model.call.Status;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Class NoOpTransaction.
+ */
 public class NoOpTransaction implements Transaction {
 
     private Long startMillis;
@@ -56,18 +59,39 @@ public class NoOpTransaction implements Transaction {
         }
     }
 
+    /**
+     * Method success.
+     *
+     * @return return value.
+     */
     public Duration success() {
         return stop(Status.success());
     }
 
+    /**
+     * Method error.
+     *
+     * @return return value.
+     */
     public Duration error() {
         return stop(Status.error());
     }
 
+    /**
+     * Method warn.
+     *
+     * @return return value.
+     */
     public Duration warn() {
         return stop(Status.warning());
     }
 
+    /**
+     * Method warn.
+     *
+     * @param level level.
+     * @return return value.
+     */
     public Duration warn(final Integer level) {
         return stop(Status.warning(level));
     }
@@ -88,10 +112,20 @@ public class NoOpTransaction implements Transaction {
         return elapsed;
     }
 
+    /**
+     * Method isRunning.
+     *
+     * @return return value.
+     */
     public Boolean isRunning() {
         return isRunning.get();
     }
 
+    /**
+     * Method elapsedMillis.
+     *
+     * @return return value.
+     */
     public Long elapsedMillis() {
         assertRunning(Boolean.TRUE);
         return currMillis() - startMillis;
@@ -107,4 +141,5 @@ public class NoOpTransaction implements Transaction {
     public void close() throws Exception {
         stop(Status.success());
     }
+
 }

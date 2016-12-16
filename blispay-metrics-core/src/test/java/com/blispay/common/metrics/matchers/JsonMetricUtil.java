@@ -5,32 +5,72 @@ import org.json.JSONObject;
 
 import java.util.Arrays;
 
+/**
+ * Class JsonMetricUtil.
+ */
 public final class JsonMetricUtil {
 
-    private JsonMetricUtil() {
+    /**
+     * Constructs JsonMetricUtil.
+     */
+    private JsonMetricUtil() {}
 
-    }
-
+    /**
+     * Method parseTimeStamp.
+     *
+     * @param obj obj.
+     * @return return value.
+     */
     public static String parseTimeStamp(final JSONObject obj) {
         return parseValue(obj, "timestamp", String.class);
     }
 
+    /**
+     * Method parseApplication.
+     *
+     * @param obj obj.
+     * @return return value.
+     */
     public static String parseApplication(final JSONObject obj) {
         return parseValue(obj, "application", String.class);
     }
 
+    /**
+     * Method parseGroup.
+     *
+     * @param obj obj.
+     * @return return value.
+     */
     public static String parseGroup(final JSONObject obj) {
         return parseValue(obj, "group", String.class);
     }
 
+    /**
+     * Method parseName.
+     *
+     * @param obj obj.
+     * @return return value.
+     */
     public static String parseName(final JSONObject obj) {
         return parseValue(obj, "name", String.class);
     }
 
+    /**
+     * Method parseType.
+     *
+     * @param obj obj.
+     * @return return value.
+     */
     public static String parseType(final JSONObject obj) {
         return parseValue(obj, "type", String.class);
     }
 
+    /**
+     * Method parseTrackingInfo.
+     *
+     * @param obj obj.
+     * @return return value.
+     */
     public static JSONObject parseTrackingInfo(final JSONObject obj) {
         return parseValue(obj, "createAndSetThreadLocalTrackingInfo", JSONObject.class);
     }
@@ -76,5 +116,5 @@ public final class JsonMetricUtil {
         }
 
     }
-    
+
 }

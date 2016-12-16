@@ -13,8 +13,15 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+/**
+ * Class Slf4jEventReporterTest.
+ */
 public class Slf4jEventReporterTest extends AbstractMetricsTest {
 
+    /**
+     * Method testSlf4jEventReporter.
+     *
+     */
     @Test
     public void testSlf4jEventReporter() {
         final Logger log = mock(Logger.class);
@@ -23,11 +30,7 @@ public class Slf4jEventReporterTest extends AbstractMetricsTest {
         metricService.addEventSubscriber(new Slf4jEventReporter(log));
         metricService.start();
 
-        final EventFactory<PiiBusinessEventData> repo = metricService
-                .eventFactory(PiiBusinessEventData.class)
-                .inGroup(EventGroup.MERCHANT_DOMAIN)
-                .withName("business-event")
-                .build();
+        final EventFactory<PiiBusinessEventData> repo = metricService.eventFactory(PiiBusinessEventData.class).inGroup(EventGroup.MERCHANT_DOMAIN).withName("business-event").build();
 
         repo.save(defaultPiiBusinessEventData());
 
@@ -41,6 +44,5 @@ public class Slf4jEventReporterTest extends AbstractMetricsTest {
 
         assertEquals(1, argument.getAllValues().size());
     }
-
 
 }

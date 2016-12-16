@@ -6,6 +6,9 @@ import com.google.common.base.CaseFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Class GcEventData.
+ */
 public class GcEventData {
 
     // This is hard coded for now, we'll have to pull it out into a property if we change our strategy.
@@ -36,8 +39,7 @@ public class GcEventData {
      * @param endTime The time, in milliseconds, since the JVM started at end of collection.
      * @param prePostFreeMem Size, in bytes, of memory pools pre and post collection.
      */
-    GcEventData(final String action, final String cause, final String name, final Long duration, final Long startTime, final Long endTime,
-                final Map<String, Long> prePostFreeMem) {
+    GcEventData(final String action, final String cause, final String name, final Long duration, final Long startTime, final Long endTime, final Map<String, Long> prePostFreeMem) {
 
         this.action = action;
         this.cause = cause;
@@ -48,39 +50,82 @@ public class GcEventData {
         this.prePostFreeMemory = prePostFreeMem;
     }
 
+    /**
+     * Method getCollectorStrategy.
+     *
+     * @return return value.
+     */
     public String getCollectorStrategy() {
         return collectorStrategy;
     }
 
+    /**
+     * Method getAction.
+     *
+     * @return return value.
+     */
     public String getAction() {
         return action;
     }
 
+    /**
+     * Method getCause.
+     *
+     * @return return value.
+     */
     public String getCause() {
         return cause;
     }
 
+    /**
+     * Method getName.
+     *
+     * @return return value.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Method getDuration.
+     *
+     * @return return value.
+     */
     public Long getDuration() {
         return duration;
     }
 
+    /**
+     * Method getStartTime.
+     *
+     * @return return value.
+     */
     public Long getStartTime() {
         return startTime;
     }
 
+    /**
+     * Method getEndTime.
+     *
+     * @return return value.
+     */
     public Long getEndTime() {
         return endTime;
     }
 
+    /**
+     * Method prePostFreeMemory.
+     *
+     * @return return value.
+     */
     @JsonAnyGetter
     public Map<String, Long> prePostFreeMemory() {
         return prePostFreeMemory;
     }
 
+    /**
+     * Class Builder.
+     */
     public static class Builder {
 
         private String action;
@@ -92,31 +137,67 @@ public class GcEventData {
 
         private Map<String, Long> prePostGcFreeMemory = new HashMap<>();
 
+        /**
+         * Method action.
+         *
+         * @param action action.
+         * @return return value.
+         */
         public Builder action(final String action) {
             this.action = action;
             return this;
         }
 
+        /**
+         * Method cause.
+         *
+         * @param cause cause.
+         * @return return value.
+         */
         public Builder cause(final String cause) {
             this.cause = cause;
             return this;
         }
 
+        /**
+         * Method name.
+         *
+         * @param name name.
+         * @return return value.
+         */
         public Builder name(final String name) {
             this.name = name;
             return this;
         }
 
+        /**
+         * Method durationMillis.
+         *
+         * @param duration duration.
+         * @return return value.
+         */
         public Builder durationMillis(final Long duration) {
             this.duration = duration;
             return this;
         }
 
+        /**
+         * Method startTime.
+         *
+         * @param startTime startTime.
+         * @return return value.
+         */
         public Builder startTime(final Long startTime) {
             this.startTime = startTime;
             return this;
         }
 
+        /**
+         * Method endTime.
+         *
+         * @param endTime endTime.
+         * @return return value.
+         */
         public Builder endTime(final Long endTime) {
             this.endTime = endTime;
             return this;
@@ -159,5 +240,7 @@ public class GcEventData {
         private static String formatPostName(final String memPool) {
             return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, memPool.replace(" ", "_").toLowerCase()) + "PostGc";
         }
+
     }
+
 }

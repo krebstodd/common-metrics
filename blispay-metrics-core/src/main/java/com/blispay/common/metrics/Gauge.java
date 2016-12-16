@@ -12,8 +12,13 @@ import java.time.ZonedDateTime;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * Class Gauge.
+ *
+ * @param <U> Generic param type.
+ */
 public class Gauge<U> implements SnapshotProvider {
-    
+
     private final Class<U> userDataHint;
     private final String applicationId;
     private final EventGroup group;
@@ -21,11 +26,16 @@ public class Gauge<U> implements SnapshotProvider {
 
     private final Supplier<U> supplier;
 
-    protected Gauge(final Class<U> userDataHint,
-                    final String applicationId,
-                    final EventGroup group,
-                    final String name,
-                    final Supplier<U> supplier) {
+    /**
+     * Constructs Gauge.
+     *
+     * @param userDataHint userDataHint.
+     * @param applicationId applicationId.
+     * @param group group.
+     * @param name name.
+     * @param supplier supplier.
+     */
+    protected Gauge(final Class<U> userDataHint, final String applicationId, final EventGroup group, final String name, final Supplier<U> supplier) {
 
         this.userDataHint = userDataHint;
         this.applicationId = applicationId;
@@ -33,26 +43,30 @@ public class Gauge<U> implements SnapshotProvider {
         this.name = name;
         this.supplier = supplier;
     }
-    
+
     @Override
     public EventModel<Void, U> snapshot() {
 
-        final EventHeader header = EventHeader.builder()
-                .applicationId(applicationId)
-                .group(group)
-                .name(name)
-                .type(EventType.EVENT)
-                .timestamp(ZonedDateTime.now(ZoneId.of("UTC")))
-                .build();
+        final EventHeader header = EventHeader.builder().applicationId(applicationId).group(group).name(name).type(EventType.EVENT).timestamp(ZonedDateTime.now(ZoneId.of("UTC"))).build();
 
         return new EventModel<>(header, null, supplier.get());
 
     }
 
+    /**
+     * Method getUserDataHint.
+     *
+     * @return return value.
+     */
     public Class<U> getUserDataHint() {
         return userDataHint;
     }
 
+    /**
+     * Class Builder.
+     *
+     * @param <U> Generic param type.
+     */
     public static class Builder<U> {
 
         private final Class<U> hint;
@@ -69,20 +83,30 @@ public class Gauge<U> implements SnapshotProvider {
          * @param applicationId App id.
          * @param registerCallback callback to register the gauge with the metric service.
          */
-        public Builder(final Class<U> hint,
-                       final String applicationId,
-                       final Consumer<Gauge<U>> registerCallback) {
+        public Builder(final Class<U> hint, final String applicationId, final Consumer<Gauge<U>> registerCallback) {
 
             this.hint = hint;
             this.applicationId = applicationId;
             this.registerCallback = registerCallback;
         }
 
+        /**
+         * Method withName.
+         *
+         * @param name name.
+         * @return return value.
+         */
         public Builder<U> withName(final String name) {
             this.name = name;
             return this;
         }
 
+        /**
+         * Method inGroup.
+         *
+         * @param group group.
+         * @return return value.
+         */
         public Builder<U> inGroup(final EventGroup group) {
             this.group = group;
             return this;
@@ -101,5 +125,7 @@ public class Gauge<U> implements SnapshotProvider {
             registerCallback.accept(gauge);
             return gauge;
         }
+
     }
+
 }

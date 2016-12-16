@@ -1,20 +1,23 @@
 package com.blispay.common.metrics.spring;
 
 import com.blispay.common.metrics.MetricService;
-import com.blispay.common.metrics.transaction.Transaction;
-import com.blispay.common.metrics.transaction.TransactionFactory;
 import com.blispay.common.metrics.model.EventGroup;
 import com.blispay.common.metrics.model.call.Direction;
 import com.blispay.common.metrics.model.call.internal.InternalAction;
 import com.blispay.common.metrics.model.call.internal.InternalResource;
 import com.blispay.common.metrics.spring.util.JoinPointUtil;
+import com.blispay.common.metrics.transaction.Transaction;
+import com.blispay.common.metrics.transaction.TransactionFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 
-// CHECK_OFF: IllegalCatch
-// CHECK_OFF: IllegalThrows
+//CHECK_OFF: IllegalCatch
+//CHECK_OFF: IllegalThrows
 
+/**
+ * Class MethodExecutionProfiler.
+ */
 @Aspect
 public class MethodExecutionProfiler {
 
@@ -26,10 +29,7 @@ public class MethodExecutionProfiler {
      */
     public MethodExecutionProfiler(final MetricService metricService) {
 
-        this.txFactory = metricService.transactionFactory()
-                .inDirection(Direction.INTERNAL)
-                .inGroup(EventGroup.INTERNAL_METHOD_CALL)
-                .build();
+        this.txFactory = metricService.transactionFactory().inDirection(Direction.INTERNAL).inGroup(EventGroup.INTERNAL_METHOD_CALL).build();
 
     }
 
@@ -72,13 +72,11 @@ public class MethodExecutionProfiler {
         final Class<?> declaringClass = JoinPointUtil.getDeclaringClass(joinPoint);
         final String methodName = JoinPointUtil.getMethodName(joinPoint);
 
-        return txFactory.create()
-                .withName("execute")
-                .withAction(InternalAction.fromMethodName(methodName))
-                .onResource(InternalResource.fromClass(declaringClass));
+        return txFactory.create().withName("execute").withAction(InternalAction.fromMethodName(methodName)).onResource(InternalResource.fromClass(declaringClass));
     }
 
 }
 
 // CHECK_ON: IllegalCatch
 // CHECK_ON: IllegalThrows
+

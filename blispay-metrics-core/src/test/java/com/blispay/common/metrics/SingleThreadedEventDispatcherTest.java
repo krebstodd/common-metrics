@@ -10,8 +10,15 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * Class SingleThreadedEventDispatcherTest.
+ */
 public class SingleThreadedEventDispatcherTest extends AbstractMetricsTest {
 
+    /**
+     * Method testDispatchesEvents.
+     *
+     */
     @Test
     public void testDispatchesEvents() {
 
@@ -32,6 +39,10 @@ public class SingleThreadedEventDispatcherTest extends AbstractMetricsTest {
 
     }
 
+    /**
+     * Method testEatsExceptions.
+     *
+     */
     @Test
     public void testEatsExceptions() {
 
@@ -49,6 +60,10 @@ public class SingleThreadedEventDispatcherTest extends AbstractMetricsTest {
 
     }
 
+    /**
+     * Method testFiltersDispatching.
+     *
+     */
     @Test
     public void testFiltersDispatching() {
 
@@ -70,11 +85,15 @@ public class SingleThreadedEventDispatcherTest extends AbstractMetricsTest {
 
         assertEquals(1, subscriber1.count());
         assertEquals(evt, subscriber1.poll());
-        
+
         assertEquals(0, subscriber2.count());
 
     }
 
+    /**
+     * Method testEatsFilterExceptions.
+     *
+     */
     @Test
     public void testEatsFilterExceptions() {
 
@@ -84,7 +103,8 @@ public class SingleThreadedEventDispatcherTest extends AbstractMetricsTest {
 
         final TestEventSubscriber subscriber1 = new TestEventSubscriber();
         final TestEventSubscriber subscriber2 = new TestEventSubscriber();
-        subscriber2.addFilter(event -> {
+        subscriber2.addFilter(
+            event -> {
                 throw new IllegalStateException("Bad filter");
             });
 
@@ -102,4 +122,5 @@ public class SingleThreadedEventDispatcherTest extends AbstractMetricsTest {
         assertEquals(0, subscriber2.count());
 
     }
+
 }

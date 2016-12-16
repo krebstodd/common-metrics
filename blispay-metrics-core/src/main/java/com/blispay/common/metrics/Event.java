@@ -12,6 +12,11 @@ import com.google.common.base.Preconditions;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+/**
+ * Class Event.
+ *
+ * @param <U> Generic param type.
+ */
 public final class Event<U> {
 
     private final EventEmitter emitter;
@@ -21,20 +26,29 @@ public final class Event<U> {
 
     private String name;
 
-    Event(final Class<U> hint,
-          final EventEmitter emitter,
-          final String appId,
-          final EventGroup group) {
+    /**
+     * Constructs Event.
+     *
+     * @param hint hint.
+     * @param emitter emitter.
+     * @param appId appId.
+     * @param group group.
+     */
+    Event(final Class<U> hint, final EventEmitter emitter, final String appId, final EventGroup group) {
 
         this(hint, emitter, appId, group, null);
     }
 
-
-    Event(final Class<U> hint,
-          final EventEmitter emitter,
-          final String appId,
-          final EventGroup group,
-          final String name) {
+    /**
+     * Constructs Event.
+     *
+     * @param hint hint.
+     * @param emitter emitter.
+     * @param appId appId.
+     * @param group group.
+     * @param name name.
+     */
+    Event(final Class<U> hint, final EventEmitter emitter, final String appId, final EventGroup group, final String name) {
 
         this.hint = hint;
         this.emitter = emitter;
@@ -43,16 +57,33 @@ public final class Event<U> {
         this.name = name;
     }
 
+    /**
+     * Method name.
+     *
+     * @param name name.
+     * @return return value.
+     */
     public Event<U> name(final String name) {
         this.name = name;
         return this;
     }
 
+    /**
+     * Method name.
+     *
+     * @param nameClazz nameClazz.
+     * @return return value.
+     */
     public Event<U> name(final Class<?> nameClazz) {
         this.name = NameFormatter.toEventName(nameClazz);
         return this;
     }
 
+    /**
+     * Method getHint.
+     *
+     * @return return value.
+     */
     public Class<U> getHint() {
         return hint;
     }
@@ -75,13 +106,13 @@ public final class Event<U> {
 
     private EventHeader createHeader() {
         return EventHeader.builder()
-                .timestamp(ZonedDateTime.now(ZoneId.of("UTC")))
-                .applicationId(appId)
-                .group(group)
-                .type(EventType.EVENT)
-                .trackingInfo(LocalMetricContext.getTrackingInfo())
-                .name(name)
-                .build();
+                          .timestamp(ZonedDateTime.now(ZoneId.of("UTC")))
+                          .applicationId(appId)
+                          .group(group)
+                          .type(EventType.EVENT)
+                          .trackingInfo(LocalMetricContext.getTrackingInfo())
+                          .name(name)
+                          .build();
     }
 
 }

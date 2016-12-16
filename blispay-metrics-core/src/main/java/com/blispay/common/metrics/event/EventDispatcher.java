@@ -6,18 +6,46 @@ import org.springframework.context.SmartLifecycle;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Class EventDispatcher.
+ */
 public abstract class EventDispatcher implements SmartLifecycle {
 
     private final AtomicBoolean isRunning = new AtomicBoolean(Boolean.FALSE);
 
-    public abstract void dispatch(final EventModel evt);
+    /**
+     * Method dispatch.
+     *
+     * @param evt evt.
+     */
+    public abstract void dispatch(EventModel evt);
 
+    /**
+     * Method newEventEmitter.
+     *
+     * @return return value.
+     */
     public abstract EventEmitter newEventEmitter();
 
-    public abstract void subscribe(final EventSubscriber listener);
+    /**
+     * Method subscribe.
+     *
+     * @param listener listener.
+     */
+    public abstract void subscribe(EventSubscriber listener);
 
-    public abstract void unSubscribe(final EventSubscriber listener);
+    /**
+     * Method unSubscribe.
+     *
+     * @param listener listener.
+     */
+    public abstract void unSubscribe(EventSubscriber listener);
 
+    /**
+     * Method isRunningAtomic.
+     *
+     * @return return value.
+     */
     protected AtomicBoolean isRunningAtomic() {
         return isRunning;
     }

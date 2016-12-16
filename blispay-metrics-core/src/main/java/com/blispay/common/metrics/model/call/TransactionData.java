@@ -4,6 +4,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.Duration;
 
+/**
+ * Class TransactionData.
+ *
+ * @param <R> Generic param type.
+ * @param <A> Generic param type.
+ */
 public class TransactionData<R extends Resource, A extends Action> {
 
     @JsonProperty("direction")
@@ -30,8 +36,7 @@ public class TransactionData<R extends Resource, A extends Action> {
      * @param action Action of call.
      * @param status Status of the response.
      */
-    public TransactionData(final Direction direction, final Long durationMillis,
-                           final R resource, final A action, final Status status) {
+    public TransactionData(final Direction direction, final Long durationMillis, final R resource, final A action, final Status status) {
 
         this.direction = direction;
         this.durationMillis = durationMillis;
@@ -40,30 +45,63 @@ public class TransactionData<R extends Resource, A extends Action> {
         this.status = status.getValue();
     }
 
+    /**
+     * Method getDirection.
+     *
+     * @return return value.
+     */
     public Direction getDirection() {
         return direction;
     }
 
+    /**
+     * Method getDurationMillis.
+     *
+     * @return return value.
+     */
     public Long getDurationMillis() {
         return durationMillis;
     }
 
+    /**
+     * Method getAction.
+     *
+     * @return return value.
+     */
     public A getAction() {
         return action;
     }
 
+    /**
+     * Method getResource.
+     *
+     * @return return value.
+     */
     public R getResource() {
         return resource;
     }
 
+    /**
+     * Method getStatus.
+     *
+     * @return return value.
+     */
     public Integer getStatus() {
         return status;
     }
 
+    /**
+     * Method builder.
+     *
+     * @return return value.
+     */
     public static Builder builder() {
         return new Builder();
     }
 
+    /**
+     * Class Builder.
+     */
     public static class Builder {
 
         private Direction direction;
@@ -72,39 +110,75 @@ public class TransactionData<R extends Resource, A extends Action> {
         private Resource resource;
         private Status status;
 
-        public Builder() {
+        /**
+         * Constructs Builder.
+         */
+        public Builder() {}
 
-        }
-
+        /**
+         * Method direction.
+         *
+         * @param direction direction.
+         * @return return value.
+         */
         public Builder direction(final Direction direction) {
             this.direction = direction;
             return this;
         }
 
+        /**
+         * Method duration.
+         *
+         * @param duration duration.
+         * @return return value.
+         */
         public Builder duration(final Duration duration) {
             this.durationMillis = duration.toMillis();
             return this;
         }
 
+        /**
+         * Method action.
+         *
+         * @param action action.
+         * @return return value.
+         */
         public Builder action(final Action action) {
             this.action = action;
             return this;
         }
 
+        /**
+         * Method resource.
+         *
+         * @param resource resource.
+         * @return return value.
+         */
         public Builder resource(final Resource resource) {
             this.resource = resource;
             return this;
         }
 
+        /**
+         * Method status.
+         *
+         * @param status status.
+         * @return return value.
+         */
         public Builder status(final Status status) {
             this.status = status;
             return this;
         }
 
-
+        /**
+         * Method build.
+         *
+         * @return return value.
+         */
         public TransactionData build() {
             return new TransactionData<>(direction, durationMillis, resource, action, status);
         }
+
     }
 
 }

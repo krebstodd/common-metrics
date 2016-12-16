@@ -7,34 +7,115 @@ import com.blispay.common.metrics.model.call.Status;
 
 import java.time.Duration;
 
+/**
+ * Interface Transaction.
+ */
 public interface Transaction extends AutoCloseable {
 
-    Transaction withName(final String name);
+    /**
+     * Method withName.
+     *
+     * @param name name.
+     * @return return value.
+     */
+    Transaction withName(String name);
 
-    Transaction withNameFromType(final Class<?> type);
+    /**
+     * Method withNameFromType.
+     *
+     * @param type type.
+     * @return return value.
+     */
+    Transaction withNameFromType(Class<?> type);
 
-    Transaction inDirection(final Direction direction);
+    /**
+     * Method inDirection.
+     *
+     * @param direction direction.
+     * @return return value.
+     */
+    Transaction inDirection(Direction direction);
 
-    Transaction withAction(final Action action);
+    /**
+     * Method withAction.
+     *
+     * @param action action.
+     * @return return value.
+     */
+    Transaction withAction(Action action);
 
-    Transaction onResource(final Resource resource);
+    /**
+     * Method onResource.
+     *
+     * @param resource resource.
+     * @return return value.
+     */
+    Transaction onResource(Resource resource);
 
-    Transaction userData(final Object userData);
+    /**
+     * Method userData.
+     *
+     * @param userData userData.
+     * @return return value.
+     */
+    Transaction userData(Object userData);
 
+    /**
+     * Method start.
+     *
+     * @return return value.
+     */
     Transaction start();
 
+    /**
+     * Method success.
+     *
+     * @return return value.
+     */
     Duration success();
 
+    /**
+     * Method error.
+     *
+     * @return return value.
+     */
     Duration error();
 
+    /**
+     * Method warn.
+     *
+     * @return return value.
+     */
     Duration warn();
 
-    Duration warn(final Integer level);
+    /**
+     * Method warn.
+     *
+     * @param level level.
+     * @return return value.
+     */
+    Duration warn(Integer level);
 
-    Duration stop(final Status callStatus);
+    /**
+     * Method stop.
+     *
+     * @param callStatus callStatus.
+     * @return return value.
+     */
+    Duration stop(Status callStatus);
 
+    /**
+     * Method isRunning.
+     *
+     * @return return value.
+     */
     Boolean isRunning();
 
+    /**
+     * Method elapsedMillis.
+     *
+     * @return return value.
+     */
     Long elapsedMillis();
 
 }

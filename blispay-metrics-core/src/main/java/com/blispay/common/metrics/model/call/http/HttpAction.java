@@ -7,42 +7,52 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Enum HttpAction.
+ */
 public enum HttpAction implements Action {
 
     /**
      * Put.
      */
     PUT("PUT"),
+
     /**
      * Post.
      */
     POST("POST"),
+
     /**
      * Get.
      */
     GET("GET"),
+
     /**
      * Delete.
      */
     DELETE("DELETE"),
+
     /**
      * Options.
      */
     OPTIONS("OPTIONS"),
+
     /**
      * Head.
      */
     HEAD("HEAD"),
+
     /**
      * Trace.
      */
     TRACE("TRACE"),
+
     /**
      * Connect.
      */
     CONNECT("CONNECT");
 
-    private static final Map<String, HttpAction> lookup;
+    private static final Map<String, HttpAction> LOOKUP;
 
     static {
         final Map<String, HttpAction> temp = new HashMap<>();
@@ -51,12 +61,17 @@ public enum HttpAction implements Action {
             temp.put(action.getValue(), action);
         }
 
-        lookup = Collections.unmodifiableMap(temp);
+        LOOKUP = Collections.unmodifiableMap(temp);
     }
 
     private final String action;
 
-    private HttpAction(final String action) {
+    /**
+     * Constructs HttpAction.
+     *
+     * @param action action.
+     */
+    HttpAction(final String action) {
         this.action = action;
     }
 
@@ -65,8 +80,14 @@ public enum HttpAction implements Action {
         return this.action;
     }
 
+    /**
+     * Method fromString.
+     *
+     * @param method method.
+     * @return return value.
+     */
     public static HttpAction fromString(final String method) {
-        return lookup.get(method.toUpperCase(Locale.ROOT));
+        return LOOKUP.get(method.toUpperCase(Locale.ROOT));
     }
 
 }
