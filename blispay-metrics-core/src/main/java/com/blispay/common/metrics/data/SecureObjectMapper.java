@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.BeanSerializerFactory;
@@ -42,6 +43,7 @@ public class SecureObjectMapper extends ObjectMapper {
     public SecureObjectMapper(final PiiFieldPredicate piiPredicate) {
 
         this.mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
         final SerializerFactory serializerFactory = BeanSerializerFactory.instance.withSerializerModifier(new SecureSerializerModifier(piiPredicate));
 

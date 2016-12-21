@@ -141,4 +141,34 @@ public class JsonMetricSerializerTest extends AbstractMetricsTest {
                                          Matchers.nullValue()));
     }
 
+    /**
+     * See bug ticket PD-4176.
+     */
+    @Test
+    public void testSerializeEmptyUserDataObject() {
+        final AtomicReference<EventModel> event = new AtomicReference<>();
+
+        final EventFactory<EmptyDataObj> factory = new EventFactory.Builder<>(EmptyDataObj.class, APPLICATION, event::set)
+                .inGroup(EventGroup.USER_DOMAIN)
+                .withName("created")
+                .build();
+
+        factory.save(new EmptyDataObj());
+
+        final JsonMetricSerializer jsonSerializer = new JsonMetricSerializer();
+        final JSONObject jsonObject = new JSONObject(jsonSerializer.serialize(event.get()));
+
+        final Map<String, Object> expectedData = new HashMap<>();
+
+        assertThat(jsonObject, new JsonMetricMatcher(EventGroup.USER_DOMAIN,
+                APPLICATION,
+                "created",
+                EventType.EVENT,
+                Matchers.nullValue(),
+                new JsonEventDataMatcher(expectedData)));
+    }
+
+    private static final class EmptyDataObj {
+
+    }
 }
