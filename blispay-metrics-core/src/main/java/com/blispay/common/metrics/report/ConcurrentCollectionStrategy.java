@@ -85,8 +85,10 @@ public class ConcurrentCollectionStrategy implements SnapshotCollectionStrategy 
 
             return results;
 
-        // The current thread was interrupted while waiting for the invoke all call to complete as ExecutorService#invokeAll
-        // blocks the currently executing thread until either all providers complete or the timeout is reached.
+        // The current thread was interrupted while blocking for the results of the ExecutorService#invokeAll call.
+        // the invokeAll method blocks the current thread until either all callables complete or the timeout
+        // is reached. This exception will only be thrown if someone else explicitly interrupts the current thread while it's
+        // waiting for invoke all to complete. 
         } catch (InterruptedException e) {
             LOG.error("Caught interrupted exception attempting to perform snapshot collection.", e);
             return new HashSet<>();
