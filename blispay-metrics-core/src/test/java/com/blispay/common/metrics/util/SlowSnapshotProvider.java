@@ -37,4 +37,14 @@ public class SlowSnapshotProvider implements SnapshotProvider {
 
     }
 
+    @Override
+    public String id() {
+        return "slowSnapshotProvider";
+    }
+
+    @Override
+    public String description() {
+        return "A test snapshot provider that simulates slowly executing snapshots.";
+    }
+
 }

@@ -46,6 +46,16 @@ public class UtilizationGauge implements SnapshotProvider {
         return new EventModel<>(createHeader(), supplier.get(), null);
     }
 
+    @Override
+    public String id() {
+        return name;
+    }
+
+    @Override
+    public String description() {
+        return String.format("Utilization gauge: name=[%s], group=[%s]", name, group);
+    }
+
     private EventHeader createHeader() {
         return EventHeader.builder()
                           .timestamp(ZonedDateTime.now(ZoneId.of("UTC")))

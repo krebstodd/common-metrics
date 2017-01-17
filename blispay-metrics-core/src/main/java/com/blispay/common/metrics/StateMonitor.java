@@ -47,6 +47,16 @@ public class StateMonitor implements SnapshotProvider {
         return new EventModel<>(createHeader(), supplier.get());
     }
 
+    @Override
+    public String id() {
+        return name;
+    }
+
+    @Override
+    public String description() {
+        return String.format("State monitor: name=[%s], group=[%s]", name, group);
+    }
+
     private EventHeader createHeader() {
         return EventHeader.builder()
                           .timestamp(ZonedDateTime.now(ZoneId.of("UTC")))

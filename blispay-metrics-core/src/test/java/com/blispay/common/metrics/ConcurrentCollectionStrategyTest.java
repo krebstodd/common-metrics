@@ -3,6 +3,7 @@ package com.blispay.common.metrics;
 import com.blispay.common.metrics.model.EventModel;
 import com.blispay.common.metrics.report.ConcurrentCollectionStrategy;
 import com.blispay.common.metrics.report.SnapshotProvider;
+import com.blispay.common.metrics.util.ExceptionThrowingSnapshotProvider;
 import com.blispay.common.metrics.util.FastSnapshotProvider;
 import com.blispay.common.metrics.util.SlowSnapshotProvider;
 import org.junit.Test;
@@ -66,10 +67,7 @@ public class ConcurrentCollectionStrategyTest {
 
         mockProviders.add(new SlowSnapshotProvider(providerLatency, mockEvent()));
         mockProviders.add(new SlowSnapshotProvider(providerLatency, mockEvent()));
-        mockProviders.add(
-            () -> {
-                throw new RuntimeException("Some runtime exception...");
-            });
+        mockProviders.add(new ExceptionThrowingSnapshotProvider(new RuntimeException("Some runtime exception...")));
         mockProviders.add(new SlowSnapshotProvider(providerLatency, mockEvent()));
         mockProviders.add(new SlowSnapshotProvider(providerLatency, mockEvent()));
 

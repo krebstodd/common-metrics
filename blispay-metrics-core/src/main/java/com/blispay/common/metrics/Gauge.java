@@ -53,6 +53,16 @@ public class Gauge<U> implements SnapshotProvider {
 
     }
 
+    @Override
+    public String id() {
+        return name;
+    }
+
+    @Override
+    public String description() {
+        return String.format("Gauge: name=[%s], group=[%s]", name, group);
+    }
+
     /**
      * Method getUserDataHint.
      *

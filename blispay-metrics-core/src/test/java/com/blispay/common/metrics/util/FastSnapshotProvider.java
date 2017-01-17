@@ -24,4 +24,14 @@ public class FastSnapshotProvider implements SnapshotProvider {
         return model;
     }
 
+    @Override
+    public String id() {
+        return "fastSnapshotProvider";
+    }
+
+    @Override
+    public String description() {
+        return "Test snapshot provider for simulating a fast-executing snapshot provider";
+    }
+
 }

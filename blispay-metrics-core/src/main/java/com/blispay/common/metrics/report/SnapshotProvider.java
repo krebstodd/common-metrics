@@ -2,12 +2,10 @@ package com.blispay.common.metrics.report;
 
 import com.blispay.common.metrics.model.EventModel;
 
-import java.util.concurrent.Callable;
-
 /**
  * Interface SnapshotProvider.
  */
-public interface SnapshotProvider extends Callable<EventModel> {
+public interface SnapshotProvider {
 
     /**
      * Method snapshot.
@@ -17,12 +15,19 @@ public interface SnapshotProvider extends Callable<EventModel> {
     EventModel snapshot();
 
     /**
-     * Method call.
-     *
-     * @return return value.
+     * Get a unique identifier that describes the snapshot provider.
+     * @return Identifier.
      */
-    default EventModel call() {
-        return snapshot();
+    default String id() {
+        return getClass().getCanonicalName();
+    }
+
+    /**
+     * String that describes what the snapshot provider is taking snapshots of.
+     * @return Description string.
+     */
+    default String description() {
+        return "Snapshot provider " + getClass().getSimpleName();
     }
 
 }
