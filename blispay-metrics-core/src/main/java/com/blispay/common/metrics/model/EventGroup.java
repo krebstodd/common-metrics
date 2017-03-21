@@ -48,6 +48,8 @@ public enum EventGroup {
     SERVER_MESSAGE_BUS("metrics.server.bus"),
     CLIENT_MESSAGE_BUS_COMMAND("metrics.client.bus.command"),
     CLIENT_MESSAGE_BUS_EVENT("metrics.client.bus.event"),
+    CLIENT_BUSCLIENT_COMMAND("metrics.client.busclient.command"),
+    CLIENT_BUSCLIENT_QUERY("metrics.client.busclient.query"),
     RESOURCE_UTILIZATION_GC("metrics.resource.gc"),
     RESOURCE_UTILIZATION_MEM("metrics.resource.memory"),
     RESOURCE_UTILIZATION_THREADS("metrics.resource.threads"),
