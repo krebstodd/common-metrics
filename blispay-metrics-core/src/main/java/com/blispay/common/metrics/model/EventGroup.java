@@ -39,6 +39,7 @@ public enum EventGroup {
     CLIENT_HTTP_SMARTY_STREETS("metrics.client.http.smarty-streets"),
     CLIENT_HTTP_SENDGRID("metrics.client.http.sendgrid"),
     CLIENT_HTTP_WHITE_PAGES_PRO("metrics.client.http.white-pages-pro"),
+    CLIENT_HTTP_HUBSPOT("metrics.client.http.hubspot"),
     CLIENT_HTTP_DDS("metrics.client.http.dds"),
     CLIENT_HTTP_QR("metrics.client.http.quick-remit"),
     CLIENT_JDBC("metrics.client.jdbc"),
