@@ -1,4 +1,4 @@
-package com.blispay.common.metrics.spring.util;
+package com.blispay.common.metrics.aop.aspectj;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -8,40 +8,48 @@ import java.util.Arrays;
 import java.util.Optional;
 
 /**
- * Class JoinPointUtil.
+ * Utility methods for dealing with aspectj join point objects.
  */
 public final class JoinPointUtil {
 
-    /**
-     * Constructs JoinPointUtil.
-     */
     private JoinPointUtil() {}
 
     /**
-     * Method getDeclaringClass.
+     * Get the class or interface that declares the target method.
      *
-     * @param joinPoint joinPoint.
-     * @return return value.
+     * @param joinPoint Join point.
+     * @return Class or interface declaring join point target method.
      */
     public static Class<?> getDeclaringClass(final JoinPoint joinPoint) {
         return ((MethodSignature) joinPoint.getSignature()).getMethod().getDeclaringClass();
     }
 
+
     /**
-     * Method getMethodName.
+     * Get the type of object the join point is actually targeting.
      *
-     * @param joinPoint joinPoint.
-     * @return return value.
+     * @param joinPoint Join point.
+     * @return Class or interface of the target object.
+     */
+    public static Class<?> getTargetClass(final JoinPoint joinPoint) {
+        return joinPoint.getTarget().getClass();
+    }
+
+    /**
+     * Get the name of the method being targeted.
+     *
+     * @param joinPoint Join point.
+     * @return Method name.
      */
     public static String getMethodName(final JoinPoint joinPoint) {
         return getMethod(joinPoint).getName();
     }
 
     /**
-     * Method getMethod.
+     * Get the method being targeted.
      *
-     * @param joinPoint joinPoint.
-     * @return return value.
+     * @param joinPoint Join point.
+     * @return Method object.
      */
     public static Method getMethod(final JoinPoint joinPoint) {
         return ((MethodSignature) joinPoint.getSignature()).getMethod();
