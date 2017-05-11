@@ -2,13 +2,20 @@ package com.blispay.common.metrics.aop.spring;
 
 import com.blispay.common.metrics.MetricService;
 import com.blispay.common.metrics.aop.aspectj.AbstractFunctionProfiler;
+import com.blispay.common.metrics.aop.aspectj.AopResource;
 import com.blispay.common.metrics.aop.aspectj.BasicFunctionProfiler;
+import com.blispay.common.metrics.aop.aspectj.JoinPointUtil;
+import com.blispay.common.metrics.model.call.Resource;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Aspect responsible for profiling public methods from spring repository. Allows developers to time query execution
@@ -47,8 +54,30 @@ public class SpringRepositoryProfiler extends AbstractFunctionProfiler {
     // CHECK_ON: IllegalThrows
 
     @Override
-    public String getMetricName(final JoinPoint jp) {
+    protected String getMetricName(final JoinPoint jp) {
         return "spring-repository-query";
     }
+
+    /**
+     * Override the default get resource call and try to find the blispay repository interface. If none is found,
+     * just return default.
+     *
+     * @param jp Join point.
+     * @return Resource.
+     */
+    @Override
+    protected Resource getResource(final JoinPoint jp) {
+        return findBlispayRepositoryIface(jp)
+                .map(iface -> (Resource) AopResource.withName(iface.getName()))
+                .orElseGet(() -> super.getResource(jp));
+    }
+
+    private static Optional<Class<?>> findBlispayRepositoryIface(final JoinPoint jp) {
+        return Arrays.stream(JoinPointUtil.getTargetClass(jp).getInterfaces())
+                .filter(iface -> iface.getPackage().getName().startsWith("com.blispay")) // Filter out any ifaces not in a blispay package.
+                .filter(iface -> iface.getSimpleName().toLowerCase(Locale.ROOT).contains("repository")) // Filter out any ifaces w/ class name not containing repository.
+                .findFirst();
+    }
+
 
 }

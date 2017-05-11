@@ -2,8 +2,10 @@ package com.blispay.common.metrics.aop.aspectj;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.aop.framework.AopProxy;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -32,7 +34,17 @@ public final class JoinPointUtil {
      * @return Class or interface of the target object.
      */
     public static Class<?> getTargetClass(final JoinPoint joinPoint) {
-        return joinPoint.getTarget().getClass();
+        Object curr = joinPoint.getTarget();
+        System.out.println(">>>>>>>" + curr);
+        while (Proxy.isProxyClass(curr.getClass())) {
+            curr = Proxy.getInvocationHandler(joinPoint.getTarget());
+            System.out.println(">>>>>>>" + curr);
+        }
+
+        while (curr instanceof AopProxy) {
+            curr = ((AopProxy) curr).getProxy();
+        }
+        return curr.getClass();
     }
 
     /**

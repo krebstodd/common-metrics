@@ -71,7 +71,7 @@ public class SpringRepositoryProfilerIntegrationTest {
                 .setName("spring-repository-query")
                 .setType(EventType.TRANSACTION)
                 .setDataMatcher(new TransactionDataMatcher(
-                        AopResource.withName(TestRepositoryImpl.class.getName()),
+                        AopResource.withName(TestRepository.class.getName()),
                         AopAction.withName("findOne"),
                         Direction.INTERNAL,
                         Status.success(),
@@ -94,7 +94,7 @@ public class SpringRepositoryProfilerIntegrationTest {
                 .setName("spring-repository-query")
                 .setType(EventType.TRANSACTION)
                 .setDataMatcher(new TransactionDataMatcher(
-                        AopResource.withName(TestRepositoryImpl.class.getName()),
+                        AopResource.withName(TestRepository.class.getName()),
                         AopAction.withName("save"),
                         Direction.INTERNAL,
                         Status.success(),
@@ -117,7 +117,7 @@ public class SpringRepositoryProfilerIntegrationTest {
                 .setName("spring-repository-query")
                 .setType(EventType.TRANSACTION)
                 .setDataMatcher(new TransactionDataMatcher(
-                        AopResource.withName(TestRepositoryImpl.class.getName()),
+                        AopResource.withName(TestRepository.class.getName()),
                         AopAction.withName("myCustomMethod"),
                         Direction.INTERNAL,
                         Status.success(),
@@ -140,7 +140,7 @@ public class SpringRepositoryProfilerIntegrationTest {
                 .setName("spring-repository-query")
                 .setType(EventType.TRANSACTION)
                 .setDataMatcher(new TransactionDataMatcher(
-                        AopResource.withName(TestRepositoryImpl.class.getName()),
+                        AopResource.withName(TestRepository.class.getName()),
                         AopAction.withName("findAll"),
                         Direction.INTERNAL,
                         Status.success(),
