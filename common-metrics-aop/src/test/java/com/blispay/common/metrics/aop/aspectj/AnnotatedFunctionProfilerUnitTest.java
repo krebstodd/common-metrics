@@ -182,7 +182,21 @@ public class AnnotatedFunctionProfilerUnitTest {
         assertThat(transactionData.getDurationMillis(), lessThanOrEqualTo(testObject.sleepMillis + durationBuffer));
     }
 
-    private static class TestObject {
+    private interface AnnotatedIface {
+        String RESOURCE = "ifaceClassResource";
+        String ACTION = "ifaceAction";
+        String NAME = "ifaceName";
+
+        @Profiled(
+                resource = RESOURCE,
+                action = ACTION,
+                name = NAME
+        )
+        void annotatedIfaceMethod();
+
+    }
+    
+    private static class TestObject implements AnnotatedIface {
 
         private static final String RESOURCE = "testClassResource";
         private static final String ACTION = "testAction";
@@ -195,7 +209,8 @@ public class AnnotatedFunctionProfilerUnitTest {
         private final AtomicReference<String> withoutConfigArg = new AtomicReference<>();
         private final AtomicReference<String> nonProfiledArg = new AtomicReference<>();
         private final AtomicReference<Pair<String, String>> multiArgs = new AtomicReference<>();
-        private final AtomicBoolean noArgumentsCalled = new AtomicBoolean();
+        private final AtomicBoolean noArgumentsCalled = new AtomicBoolean(false);
+        private final AtomicBoolean annotatedIfaceCalled = new AtomicBoolean(false);
 
         @Profiled(
                 resource = RESOURCE,
@@ -242,6 +257,12 @@ public class AnnotatedFunctionProfilerUnitTest {
             } catch (InterruptedException e) {
                 throw new IllegalStateException(e);
             }
+        }
+
+        @Override
+        public void annotatedIfaceMethod() {
+            doSleep();
+            annotatedIfaceCalled.set(true);
         }
     }
 }

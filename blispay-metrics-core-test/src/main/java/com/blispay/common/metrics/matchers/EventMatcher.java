@@ -10,6 +10,8 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 
+import java.util.Optional;
+
 /**
  * Class EventMatcher.
  *
@@ -100,9 +102,9 @@ public class EventMatcher<D, U> extends TypeSafeMatcher<EventModel<D, U>> {
                            .appendText("], data=[")
                            .appendValue(item.getData())
                            .appendText("], userData=[")
-                           .appendValue(ReflectionToStringBuilder.toString(item.getUserData()))
+                           .appendValue(Optional.ofNullable(item.getUserData()).map(ReflectionToStringBuilder::toString).orElse(""))
                            .appendText("], trackingInfo=[")
-                           .appendValue(ReflectionToStringBuilder.toString(item.getHeader().getTrackingInfo()))
+                            .appendValue(Optional.ofNullable(item.getHeader().getTrackingInfo()).map(ReflectionToStringBuilder::toString).orElse(""))
                            .appendText("])");
     }
 
