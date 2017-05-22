@@ -28,7 +28,7 @@
         <spring.boot.version>1.3.6.RELEASE</spring.boot.version>
 
         <common.libs.version>1.0.61</common.libs.version>
-        <common.platform.version>0-SNAPSHOT</common.platform.version>
+        <common.platform.version>1.0.154</common.platform.version>
     </properties>
 
     <dependencyManagement>
