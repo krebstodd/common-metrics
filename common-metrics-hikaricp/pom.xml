@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>common-metrics-hikari</artifactId>
+    <artifactId>common-metrics-hikaricp</artifactId>
 
     <dependencies>
         <dependency>
