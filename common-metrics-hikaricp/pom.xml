@@ -9,23 +9,20 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>blispay-metrics-jetty</artifactId>
+    <artifactId>common-metrics-hikari</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>com.blispay.common</groupId>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>blispay-metrics-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
-            <groupId>io.dropwizard.metrics</groupId>
-            <artifactId>metrics-jetty9</artifactId>
-            <version>3.1.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.blispay.common</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>blispay-metrics-core-test</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>

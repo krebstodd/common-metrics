@@ -26,12 +26,18 @@ public class BasicFunctionProfilerUnitTest {
 
     private TestEventSubscriber metricSubscriber = new TestEventSubscriber();
 
+    /**
+     * Init.
+     */
     @Before
     public void init() {
         metricService.start();
         metricService.addEventSubscriber(metricSubscriber);
     }
 
+    /**
+     * Destroy.
+     */
     @After
     public void destroy() {
         metricService.stop();
@@ -108,6 +114,9 @@ public class BasicFunctionProfilerUnitTest {
         assertEquals("Expected successful status", Status.success().getValue(), transactionData.getStatus());
     }
 
+    /**
+     * Test object.
+     */
     public static class TestObject {
 
         private boolean publicExecuted;
@@ -115,7 +124,7 @@ public class BasicFunctionProfilerUnitTest {
         private boolean protectedExecuted;
         private boolean packagePrivateExecuted;
 
-        public void publicMethod() {
+        void publicMethod() {
             publicExecuted = true;
         }
 

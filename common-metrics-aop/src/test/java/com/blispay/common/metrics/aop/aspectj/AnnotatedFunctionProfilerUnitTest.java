@@ -31,12 +31,18 @@ public class AnnotatedFunctionProfilerUnitTest {
 
     private TestEventSubscriber metricSubscriber = new TestEventSubscriber();
 
+    /**
+     * Init.
+     */
     @Before
     public void init() {
         metricService.start();
         metricService.addEventSubscriber(metricSubscriber);
     }
 
+    /**
+     * Destroy.
+     */
     @After
     public void destroy() {
         metricService.stop();

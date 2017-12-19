@@ -9,10 +9,13 @@ public class JpaRepositoryAdvisorFactoryBean extends AbstractSpringAdvisorFactor
 
     private final MetricService metricService;
 
+    /**
+     * Create a new bean.
+     * @param metricService Metric service.
+     */
     public JpaRepositoryAdvisorFactoryBean(final MetricService metricService) {
         this.metricService = metricService;
     }
-
 
     @Override
     protected Object getAspect() {

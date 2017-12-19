@@ -89,7 +89,7 @@ public class TransactionDataMatcher extends TypeSafeMatcher<TransactionData> {
      * @return return value.
      */
     protected Boolean approximatelyEqual(final Long expected, final Long actual, final Long acceptableDelta) {
-        return Math.abs(expected - actual) < acceptableDelta;
+        return Math.abs(expected - actual) <= acceptableDelta;
     }
 
 }

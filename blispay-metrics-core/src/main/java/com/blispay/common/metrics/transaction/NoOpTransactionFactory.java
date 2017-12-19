@@ -10,4 +10,9 @@ public class NoOpTransactionFactory implements TransactionFactory {
         return new NoOpTransaction();
     }
 
+    @Override
+    public ManualTransaction createManual() {
+        return new NoOpTransaction();
+    }
+
 }

@@ -3,6 +3,7 @@ package com.blispay.common.metrics;
 import com.blispay.common.metrics.event.EventEmitter;
 import com.blispay.common.metrics.model.EventGroup;
 import com.blispay.common.metrics.model.EventModel;
+import com.blispay.common.metrics.model.call.Resource;
 import com.google.common.base.Preconditions;
 
 /**
@@ -16,6 +17,7 @@ public class EventFactory<U> {
     private final String applicationId;
     private final EventEmitter emitter;
     private final EventGroup group;
+    private final Resource resource;
     private final String name;
 
     /**
@@ -25,14 +27,21 @@ public class EventFactory<U> {
      * @param applicationId applicationId.
      * @param emitter emitter.
      * @param group group.
+     * @param resource resource.
      * @param name name.
      */
-    protected EventFactory(final Class<U> userDataHint, final String applicationId, final EventEmitter emitter, final EventGroup group, final String name) {
+    protected EventFactory(final Class<U> userDataHint,
+                           final String applicationId,
+                           final EventEmitter emitter,
+                           final EventGroup group,
+                           final Resource resource,
+                           final String name) {
 
         this.userDataHint = userDataHint;
         this.applicationId = applicationId;
         this.emitter = emitter;
         this.group = group;
+        this.resource = resource;
         this.name = name;
     }
 
@@ -42,7 +51,7 @@ public class EventFactory<U> {
      * @return return value.
      */
     public Event<U> create() {
-        return new Event<>(this.userDataHint, this.emitter, this.applicationId, this.group, this.name);
+        return new Event<>(this.userDataHint, this.emitter, this.applicationId, this.group, this.resource, this.name);
     }
 
     /**
@@ -67,6 +76,7 @@ public class EventFactory<U> {
         private final EventEmitter emitter;
 
         private EventGroup group;
+        private Resource resource;
         private String name;
 
         /**
@@ -106,6 +116,17 @@ public class EventFactory<U> {
         }
 
         /**
+         * Method onResource.
+         *
+         * @param resource resource.
+         * @return return value.
+         */
+        public Builder<U> onResource(final Resource resource) {
+            this.resource = resource;
+            return this;
+        }
+
+        /**
          * Build a new event factory.
          * @return new event factory.
          */
@@ -113,7 +134,7 @@ public class EventFactory<U> {
 
             Preconditions.checkNotNull(this.group);
 
-            return new EventFactory<>(hint, applicationId, emitter, group, name);
+            return new EventFactory<>(hint, applicationId, emitter, group, resource, name);
 
         }
 

@@ -3,7 +3,8 @@ package com.blispay.common.metrics.model.call;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Interface Action.
+ * Represents what happening as a result of the transaction. For example, the action for a database query might be SELECT
+ * and the action for an api call might be POST.
  */
 public interface Action {
 
@@ -14,5 +15,14 @@ public interface Action {
      */
     @JsonValue
     String getValue();
+
+    /**
+     * Create a new action with the provided name.
+     * @param actionName Action name.
+     * @return Action instance.
+     */
+    static Action withName(final String actionName) {
+        return new BasicAction(actionName);
+    }
 
 }

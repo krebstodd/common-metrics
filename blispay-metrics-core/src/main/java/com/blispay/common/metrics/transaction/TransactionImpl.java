@@ -2,140 +2,44 @@ package com.blispay.common.metrics.transaction;
 
 import com.blispay.common.metrics.event.EventEmitter;
 import com.blispay.common.metrics.model.EventGroup;
-import com.blispay.common.metrics.model.EventHeader;
-import com.blispay.common.metrics.model.EventModel;
-import com.blispay.common.metrics.model.EventType;
-import com.blispay.common.metrics.model.call.Action;
-import com.blispay.common.metrics.model.call.Direction;
-import com.blispay.common.metrics.model.call.Resource;
 import com.blispay.common.metrics.model.call.Status;
-import com.blispay.common.metrics.model.call.TransactionData;
-import com.blispay.common.metrics.util.LocalMetricContext;
-import com.blispay.common.metrics.util.NameFormatter;
 
 import java.time.Duration;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Class TransactionImpl.
  */
-public class TransactionImpl implements Transaction {
+public class TransactionImpl extends AbstractTransaction implements Transaction {
 
     private Long startMillis;
     private AtomicBoolean isRunning = new AtomicBoolean(false);
 
-    private Direction direction;
-    private Action action;
-    private Resource resource;
-
-    private ZonedDateTime timestamp;
-    private final EventEmitter emitter;
-    private final String appId;
-    private final EventGroup group;
-
-    private String name;
-    private Object userData;
-
     /**
-     * Constructs TransactionImpl.
+     * Constructs AbstractTransaction.
      *
      * @param emitter emitter.
-     * @param appId appId.
-     * @param group group.
-     * @param name name.
+     * @param appId   appId.
+     * @param group   group.
+     * @param name    name.
      */
     protected TransactionImpl(final EventEmitter emitter, final String appId, final EventGroup group, final String name) {
-
-        this.emitter = emitter;
-        this.appId = appId;
-        this.group = group;
-        this.name = name;
-    }
-
-    /**
-     * Method withName.
-     *
-     * @param name name.
-     * @return return value.
-     */
-    public Transaction withName(final String name) {
-        this.name = name;
-        return this;
-    }
-
-    /**
-     * Method withNameFromType.
-     *
-     * @param type type.
-     * @return return value.
-     */
-    public Transaction withNameFromType(final Class<?> type) {
-        this.name = NameFormatter.toEventName(type);
-        return this;
-    }
-
-    /**
-     * Method inDirection.
-     *
-     * @param direction direction.
-     * @return return value.
-     */
-    public Transaction inDirection(final Direction direction) {
-        this.direction = direction;
-        return this;
-    }
-
-    /**
-     * Method withAction.
-     *
-     * @param action action.
-     * @return return value.
-     */
-    public Transaction withAction(final Action action) {
-        this.action = action;
-        return this;
-    }
-
-    /**
-     * Method onResource.
-     *
-     * @param resource resource.
-     * @return return value.
-     */
-    public Transaction onResource(final Resource resource) {
-        this.resource = resource;
-        return this;
-    }
-
-    /**
-     * Method userData.
-     *
-     * @param userData userData.
-     * @return return value.
-     */
-    public Transaction userData(final Object userData) {
-        this.userData = userData;
-        return this;
-    }
-
-    private TransactionData build(final Duration duration, final Status status) {
-        return new TransactionData<>(direction, duration.toMillis(), resource, action, status);
+        super(emitter, appId, group, name);
     }
 
     /**
      * Start the current transaction.
      * @return The currently running tx.
      */
+    @Override
     public Transaction start() {
         if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
 
-            timestamp = ZonedDateTime.now(ZoneId.of("UTC"));
+            setTimestamp();
 
             startMillis = currMillis();
 
-            return this;
+            return (Transaction) this;
 
         } else {
             throw new IllegalStateException("Transaction already started.");
@@ -147,6 +51,7 @@ public class TransactionImpl implements Transaction {
      *
      * @return return value.
      */
+    @Override
     public Duration success() {
         return stop(Status.success());
     }
@@ -156,6 +61,7 @@ public class TransactionImpl implements Transaction {
      *
      * @return return value.
      */
+    @Override
     public Duration error() {
         return stop(Status.error());
     }
@@ -165,6 +71,7 @@ public class TransactionImpl implements Transaction {
      *
      * @return return value.
      */
+    @Override
     public Duration warn() {
         return stop(Status.warning());
     }
@@ -175,6 +82,7 @@ public class TransactionImpl implements Transaction {
      * @param level level.
      * @return return value.
      */
+    @Override
     public Duration warn(final Integer level) {
         return stop(Status.warning(level));
     }
@@ -184,13 +92,12 @@ public class TransactionImpl implements Transaction {
      * @param callStatus The status of the completed transaction.
      * @return The total duration of the transaction.
      */
+    @Override
     public Duration stop(final Status callStatus) {
         assertRunning(Boolean.TRUE);
         final Duration elapsed = Duration.ofMillis(elapsedMillis());
         isRunning.set(Boolean.FALSE);
-
-        emitter.emit(createModel(build(elapsed, callStatus), userData));
-
+        emit(elapsed, callStatus);
         return elapsed;
     }
 
@@ -199,6 +106,7 @@ public class TransactionImpl implements Transaction {
      *
      * @return return value.
      */
+    @Override
     public Boolean isRunning() {
         return isRunning.get();
     }
@@ -208,6 +116,7 @@ public class TransactionImpl implements Transaction {
      *
      * @return return value.
      */
+    @Override
     public Long elapsedMillis() {
         assertRunning(Boolean.TRUE);
         return currMillis() - startMillis;
@@ -221,14 +130,6 @@ public class TransactionImpl implements Transaction {
         if (this.isRunning.get() != expected) {
             throw new IllegalStateException("Transaction not in expected state.");
         }
-    }
-
-    private <U> EventModel<TransactionData, U> createModel(final TransactionData data, final U userData) {
-        return new EventModel<>(createHeader(), data, userData);
-    }
-
-    private EventHeader createHeader() {
-        return EventHeader.builder().timestamp(timestamp).applicationId(appId).group(group).type(EventType.TRANSACTION).trackingInfo(LocalMetricContext.getTrackingInfo()).name(name).build();
     }
 
     @Override

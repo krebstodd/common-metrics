@@ -11,6 +11,11 @@ public class ProfiledProxyFactory {
 
     private final MetricService metricService;
 
+    /**
+     * Create a new profiled proxy factory.
+     *
+     * @param metricService Metric service.
+     */
     public ProfiledProxyFactory(final MetricService metricService) {
         this.metricService = metricService;
     }

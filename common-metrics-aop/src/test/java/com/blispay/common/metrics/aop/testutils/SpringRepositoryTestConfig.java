@@ -16,21 +16,38 @@ import java.util.UUID;
 @EnableAspectJAutoProxy
 public class SpringRepositoryTestConfig {
 
+    /**
+     * Metric service.
+     * @return Metric service.
+     */
     @Bean
     public MetricService metricService() {
         return new MetricService(UUID.randomUUID().toString());
     }
 
+    /**
+     * Test repo.
+     * @return Test repo.
+     */
     @Bean
     public TestRepository testRepository() {
         return new TestRepositoryImpl();
     }
 
+    /**
+     * Test service.
+     * @return Test service.
+     */
     @Bean
     public TestService testService() {
         return new TestService();
     }
 
+    /**
+     * Advisor.
+     * @return Advisor.
+     * @throws Exception on error.
+     */
     @Bean
     public Advisor springRepositoryProfiler() throws Exception {
         return new JpaRepositoryAdvisorFactoryBean(metricService()).getObject();

@@ -15,6 +15,11 @@ public class BasicFunctionProfiler extends AbstractFunctionProfiler {
 
     private static final Logger LOG = LoggerFactory.getLogger(BasicFunctionProfiler.class);
 
+    /**
+     * Create a new basic function profiler.
+     *
+     * @param metricService Metric service.
+     */
     public BasicFunctionProfiler(final MetricService metricService) {
         super(metricService);
     }

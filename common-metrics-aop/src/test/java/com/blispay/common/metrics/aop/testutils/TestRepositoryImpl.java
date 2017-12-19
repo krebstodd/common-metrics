@@ -1,6 +1,7 @@
 package com.blispay.common.metrics.aop.testutils;
 
 import org.apache.commons.lang3.RandomUtils;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -38,9 +39,25 @@ public class TestRepositoryImpl implements TestRepository {
     }
 
     @Override
+    public <S extends Object> S findOne(final Example<S> example) {
+        return (S) findOne("");
+    }
+
+
+    @Override
     public boolean exists(final String key) {
         sleep(LATENCY);
         return true;
+    }
+
+    @Override
+    public <S extends Object> boolean exists(final Example<S> example) {
+        return exists("");
+    }
+
+    @Override
+    public <S extends Object> Page<S> findAll(final Example<S> example, final Pageable pageable) {
+        return (Page<S>) findAll();
     }
 
     @Override
@@ -67,9 +84,26 @@ public class TestRepositoryImpl implements TestRepository {
     }
 
     @Override
+    public <S extends Object> List<S> findAll(final Example<S> example, final Sort sort) {
+        sleep(LATENCY);
+        return Collections.emptyList();
+    }
+
+    @Override
+    public <S extends Object> List<S> findAll(final Example<S> example) {
+        sleep(LATENCY);
+        return Collections.emptyList();
+    }
+
+    @Override
     public long count() {
         sleep(LATENCY);
         return 1;
+    }
+
+    @Override
+    public <S extends Object> long count(final Example<S> example) {
+        return count();
     }
 
     @Override
@@ -141,4 +175,5 @@ public class TestRepositoryImpl implements TestRepository {
     public Object getCurrState() {
         return new Object();
     }
+
 }

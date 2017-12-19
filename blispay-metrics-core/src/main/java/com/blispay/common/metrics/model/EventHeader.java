@@ -1,5 +1,6 @@
 package com.blispay.common.metrics.model;
 
+import com.blispay.common.metrics.model.call.Resource;
 import com.blispay.common.metrics.util.NameFormatter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
@@ -26,6 +27,9 @@ public final class EventHeader {
     @JsonProperty("type")
     private final EventType type;
 
+    @JsonProperty("resource")
+    private final Resource resource;
+
     @JsonProperty("name")
     private final String name;
 
@@ -39,15 +43,23 @@ public final class EventHeader {
      * @param application Application id.
      * @param group Event Group.
      * @param type Event type.
+     * @param resource Resource.
      * @param name Event name.
      * @param trackingInfo Event tracking info.
      */
-    public EventHeader(final ZonedDateTime timestamp, final String application, final EventGroup group, final EventType type, final String name, final TrackingInfo trackingInfo) {
+    public EventHeader(final ZonedDateTime timestamp,
+                       final String application,
+                       final EventGroup group,
+                       final EventType type,
+                       final Resource resource,
+                       final String name,
+                       final TrackingInfo trackingInfo) {
 
         this.timestamp = DT_FORMATTER.format(timestamp);
         this.application = application;
         this.group = group;
         this.type = type;
+        this.resource = resource;
         this.name = name;
         this.trackingInfo = trackingInfo;
     }
@@ -88,6 +100,10 @@ public final class EventHeader {
         return type;
     }
 
+    public Resource getResource() {
+        return resource;
+    }
+
     /**
      * Method getName.
      *
@@ -124,6 +140,7 @@ public final class EventHeader {
         private String applicationId;
         private EventGroup group;
         private EventType type;
+        private Resource resource;
         private String name;
         private TrackingInfo trackingInfo;
 
@@ -172,6 +189,17 @@ public final class EventHeader {
         }
 
         /**
+         * Set resource.
+         *
+         * @param resource value.
+         * @return this.
+         */
+        public Builder resource(final Resource resource) {
+            this.resource = resource;
+            return this;
+        }
+
+        /**
          * Method name.
          *
          * @param name name.
@@ -215,7 +243,7 @@ public final class EventHeader {
             Preconditions.checkNotNull(group);
             Preconditions.checkNotNull(type);
 
-            return new EventHeader(timestamp, applicationId, group, type, name, trackingInfo);
+            return new EventHeader(timestamp, applicationId, group, type, resource, name, trackingInfo);
 
         }
 

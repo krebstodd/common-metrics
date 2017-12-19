@@ -325,7 +325,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
                                                                                                                    Direction.OUTBOUND,
                                                                                                                    Status.success(),
                                                                                                                    1000L))
-                                                                        .setTrackingInfoMatcher(Matchers.notNullValue())
+                                                                        .setTrackingInfoMatcher(Matchers.notNullValue(TrackingInfo.class))
                                                                         .build();
 
         assertThat((EventModel<TransactionData, Void>) evtSub.poll(), matcher);
@@ -375,7 +375,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
                                                                                                                    Direction.OUTBOUND,
                                                                                                                    Status.success(),
                                                                                                                    1000L))
-                                                                        .setTrackingInfoMatcher(Matchers.notNullValue())
+                                                                        .setTrackingInfoMatcher(Matchers.notNullValue(TrackingInfo.class))
                                                                         .build();
 
         assertThat((EventModel<TransactionData, Void>) evtSub.poll(), matcher);

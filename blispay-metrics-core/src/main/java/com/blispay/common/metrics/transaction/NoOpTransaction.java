@@ -1,49 +1,26 @@
 package com.blispay.common.metrics.transaction;
 
-import com.blispay.common.metrics.model.call.Action;
-import com.blispay.common.metrics.model.call.Direction;
-import com.blispay.common.metrics.model.call.Resource;
 import com.blispay.common.metrics.model.call.Status;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Class NoOpTransaction.
+ * A no-op transaction will not publish any metric events to the {@link com.blispay.common.metrics.MetricService}.
+ * No-op transactions are useful for cases in which you want to provide a transaction factory to
+ * an object that publishes transactional metrics without the object needing to know or care whether or not its metrics are
+ * enabled or not.
  */
-public class NoOpTransaction implements Transaction {
+public class NoOpTransaction extends AbstractTransaction implements Transaction, ManualTransaction {
 
     private Long startMillis;
     private AtomicBoolean isRunning = new AtomicBoolean(false);
 
-    @Override
-    public Transaction withName(final String name) {
-        return this;
-    }
-
-    @Override
-    public Transaction withNameFromType(final Class<?> type) {
-        return this;
-    }
-
-    @Override
-    public Transaction inDirection(final Direction direction) {
-        return this;
-    }
-
-    @Override
-    public Transaction withAction(final Action action) {
-        return this;
-    }
-
-    @Override
-    public Transaction onResource(final Resource resource) {
-        return this;
-    }
-
-    @Override
-    public Transaction userData(final Object userData) {
-        return this;
+    /**
+     * Constructs no-op transaction.
+     */
+    protected NoOpTransaction() {
+        super(null, null, null, null);
     }
 
     @Override
@@ -59,52 +36,47 @@ public class NoOpTransaction implements Transaction {
         }
     }
 
-    /**
-     * Method success.
-     *
-     * @return return value.
-     */
+    @Override
     public Duration success() {
         return stop(Status.success());
     }
 
-    /**
-     * Method error.
-     *
-     * @return return value.
-     */
+    @Override
+    public Duration success(final Duration duration) {
+        return duration;
+    }
+
+    @Override
     public Duration error() {
         return stop(Status.error());
     }
 
-    /**
-     * Method warn.
-     *
-     * @return return value.
-     */
+    @Override
+    public Duration error(final Duration duration) {
+        return duration;
+    }
+
+    @Override
     public Duration warn() {
         return stop(Status.warning());
     }
 
-    /**
-     * Method warn.
-     *
-     * @param level level.
-     * @return return value.
-     */
+    @Override
     public Duration warn(final Integer level) {
         return stop(Status.warning(level));
     }
 
-    private Long currMillis() {
-        return System.currentTimeMillis();
+    @Override
+    public Duration warn(final Duration duration) {
+        return duration;
     }
 
-    /**
-     * Stop the currently running transaction with a custom status code.
-     * @param callStatus The status of the completed transaction.
-     * @return The total duration of the transaction.
-     */
+    @Override
+    public Duration warn(final Integer level, final Duration duration) {
+        return duration;
+    }
+
+    @Override
     public Duration stop(final Status callStatus) {
         assertRunning(Boolean.TRUE);
         final Duration elapsed = Duration.ofMillis(elapsedMillis());
@@ -112,34 +84,35 @@ public class NoOpTransaction implements Transaction {
         return elapsed;
     }
 
-    /**
-     * Method isRunning.
-     *
-     * @return return value.
-     */
+    @Override
+    public Duration stop(final Status callStatus, final Duration duration) {
+        return duration;
+    }
+
+    @Override
     public Boolean isRunning() {
         return isRunning.get();
     }
 
-    /**
-     * Method elapsedMillis.
-     *
-     * @return return value.
-     */
+    @Override
     public Long elapsedMillis() {
         assertRunning(Boolean.TRUE);
         return currMillis() - startMillis;
+    }
+
+    @Override
+    public void close() throws Exception {
+        stop(Status.success());
+    }
+
+    private Long currMillis() {
+        return System.currentTimeMillis();
     }
 
     private void assertRunning(final boolean expected) {
         if (this.isRunning.get() != expected) {
             throw new IllegalStateException("Transaction not in expected state.");
         }
-    }
-
-    @Override
-    public void close() throws Exception {
-        stop(Status.success());
     }
 
 }

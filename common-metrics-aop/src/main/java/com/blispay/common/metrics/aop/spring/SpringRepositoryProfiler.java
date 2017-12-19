@@ -26,6 +26,10 @@ public class SpringRepositoryProfiler extends AbstractFunctionProfiler {
 
     private static final Logger LOG = LoggerFactory.getLogger(BasicFunctionProfiler.class);
 
+    /**
+     * Create a new spring repository profiler.
+     * @param metricService Metric service.
+     */
     public SpringRepositoryProfiler(final MetricService metricService) {
         super(metricService);
     }

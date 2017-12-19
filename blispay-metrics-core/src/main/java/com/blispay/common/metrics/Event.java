@@ -5,6 +5,7 @@ import com.blispay.common.metrics.model.EventGroup;
 import com.blispay.common.metrics.model.EventHeader;
 import com.blispay.common.metrics.model.EventModel;
 import com.blispay.common.metrics.model.EventType;
+import com.blispay.common.metrics.model.call.Resource;
 import com.blispay.common.metrics.util.LocalMetricContext;
 import com.blispay.common.metrics.util.NameFormatter;
 import com.google.common.base.Preconditions;
@@ -21,6 +22,7 @@ public final class Event<U> {
 
     private final EventEmitter emitter;
     private final String appId;
+    private final Resource resource;
     private final EventGroup group;
     private final Class<U> hint;
 
@@ -34,9 +36,13 @@ public final class Event<U> {
      * @param appId appId.
      * @param group group.
      */
-    Event(final Class<U> hint, final EventEmitter emitter, final String appId, final EventGroup group) {
+    Event(final Class<U> hint,
+          final EventEmitter emitter,
+          final String appId,
+          final Resource resource,
+          final EventGroup group) {
 
-        this(hint, emitter, appId, group, null);
+        this(hint, emitter, appId, group, resource, null);
     }
 
     /**
@@ -48,12 +54,18 @@ public final class Event<U> {
      * @param group group.
      * @param name name.
      */
-    Event(final Class<U> hint, final EventEmitter emitter, final String appId, final EventGroup group, final String name) {
+    Event(final Class<U> hint,
+          final EventEmitter emitter,
+          final String appId,
+          final EventGroup group,
+          final Resource resource,
+          final String name) {
 
         this.hint = hint;
         this.emitter = emitter;
         this.appId = appId;
         this.group = group;
+        this.resource = resource;
         this.name = name;
     }
 
@@ -110,6 +122,7 @@ public final class Event<U> {
                           .applicationId(appId)
                           .group(group)
                           .type(EventType.EVENT)
+                          .resource(resource)
                           .trackingInfo(LocalMetricContext.getTrackingInfo())
                           .name(name)
                           .build();
