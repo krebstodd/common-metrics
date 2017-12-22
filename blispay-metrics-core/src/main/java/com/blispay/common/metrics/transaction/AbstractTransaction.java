@@ -18,10 +18,10 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 /**
- * Base transaction implementation. Includes management of top level {@link TransactionMetadata} and emitting new
+ * Base transaction implementation. Includes management of top level transaction data and the emitting of new
  * transaction metrics.
  */
-public abstract class AbstractTransaction implements TransactionMetadata {
+public abstract class AbstractTransaction {
 
     private Direction direction;
     private Action action;
@@ -51,75 +51,57 @@ public abstract class AbstractTransaction implements TransactionMetadata {
     }
 
     /**
-     * Method withName.
+     * Method setName.
      *
      * @param name name.
-     * @return return value.
      */
-    @Override
-    public <T extends AbstractTransaction> T withName(final String name) {
+    protected void setName(final String name) {
         this.name = name;
-        return (T) this;
     }
 
     /**
-     * Method withNameFromType.
+     * Method setNameFromType.
      *
      * @param type type.
-     * @return return value.
      */
-    @Override
-    public <T extends AbstractTransaction> T withNameFromType(final Class<?> type) {
+    protected void setNameFromType(final Class type) {
         this.name = NameFormatter.toEventName(type);
-        return (T) this;
     }
 
     /**
      * Method inDirection.
      *
      * @param direction direction.
-     * @return return value.
      */
-    @Override
-    public <T extends AbstractTransaction> T inDirection(final Direction direction) {
+    protected void setDirection(final Direction direction) {
         this.direction = direction;
-        return (T) this;
     }
 
     /**
-     * Method withAction.
+     * Method setAction.
      *
      * @param action action.
-     * @return return value.
      */
-    @Override
-    public <T extends AbstractTransaction> T withAction(final Action action) {
+    protected void setAction(final Action action) {
         this.action = action;
-        return (T) this;
     }
 
     /**
      * Method onResource.
      *
      * @param resource resource.
-     * @return return value.
      */
-    @Override
-    public <T extends AbstractTransaction> T onResource(final Resource resource) {
+    protected void setResource(final Resource resource) {
         this.resource = resource;
-        return (T) this;
     }
 
     /**
      * Method userData.
      *
      * @param userData userData.
-     * @return return value.
      */
-    @Override
-    public <T extends AbstractTransaction> T userData(final Object userData) {
+    protected void setUserData(final Object userData) {
         this.userData = userData;
-        return (T) this;
     }
 
     protected void emit(final Duration elapsed, final Status callStatus) {

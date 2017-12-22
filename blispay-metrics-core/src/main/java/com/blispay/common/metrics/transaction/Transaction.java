@@ -1,5 +1,8 @@
 package com.blispay.common.metrics.transaction;
 
+import com.blispay.common.metrics.model.call.Action;
+import com.blispay.common.metrics.model.call.Direction;
+import com.blispay.common.metrics.model.call.Resource;
 import com.blispay.common.metrics.model.call.Status;
 
 import java.time.Duration;
@@ -7,7 +10,55 @@ import java.time.Duration;
 /**
  * Transactions are used to time how long some bounded process takes to complete.
  */
-public interface Transaction extends AutoCloseable, TransactionMetadata {
+public interface Transaction extends AutoCloseable {
+
+    /**
+     * Method withName.
+     *
+     * @param name name.
+     * @return return value.
+     */
+    Transaction withName(String name);
+
+    /**
+     * Method withNameFromType.
+     *
+     * @param type type.
+     * @return return value.
+     */
+    Transaction withNameFromType(Class type);
+
+    /**
+     * Method inDirection.
+     *
+     * @param direction direction.
+     * @return return value.
+     */
+    Transaction inDirection(Direction direction);
+
+    /**
+     * Method withAction.
+     *
+     * @param action action.
+     * @return return value.
+     */
+    Transaction withAction(Action action);
+
+    /**
+     * Method onResource.
+     *
+     * @param resource resource.
+     * @return return value.
+     */
+    Transaction onResource(Resource resource);
+
+    /**
+     * Method userData.
+     *
+     * @param userData userData.
+     * @return return value.
+     */
+    Transaction userData(Object userData);
 
     /**
      * Tell the transaction to start it's timer.

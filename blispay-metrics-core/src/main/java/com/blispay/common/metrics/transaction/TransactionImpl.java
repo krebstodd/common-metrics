@@ -2,6 +2,9 @@ package com.blispay.common.metrics.transaction;
 
 import com.blispay.common.metrics.event.EventEmitter;
 import com.blispay.common.metrics.model.EventGroup;
+import com.blispay.common.metrics.model.call.Action;
+import com.blispay.common.metrics.model.call.Direction;
+import com.blispay.common.metrics.model.call.Resource;
 import com.blispay.common.metrics.model.call.Status;
 
 import java.time.Duration;
@@ -27,19 +30,55 @@ public class TransactionImpl extends AbstractTransaction implements Transaction 
         super(emitter, appId, group, name);
     }
 
+    @Override
+    public Transaction withName(final String name) {
+        setName(name);
+        return this;
+    }
+
+    @Override
+    public Transaction withNameFromType(final Class type) {
+        setNameFromType(type);
+        return this;
+    }
+
+    @Override
+    public Transaction inDirection(final Direction direction) {
+        setDirection(direction);
+        return this;
+    }
+
+    @Override
+    public Transaction withAction(final Action action) {
+        setAction(action);
+        return this;
+    }
+
+    @Override
+    public Transaction onResource(final Resource resource) {
+        setResource(resource);
+        return this;
+    }
+
+    @Override
+    public Transaction userData(final Object userData) {
+        setUserData(userData);
+        return this;
+    }
+
     /**
      * Start the current transaction.
      * @return The currently running tx.
      */
     @Override
-    public Transaction start() {
+    public TransactionImpl start() {
         if (isRunning.compareAndSet(Boolean.FALSE, Boolean.TRUE)) {
 
             setTimestamp();
 
             startMillis = currMillis();
 
-            return (Transaction) this;
+            return this;
 
         } else {
             throw new IllegalStateException("Transaction already started.");

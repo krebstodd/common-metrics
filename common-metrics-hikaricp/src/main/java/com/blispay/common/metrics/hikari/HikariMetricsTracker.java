@@ -76,8 +76,6 @@ class HikariMetricsTracker extends MetricsTracker {
 
         final Resource trackedResource = Resource.withName(poolName);
 
-        // Publishes a transaction for each time a connection is acquired from the pool indicating how long the thread
-        // spent waiting for a connection to become available.
         this.connectionAcquiredTxFactory = metricService.transactionFactory()
                 .withName("hikaricp-acquire-conn")
                 .onResource(trackedResource)
@@ -85,7 +83,6 @@ class HikariMetricsTracker extends MetricsTracker {
                 .inDirection(Direction.INTERNAL)
                 .withAction(Action.withName("acquire"))
                 .build();
-
 
         this.connectionUsageTxFactory = metricService.transactionFactory()
                 .withName("hikaricp-use-conn")

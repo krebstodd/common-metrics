@@ -56,16 +56,16 @@ public class TransactionFactoryImpl implements TransactionFactory {
      */
     @Override
     public Transaction create() {
-        return fillMetadata(new TransactionImpl(emitter, applicationId, group, name));
+        return new TransactionImpl(emitter, applicationId, group, name)
+                .inDirection(this.direction)
+                .withAction(this.action)
+                .onResource(this.resource);
     }
 
     @Override
     public ManualTransaction createManual() {
-        return fillMetadata(new ManualTransactionImpl(emitter, applicationId, group, name));
-    }
-
-    private <T extends AbstractTransaction> T fillMetadata(final T metadata) {
-        return metadata.inDirection(this.direction)
+        return new ManualTransactionImpl(emitter, applicationId, group, name)
+                .inDirection(this.direction)
                 .withAction(this.action)
                 .onResource(this.resource);
     }

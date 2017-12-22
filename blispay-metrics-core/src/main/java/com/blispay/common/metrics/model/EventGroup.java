@@ -69,7 +69,13 @@ public enum EventGroup {
     RESOURCE_UTILIZATION_JDBC_CONN_POOL("metrics.resource.jdbc.connPool"),
     INTERNAL_METHOD_CALL("metrics.internal.method"),
     DATA_SERIALIZATION("metrics.internal.serialization"),
-    HEALTH("metrics.health");
+    HEALTH("metrics.health"),
+
+    /**
+     * Event group used by the {@link com.blispay.common.metrics.transaction.NoOpTransactionFactory}. Metrics with this
+     * group should never be published.
+     */
+    NOOP("no-op");
 
     // CHECK_ON: JavadocVariable
 
