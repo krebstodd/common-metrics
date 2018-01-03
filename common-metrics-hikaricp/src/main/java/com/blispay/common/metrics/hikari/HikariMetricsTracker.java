@@ -30,6 +30,12 @@ class HikariMetricsTracker extends MetricsTracker {
     private static final Logger LOG = LoggerFactory.getLogger(HikariMetricsTracker.class);
 
     /**
+     * Indicates the maximum number of com.blispay stack trace items to print in the metric user data. The most recent
+     * n items will be printed.
+     */
+    private static final int MAX_STACK_TRACE_LENGTH = 3;
+
+    /**
      * Name of the Hikari CP pool provided by the {@link MetricsTrackerFactory}.
      */
     private final String poolName;
@@ -168,7 +174,8 @@ class HikariMetricsTracker extends MetricsTracker {
                 .filter(element -> element.getClassName().startsWith("com.blispay"))
                 .collect(Collectors.toList());
 
-        return new StackTraceInfo(stackTrace);
+        final int stackTraceLength = Math.min(stackTrace.size(), MAX_STACK_TRACE_LENGTH);
+        return new StackTraceInfo(stackTrace.subList(0, stackTraceLength));
     }
 
     /**
