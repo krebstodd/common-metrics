@@ -43,7 +43,14 @@ public enum EventGroup {
     CLIENT_HTTP_HUBSPOT("metrics.client.http.hubspot"),
     CLIENT_HTTP_DDS("metrics.client.http.dds"),
     CLIENT_HTTP_QR("metrics.client.http.quick-remit"),
+    /**
+     * Measures query transaction times.
+     */
     CLIENT_JDBC("metrics.client.jdbc"),
+    /**
+     * Measures time to acquire/use connection from pool.
+     */
+    CLIENT_JDBC_CONN_POOL("metrics.client.jdbc.connPool"),
     CLIENT_REDIS("metrics.client.redis"),
     CLIENT_MQ_REQ("metrics.client.mq.req"),
     CLIENT_MQ_EVT("metrics.client.mq.evt"),
@@ -57,9 +64,19 @@ public enum EventGroup {
     RESOURCE_UTILIZATION_THREADS("metrics.resource.threads"),
     RESOURCE_UTILIZATION_LOGGING("metrics.resource.logging"),
     RESOURCE_UTILIZATION_CACHE("metrics.resource.cache"),
+    /**
+     * Measures utilization of jdbc connection pool.
+     */
+    RESOURCE_UTILIZATION_JDBC_CONN_POOL("metrics.resource.jdbc.connPool"),
     INTERNAL_METHOD_CALL("metrics.internal.method"),
     DATA_SERIALIZATION("metrics.internal.serialization"),
-    HEALTH("metrics.health");
+    HEALTH("metrics.health"),
+
+    /**
+     * Event group used by the {@link com.blispay.common.metrics.transaction.NoOpTransactionFactory}. Metrics with this
+     * group should never be published.
+     */
+    NOOP("no-op");
 
     // CHECK_ON: JavadocVariable
 

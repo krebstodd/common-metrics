@@ -22,7 +22,7 @@ public abstract class AbstractFunctionProfiler {
 
     private final MetricService metricService;
 
-    public AbstractFunctionProfiler(final MetricService metricService) {
+    protected AbstractFunctionProfiler(final MetricService metricService) {
         Validate.notNull(metricService, "Metric service required.");
         this.metricService = metricService;
     }

@@ -20,6 +20,13 @@ public interface TransactionFactory {
     Transaction create();
 
     /**
+     * Create a new manual transaction with the currently configured state.
+     *
+     * @return Manual transaction instance.
+     */
+    ManualTransaction createManual();
+
+    /**
      * Class Builder.
      */
     class Builder {

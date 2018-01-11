@@ -18,6 +18,11 @@ public final class AopAction implements Action {
         return value;
     }
 
+    /**
+     * Create a new aop action with the provided name.
+     * @param actionName Action name.
+     * @return Aop action.
+     */
     public static AopAction withName(final String actionName) {
         return new AopAction(actionName);
     }

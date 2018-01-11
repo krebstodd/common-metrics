@@ -52,7 +52,11 @@ public class InstrumentedJettyServer extends Server {
         final String path = channel.getRequest().getRequestURI();
         final String method = channel.getRequest().getMethod();
 
-        final Transaction tx = txFactory.create().onResource(HttpResource.fromUrl(path)).withAction(HttpAction.fromString(method)).start();
+        final Transaction tx = txFactory.create()
+                .onResource(HttpResource.fromUrl(path))
+                .withAction(HttpAction.fromString(method));
+
+        tx.start();
 
         // Pass the channel down to our application.
         try {

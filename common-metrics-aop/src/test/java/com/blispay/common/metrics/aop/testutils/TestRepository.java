@@ -9,6 +9,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TestRepository extends JpaRepository<Object, String> {
 
+    /**
+     * Some custom method.
+     *
+     * @param argument Arg.
+     * @return Return.
+     */
     Object myCustomMethod(String argument);
 
 }

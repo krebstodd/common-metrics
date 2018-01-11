@@ -31,7 +31,12 @@ public class TransactionFactoryImpl implements TransactionFactory {
      * @param action action.
      * @param resource resource.
      */
-    protected TransactionFactoryImpl(final String applicationId, final EventEmitter emitter, final EventGroup group, final String name, final Direction direction, final Action action,
+    protected TransactionFactoryImpl(final String applicationId,
+                                     final EventEmitter emitter,
+                                     final EventGroup group,
+                                     final String name,
+                                     final Direction direction,
+                                     final Action action,
                                      final Resource resource) {
 
         this.applicationId = applicationId;
@@ -49,10 +54,20 @@ public class TransactionFactoryImpl implements TransactionFactory {
      *
      * @return Transaction instance.
      */
+    @Override
     public Transaction create() {
+        return new TransactionImpl(emitter, applicationId, group, name)
+                .inDirection(this.direction)
+                .withAction(this.action)
+                .onResource(this.resource);
+    }
 
-        return new TransactionImpl(emitter, applicationId, group, name).inDirection(direction).withAction(action).onResource(resource);
-
+    @Override
+    public ManualTransaction createManual() {
+        return new ManualTransactionImpl(emitter, applicationId, group, name)
+                .inDirection(this.direction)
+                .withAction(this.action)
+                .onResource(this.resource);
     }
 
 }

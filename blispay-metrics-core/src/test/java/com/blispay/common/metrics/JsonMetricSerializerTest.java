@@ -91,11 +91,11 @@ public class JsonMetricSerializerTest extends AbstractMetricsTest {
 
         new TransactionFactory.Builder(APPLICATION, event::set).inGroup(EventGroup.CLIENT_HTTP_DDS)
                                                                .withName("some-request")
-                                                               .build()
-                                                               .create()
                                                                .inDirection(Direction.INBOUND)
                                                                .withAction(HttpAction.GET)
                                                                .onResource(HttpResource.fromUrl("http://blispay.com"))
+                                                               .build()
+                                                               .create()
                                                                .start()
                                                                .stop(Status.success());
 

@@ -27,6 +27,7 @@ import com.blispay.common.metrics.model.status.StatusData;
 import com.blispay.common.metrics.model.utilization.ResourceUtilizationData;
 import com.blispay.common.metrics.report.BasicSnapshotReporter;
 import com.blispay.common.metrics.report.SnapshotReporter;
+import com.blispay.common.metrics.transaction.ManualTransaction;
 import com.blispay.common.metrics.transaction.Transaction;
 import com.blispay.common.metrics.util.LocalMetricContext;
 import com.blispay.common.metrics.util.TestEventSubscriber;
@@ -34,6 +35,7 @@ import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -325,7 +327,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
                                                                                                                    Direction.OUTBOUND,
                                                                                                                    Status.success(),
                                                                                                                    1000L))
-                                                                        .setTrackingInfoMatcher(Matchers.notNullValue())
+                                                                        .setTrackingInfoMatcher(Matchers.notNullValue(TrackingInfo.class))
                                                                         .build();
 
         assertThat((EventModel<TransactionData, Void>) evtSub.poll(), matcher);
@@ -375,7 +377,7 @@ public class MetricServiceTest extends AbstractMetricsTest {
                                                                                                                    Direction.OUTBOUND,
                                                                                                                    Status.success(),
                                                                                                                    1000L))
-                                                                        .setTrackingInfoMatcher(Matchers.notNullValue())
+                                                                        .setTrackingInfoMatcher(Matchers.notNullValue(TrackingInfo.class))
                                                                         .build();
 
         assertThat((EventModel<TransactionData, Void>) evtSub.poll(), matcher);
@@ -460,6 +462,46 @@ public class MetricServiceTest extends AbstractMetricsTest {
         assertEquals(EventGroup.ACCOUNT_DOMAIN_HEALTH, health.getHeader().getGroup());
         assertTrue(health.getData() instanceof StatusData);
         assertFalse(((StatusData) health2.getData()).getStatusValue());
+
+    }
+
+    @Test
+    public void testManualTransaction() {
+
+        final TestEventSubscriber evtSub = new TestEventSubscriber();
+
+        final MetricService metricService = new MetricService(APPLICATION);
+        metricService.addEventSubscriber(evtSub);
+        metricService.start();
+
+        final ManualTransaction tx = metricService.transactionFactory()
+                .inGroup(EventGroup.CLIENT_JDBC)
+                .withName("query")
+                .inDirection(Direction.OUTBOUND)
+                .withAction(DsAction.INSERT)
+                .onResource(DsResource.fromSchemaTable("dom_account", "APPLICATIONs"))
+                .build()
+                .createManual();
+
+        assertEquals(0, evtSub.count());
+
+        tx.success(Duration.ofMillis(12345));
+
+        assertEquals(1, evtSub.count());
+
+        final EventMatcher<TransactionData, Void> matcher = EventMatcher.<TransactionData, Void>builder()
+                .setApplication(APPLICATION)
+                .setGroup(EventGroup.CLIENT_JDBC)
+                .setName("query")
+                .setType(EventType.TRANSACTION)
+                .setDataMatcher(new TransactionDataMatcher(new DsResource("dom_account", "APPLICATIONs"),
+                        DsAction.INSERT,
+                        Direction.OUTBOUND,
+                        Status.success(),
+                        12345L))
+                .build();
+
+        assertThat((EventModel<TransactionData, Void>) evtSub.poll(), matcher);
 
     }
 

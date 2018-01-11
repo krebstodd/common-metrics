@@ -18,6 +18,11 @@ public final class AopResource extends Resource {
         return value;
     }
 
+    /**
+     * Create a new AOP resource.
+     * @param resourceName Resource name.
+     * @return Aop resource.
+     */
     public static AopResource withName(final String resourceName) {
         return new AopResource(resourceName);
     }

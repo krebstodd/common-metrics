@@ -19,6 +19,11 @@ public class AnnotatedFunctionProfiler extends AbstractFunctionProfiler {
 
     private static final Logger LOG = LoggerFactory.getLogger(AnnotatedFunctionProfiler.class);
 
+    /**
+     * Create a new annotated function profiler.
+     *
+     * @param metricService Metric service to publish against.
+     */
     public AnnotatedFunctionProfiler(final MetricService metricService) {
         super(metricService);
     }
